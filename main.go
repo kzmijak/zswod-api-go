@@ -36,6 +36,6 @@ func main() {
 	controller.NewController().
 		WithContext(&ctx).
 		WithLogger(*lgr).
-		Run(cfg.Server.Host);
+		Run(cfg.Server);
 }
 

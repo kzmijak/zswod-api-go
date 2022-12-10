@@ -7,6 +7,7 @@
     "filePath": "test.json"
   },
   "server": {
+    "domain": "sporlowd.pl",
     "host": "8080"
   }
 }

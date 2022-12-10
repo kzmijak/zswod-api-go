@@ -11,12 +11,13 @@ var Client *ent.Client;
 
 
 func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
-	var err error
 
-	Client, err = ent.Open(cfg.DriverName, cfg.DSN )
+	client, err := ent.Open(cfg.DriverName, cfg.DSN )
 	if err != nil {
 		return ErrConnectionFailed
 	}
+
+	Client = client;
 	
 	
 	if err := Client.Schema.Create(ctx); err != nil {

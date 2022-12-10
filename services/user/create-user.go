@@ -10,9 +10,9 @@ import (
 )
 
 type CreateUserRequest struct {
-	Email string
-	Password string
-	Username string
+	Email string `json:"email"`
+	Password string `json:"password"`
+	Username string `json:"username"`
 }
 
 const (
@@ -22,7 +22,7 @@ const (
 
 func CreateUser(ctx context.Context, request CreateUserRequest) (*ent.User, error) {
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.MaxCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, errors.Error(ErrCouldNotSaltPassword)
 	}

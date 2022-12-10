@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/models"
+	"github.com/kzmijak/zswod_api_go/modules/controller"
 )
 
 
@@ -27,7 +28,7 @@ func (c Controller) WithContext(ctx *context.Context) *Controller  {
 	return &c;
 }
 
-func (c Controller) Run(host string) {
+func (c Controller) Run(cfg controller.ControllerConfig) {
 	router := gin.Default()
 
 	v1 := router.Group("/api/v1")
@@ -35,8 +36,9 @@ func (c Controller) Run(host string) {
 		users := v1.Group("/users")
 		{
 			users.GET("", c.GetAllUsers)
+			users.POST("", c.CreateUser)
 		}
 	}
 
-	router.Run(":" + host)
+	router.Run(cfg.Domain + ":" + cfg.Host)
 }
