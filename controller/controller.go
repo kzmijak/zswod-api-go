@@ -37,6 +37,7 @@ func (c Controller) Run(cfg controller.ControllerConfig) {
 		{
 			users.GET("", c.GetAllUsers)
 			users.POST("", c.CreateUser)
+			users.POST("sign-in", c.SignIn)
 		}
 	}
 

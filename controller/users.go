@@ -41,3 +41,21 @@ func (c *Controller) CreateUser(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, response)
 }
+
+func (c *Controller) SignIn(ctx *gin.Context) {
+	var requestBody user.SignInRequest
+
+	if err := ctx.BindJSON(&requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return;
+	}
+
+	response, err := user.SignIn(*c.ctx, requestBody)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return;
+	}
+
+	ctx.IndentedJSON(http.StatusOK, response)
+}
