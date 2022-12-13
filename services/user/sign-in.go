@@ -33,7 +33,7 @@ func SignIn(ctx context.Context, request SignInRequest) (string, error) {
 		return "", errors.Error(ErrInvalidPassword)
 	}
 
-	jwt, err := authentication.GenerateJwt(request.Email, role.Admin)
+	jwt, err := authentication.GenerateJwt(request.Email, role.Admin) // TODO, not everybody should be an admin!!!
 
 	if err != nil {
 		return "", errors.Error(ErrInvalidClaims)
