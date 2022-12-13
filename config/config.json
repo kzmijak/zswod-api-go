@@ -1,6 +1,13 @@
 {
   "database": {
     "driverName": "mysql",
-    "dsn": "zswod:784CAF564B59D9CDBDCB81D24EC9DC6CE690CAACE7BED6D69C72186F5A062B33@tcp(localhost:3306)/zswod?parseTime=true"
+    "dsn": "zswod:784CAF564B59D9CDBDCB81D24EC9DC6CE690CAACE7BED6D69C72186F5A062B33@tcp(localhost:3306)/zswod_go?parseTime=true"
+  },
+  "logger": {
+    "filePath": "test.json"
+  },
+  "server": {
+    "domain": "sporlowd.pl",
+    "host": "8080"
   }
 }
