@@ -26,6 +26,7 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 	if err := ctx.BindJSON(&requestBody); err != nil {
 		c.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, err)
+		return
 	}
 
 	response, err := c.userService.CreateUser(requestBody)
@@ -35,6 +36,7 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 	if err != nil {
 		c.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, err)
+		return 
 	}
 
 	c.log.Trace("Creating user success")

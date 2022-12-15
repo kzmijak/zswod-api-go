@@ -20,11 +20,12 @@ const (
 )
 
 func (s UserService) SignIn(request SignInRequest) (string, error) {
-	user, err := database.Client.User.Query().Where(user.Username(request.Email)).Only(s.ctx);
+	user, err := database.Client.User.Query().Where(user.Email(request.Email)).Only(s.ctx);
 
 	if err != nil {
 		return "" ,errors.Error(ErrUserNotFound)
 	}
+
 	
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return "", errors.Error(ErrInvalidPassword)

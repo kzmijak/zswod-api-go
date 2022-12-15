@@ -1,9 +1,9 @@
-{"level":"trace","msg":"Getting users","time":"2022-12-15T13:07:54+01:00"}
-{"level":"trace","msg":"Getting users","time":"2022-12-15T13:08:03+01:00"}
-{"level":"trace","msg":"Getting users","time":"2022-12-15T13:08:18+01:00"}
-ers","time":"2022-12-15T13:06:58+01:00"}
-{"level":"error","msg":"err_no_context: Context is required to run this method","time":"2022-12-15T13:06:58+01:00"}
-{"level":"trace","msg":"Getting users","time":"2022-12-15T13:07:02+01:00"}
-{"level":"error","msg":"err_no_context: Context is required to run this method","time":"2022-12-15T13:07:02+01:00"}
+{"level":"trace","msg":"Creating user","time":"2022-12-15T14:27:49+01:00"}
+{"level":"error","msg":"invalid character '}' looking for beginning of object key string","time":"2022-12-15T14:28:06+01:00"}
+{"level":"trace","msg":"Creating user","time":"2022-12-15T14:28:09+01:00"}
+{"level":"trace","msg":"Response Email: test23","time":"2022-12-15T14:28:34+01:00"}
+{"level":"trace","msg":"Creating user success","time":"2022-12-15T14:28:34+01:00"}
+l":"error","msg":"invalid character '}' looking for beginning of object key string","time":"2022-12-15T14:26:07+01:00"}
+2+01:00"}
 {"level":"trace","msg":"Getting users","time":"2022-12-15T13:07:35+01:00"}
 {"level":"error","msg":"err_no_context: Context is required to run this method","time":"2022-12-15T13:07:35+01:00"}

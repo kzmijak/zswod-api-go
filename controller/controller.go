@@ -49,10 +49,13 @@ func (c Controller) Run() {
 	{
 		users := v1.Group("/users")
 		{
-			users.Use(c.JwtAuthMiddleware())
 			users.GET("", c.GetAllUsers)
-			users.POST("", c.CreateUser)
-			users.POST("sign-in", c.SignIn)
+			users.Use(c.JwtAuthMiddleware())
+		}
+		auth := v1.Group("/auth") 
+		{
+			auth.POST("", c.CreateUser)
+			auth.POST("sign-in", c.SignIn)	
 		}
 	}
 
