@@ -12,20 +12,20 @@ const (
 )
 
 type UserService struct {
-	jwtService jwt.JwtService
+	jwtService *jwt.JwtService
 	ctx context.Context
 }
 
-func New() UserService {
-	return UserService{}
+func New() *UserService {
+	return &UserService{}
 }
 
-func (UserService) WithContext(ctx context.Context) (s UserService) {
+func (s *UserService) WithContext(ctx context.Context) (*UserService) {
 	s.ctx = ctx
-	return
+	return s
 }
 
-func (UserService) WithJwtService(jwtService jwt.JwtService) (s UserService) {
+func (s *UserService) WithJwtService(jwtService *jwt.JwtService) (*UserService) {
 	s.jwtService = jwtService
-	return
+	return s
 }

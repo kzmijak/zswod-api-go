@@ -37,7 +37,7 @@ func main() {
 	controller.New().
 		WithContext(ctx).
 		WithLogger(lgr).
-		WithConfig(*cfg).
+		WithConfig(cfg).
 		Run();
 }
 

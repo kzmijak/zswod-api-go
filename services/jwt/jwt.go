@@ -16,14 +16,14 @@ const (
 )
 
 type JwtService struct {
-	cfg auth.AuthConfig
+	cfg *auth.AuthConfig
 }
 
-func New() JwtService {
-	return JwtService{}
+func New() *JwtService {
+	return &JwtService{}
 }
 
-func (s JwtService) WithConfig(cfg auth.AuthConfig) JwtService {
-	s.cfg = cfg
+func (s *JwtService) WithConfig(cfg auth.AuthConfig) *JwtService {
+	s.cfg = &cfg
 	return s
 }

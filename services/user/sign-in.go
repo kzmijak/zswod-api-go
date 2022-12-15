@@ -19,7 +19,7 @@ const (
 	ErrInvalidClaims = "err_invalid_claims: Could not generate token for this user"
 )
 
-func (s UserService) SignIn(request SignInRequest) (string, error) {
+func (s *UserService) SignIn(request SignInRequest) (string, error) {
 	user, err := database.Client.User.Query().Where(user.Email(request.Email)).Only(s.ctx);
 
 	if err != nil {
