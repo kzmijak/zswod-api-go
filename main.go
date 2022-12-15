@@ -19,6 +19,7 @@ func main() {
 		fmt.Printf("Failed to load environmental variables %v", err)
 		os.Exit(0)
 	}
+
 	
 	lgr, err := logger.Initialize(ctx, cfg.Logger); 
 	if err != nil {
@@ -33,9 +34,10 @@ func main() {
 	fmt.Print(database.Client)
 
 
-	controller.NewController().
-		WithContext(&ctx).
-		WithLogger(*lgr).
-		Run(cfg.Server);
+	controller.New().
+		WithContext(ctx).
+		WithLogger(lgr).
+		WithConfig(*cfg).
+		Run();
 }
 

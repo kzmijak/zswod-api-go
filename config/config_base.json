@@ -1,0 +1,17 @@
+{
+  "database": {
+    "driverName": "",
+    "dsn": ""
+  },
+  "logger": {
+    "filePath": ""
+  },
+  "server": {
+    "domain": "",
+    "host": ""
+  },
+  "auth": {
+    "lifespanHours": "",
+    "secret": ""
+  }
+}

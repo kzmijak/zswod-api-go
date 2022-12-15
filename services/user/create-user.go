@@ -1,8 +1,6 @@
 package user
 
 import (
-	"context"
-
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
@@ -20,7 +18,9 @@ const (
 	ErrUserCreationFailed = "err_user_creation_failed: Failed to save the user in the database"
 )
 
-func CreateUser(ctx context.Context, request CreateUserRequest) (*ent.User, error) {
+func (s UserService) CreateUser(request CreateUserRequest) (*ent.User, error) {
+
+	// TODO: Add validation (user already exists etc.)
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -29,7 +29,7 @@ func CreateUser(ctx context.Context, request CreateUserRequest) (*ent.User, erro
 
 	salt := string(hash)
 
-	user, err := database.Client.User.Create().SetEmail(request.Email).SetPassword(salt).SetUsername(request.Username).Save(ctx)
+	user, err := database.Client.User.Create().SetEmail(request.Email).SetPassword(salt).SetUsername(request.Username).Save(s.ctx)
 	if err != nil {
 		return nil, errors.Error(ErrUserCreationFailed)
 	}

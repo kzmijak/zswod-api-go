@@ -9,7 +9,7 @@ import (
 
 func (c *Controller) GetAllUsers(ctx *gin.Context) {
 	c.log.Trace("Getting users")
-	users, err := user.GetAllUsers(*c.ctx)
+	users, err := c.userService.GetAllUsers()
 
 	if err != nil {
 		c.log.Error(err)
@@ -18,7 +18,7 @@ func (c *Controller) GetAllUsers(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, users)
 }
 
-func (c *Controller) CreateUser(ctx *gin.Context) {
+func (c Controller) CreateUser(ctx *gin.Context) {
 	var requestBody user.CreateUserRequest 
 
 	c.log.Trace("Creating user")
@@ -28,7 +28,7 @@ func (c *Controller) CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 	}
 
-	response, err := user.CreateUser(*c.ctx, requestBody)
+	response, err := c.userService.CreateUser(requestBody)
 
 	c.log.Trace("Response Email: " + response.Username)
 
@@ -50,7 +50,7 @@ func (c *Controller) SignIn(ctx *gin.Context) {
 		return;
 	}
 
-	response, err := user.SignIn(*c.ctx, requestBody)
+	response, err := c.userService.SignIn(requestBody)
 
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)

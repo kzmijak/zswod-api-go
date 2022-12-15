@@ -1,11 +1,8 @@
 package user
 
 import (
-	"context"
-
 	"github.com/kzmijak/zswod_api_go/ent/user"
 	"github.com/kzmijak/zswod_api_go/models/role"
-	"github.com/kzmijak/zswod_api_go/modules/authentication"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"golang.org/x/crypto/bcrypt"
@@ -22,8 +19,8 @@ const (
 	ErrInvalidClaims = "err_invalid_claims: Could not generate token for this user"
 )
 
-func SignIn(ctx context.Context, request SignInRequest) (string, error) {
-	user, err := database.Client.User.Query().Where(user.Username(request.Email)).Only(ctx);
+func (s UserService) SignIn(request SignInRequest) (string, error) {
+	user, err := database.Client.User.Query().Where(user.Username(request.Email)).Only(s.ctx);
 
 	if err != nil {
 		return "" ,errors.Error(ErrUserNotFound)
@@ -33,7 +30,9 @@ func SignIn(ctx context.Context, request SignInRequest) (string, error) {
 		return "", errors.Error(ErrInvalidPassword)
 	}
 
-	jwt, err := authentication.GenerateJwt(request.Email, role.Admin) // TODO, not everybody should be an admin!!!
+	// TODO: not everybody should be an admin!!!
+	// TODO: pass user guid not email
+	jwt, err := s.jwtService.GenerateToken(request.Email, role.Admin)
 
 	if err != nil {
 		return "", errors.Error(ErrInvalidClaims)
