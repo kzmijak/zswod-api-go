@@ -30,12 +30,6 @@ func (iu *ImageUpdate) Where(ps ...predicate.Image) *ImageUpdate {
 	return iu
 }
 
-// SetImageGUID sets the "image_guid" field.
-func (iu *ImageUpdate) SetImageGUID(u uuid.UUID) *ImageUpdate {
-	iu.mutation.SetImageGUID(u)
-	return iu
-}
-
 // SetBlob sets the "blob" field.
 func (iu *ImageUpdate) SetBlob(b []byte) *ImageUpdate {
 	iu.mutation.SetBlob(b)
@@ -67,13 +61,13 @@ func (iu *ImageUpdate) SetUploadDate(t time.Time) *ImageUpdate {
 }
 
 // SetArticleID sets the "article" edge to the Article entity by ID.
-func (iu *ImageUpdate) SetArticleID(id int) *ImageUpdate {
+func (iu *ImageUpdate) SetArticleID(id uuid.UUID) *ImageUpdate {
 	iu.mutation.SetArticleID(id)
 	return iu
 }
 
 // SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (iu *ImageUpdate) SetNillableArticleID(id *int) *ImageUpdate {
+func (iu *ImageUpdate) SetNillableArticleID(id *uuid.UUID) *ImageUpdate {
 	if id != nil {
 		iu = iu.SetArticleID(*id)
 	}
@@ -156,7 +150,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   image.Table,
 			Columns: image.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: image.FieldID,
 			},
 		},
@@ -167,9 +161,6 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := iu.mutation.ImageGUID(); ok {
-		_spec.SetField(image.FieldImageGUID, field.TypeUUID, value)
 	}
 	if value, ok := iu.mutation.Blob(); ok {
 		_spec.SetField(image.FieldBlob, field.TypeBytes, value)
@@ -195,7 +186,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: article.FieldID,
 				},
 			},
@@ -211,7 +202,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: article.FieldID,
 				},
 			},
@@ -238,12 +229,6 @@ type ImageUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ImageMutation
-}
-
-// SetImageGUID sets the "image_guid" field.
-func (iuo *ImageUpdateOne) SetImageGUID(u uuid.UUID) *ImageUpdateOne {
-	iuo.mutation.SetImageGUID(u)
-	return iuo
 }
 
 // SetBlob sets the "blob" field.
@@ -277,13 +262,13 @@ func (iuo *ImageUpdateOne) SetUploadDate(t time.Time) *ImageUpdateOne {
 }
 
 // SetArticleID sets the "article" edge to the Article entity by ID.
-func (iuo *ImageUpdateOne) SetArticleID(id int) *ImageUpdateOne {
+func (iuo *ImageUpdateOne) SetArticleID(id uuid.UUID) *ImageUpdateOne {
 	iuo.mutation.SetArticleID(id)
 	return iuo
 }
 
 // SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (iuo *ImageUpdateOne) SetNillableArticleID(id *int) *ImageUpdateOne {
+func (iuo *ImageUpdateOne) SetNillableArticleID(id *uuid.UUID) *ImageUpdateOne {
 	if id != nil {
 		iuo = iuo.SetArticleID(*id)
 	}
@@ -379,7 +364,7 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Table:   image.Table,
 			Columns: image.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: image.FieldID,
 			},
 		},
@@ -408,9 +393,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			}
 		}
 	}
-	if value, ok := iuo.mutation.ImageGUID(); ok {
-		_spec.SetField(image.FieldImageGUID, field.TypeUUID, value)
-	}
 	if value, ok := iuo.mutation.Blob(); ok {
 		_spec.SetField(image.FieldBlob, field.TypeBytes, value)
 	}
@@ -435,7 +417,7 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: article.FieldID,
 				},
 			},
@@ -451,7 +433,7 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: article.FieldID,
 				},
 			},

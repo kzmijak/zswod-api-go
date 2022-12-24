@@ -17,9 +17,7 @@ import (
 type Image struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// ImageGUID holds the value of the "image_guid" field.
-	ImageGUID uuid.UUID `json:"image_guid,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
 	// ContentType holds the value of the "content_type" field.
@@ -33,7 +31,7 @@ type Image struct {
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges          ImageEdges `json:"edges"`
-	article_images *int
+	article_images *uuid.UUID
 }
 
 // ImageEdges holds the relations/edges for other nodes in the graph.
@@ -65,16 +63,14 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case image.FieldBlob:
 			values[i] = new([]byte)
-		case image.FieldID:
-			values[i] = new(sql.NullInt64)
 		case image.FieldContentType, image.FieldTitle, image.FieldAlt:
 			values[i] = new(sql.NullString)
 		case image.FieldUploadDate:
 			values[i] = new(sql.NullTime)
-		case image.FieldImageGUID:
+		case image.FieldID:
 			values[i] = new(uuid.UUID)
 		case image.ForeignKeys[0]: // article_images
-			values[i] = new(sql.NullInt64)
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Image", columns[i])
 		}
@@ -91,16 +87,10 @@ func (i *Image) assignValues(columns []string, values []any) error {
 	for j := range columns {
 		switch columns[j] {
 		case image.FieldID:
-			value, ok := values[j].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			i.ID = int(value.Int64)
-		case image.FieldImageGUID:
 			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field image_guid", values[j])
+				return fmt.Errorf("unexpected type %T for field id", values[j])
 			} else if value != nil {
-				i.ImageGUID = *value
+				i.ID = *value
 			}
 		case image.FieldBlob:
 			if value, ok := values[j].(*[]byte); !ok {
@@ -133,11 +123,11 @@ func (i *Image) assignValues(columns []string, values []any) error {
 				i.UploadDate = value.Time
 			}
 		case image.ForeignKeys[0]:
-			if value, ok := values[j].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field article_images", value)
+			if value, ok := values[j].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field article_images", values[j])
 			} else if value.Valid {
-				i.article_images = new(int)
-				*i.article_images = int(value.Int64)
+				i.article_images = new(uuid.UUID)
+				*i.article_images = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -172,9 +162,6 @@ func (i *Image) String() string {
 	var builder strings.Builder
 	builder.WriteString("Image(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
-	builder.WriteString("image_guid=")
-	builder.WriteString(fmt.Sprintf("%v", i.ImageGUID))
-	builder.WriteString(", ")
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", i.Blob))
 	builder.WriteString(", ")

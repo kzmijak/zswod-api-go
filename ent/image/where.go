@@ -12,28 +12,28 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Image {
+func ID(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Image {
+func IDEQ(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Image {
+func IDNEQ(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Image {
+func IDIn(ids ...uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -44,7 +44,7 @@ func IDIn(ids ...int) predicate.Image {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Image {
+func IDNotIn(ids ...uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -55,37 +55,30 @@ func IDNotIn(ids ...int) predicate.Image {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Image {
+func IDGT(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Image {
+func IDGTE(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Image {
+func IDLT(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Image {
+func IDLTE(id uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
-	})
-}
-
-// ImageGUID applies equality check predicate on the "image_guid" field. It's identical to ImageGUIDEQ.
-func ImageGUID(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldImageGUID), v))
 	})
 }
 
@@ -121,70 +114,6 @@ func Alt(v string) predicate.Image {
 func UploadDate(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// ImageGUIDEQ applies the EQ predicate on the "image_guid" field.
-func ImageGUIDEQ(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldImageGUID), v))
-	})
-}
-
-// ImageGUIDNEQ applies the NEQ predicate on the "image_guid" field.
-func ImageGUIDNEQ(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldImageGUID), v))
-	})
-}
-
-// ImageGUIDIn applies the In predicate on the "image_guid" field.
-func ImageGUIDIn(vs ...uuid.UUID) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldImageGUID), v...))
-	})
-}
-
-// ImageGUIDNotIn applies the NotIn predicate on the "image_guid" field.
-func ImageGUIDNotIn(vs ...uuid.UUID) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldImageGUID), v...))
-	})
-}
-
-// ImageGUIDGT applies the GT predicate on the "image_guid" field.
-func ImageGUIDGT(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldImageGUID), v))
-	})
-}
-
-// ImageGUIDGTE applies the GTE predicate on the "image_guid" field.
-func ImageGUIDGTE(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldImageGUID), v))
-	})
-}
-
-// ImageGUIDLT applies the LT predicate on the "image_guid" field.
-func ImageGUIDLT(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldImageGUID), v))
-	})
-}
-
-// ImageGUIDLTE applies the LTE predicate on the "image_guid" field.
-func ImageGUIDLTE(v uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldImageGUID), v))
 	})
 }
 

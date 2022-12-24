@@ -7,8 +7,6 @@ const (
 	Label = "image"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldImageGUID holds the string denoting the image_guid field in the database.
-	FieldImageGUID = "image_guid"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
 	// FieldContentType holds the string denoting the content_type field in the database.
@@ -35,7 +33,6 @@ const (
 // Columns holds all SQL columns for image fields.
 var Columns = []string{
 	FieldID,
-	FieldImageGUID,
 	FieldBlob,
 	FieldContentType,
 	FieldTitle,

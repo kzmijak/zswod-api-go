@@ -1,12 +1,11 @@
 package controller
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	jwts "github.com/kzmijak/zswod_api_go/services/jwt"
 )
 
@@ -18,22 +17,25 @@ func (Controller) ExtractToken(ctx *gin.Context) string {
 	return ""
 }
 
-func (c Controller) ExtractTokenID(ctx *gin.Context) (uint, error) {
+func (c Controller) ExtractTokenID(ctx *gin.Context) (*uuid.UUID, error) {
 	tokenString := c.ExtractToken(ctx)
 	token, err := c.jwtService.ParseToken(tokenString)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims[jwts.CLAIM_GUID]), 10, 32)
+		uidString := claims[jwts.CLAIM_GUID].(string)
+		
+		uuid, err := uuid.Parse(uidString)
+		
 		if err != nil {
-			return 0, err
+			return nil, err
 		}
 
-		return uint(uid), nil
+		return &uuid, nil
 	}
 
-	return 0, nil
+	return nil, nil
 }

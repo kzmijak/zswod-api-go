@@ -51,6 +51,7 @@ func (c *Controller) Run() {
 		{
 			users.Use(c.JwtAuthMiddleware())
 			users.GET("", c.GetAllUsers)
+			users.GET("/current", c.GetCurrentUserId)
 		}
 		auth := v1.Group("/auth") 
 		{

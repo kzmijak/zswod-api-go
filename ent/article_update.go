@@ -30,12 +30,6 @@ func (au *ArticleUpdate) Where(ps ...predicate.Article) *ArticleUpdate {
 	return au
 }
 
-// SetArticleGUID sets the "article_guid" field.
-func (au *ArticleUpdate) SetArticleGUID(u uuid.UUID) *ArticleUpdate {
-	au.mutation.SetArticleGUID(u)
-	return au
-}
-
 // SetTitle sets the "title" field.
 func (au *ArticleUpdate) SetTitle(s string) *ArticleUpdate {
 	au.mutation.SetTitle(s)
@@ -67,14 +61,14 @@ func (au *ArticleUpdate) SetTitleNormalized(s string) *ArticleUpdate {
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (au *ArticleUpdate) AddImageIDs(ids ...int) *ArticleUpdate {
+func (au *ArticleUpdate) AddImageIDs(ids ...uuid.UUID) *ArticleUpdate {
 	au.mutation.AddImageIDs(ids...)
 	return au
 }
 
 // AddImages adds the "images" edges to the Image entity.
 func (au *ArticleUpdate) AddImages(i ...*Image) *ArticleUpdate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -93,14 +87,14 @@ func (au *ArticleUpdate) ClearImages() *ArticleUpdate {
 }
 
 // RemoveImageIDs removes the "images" edge to Image entities by IDs.
-func (au *ArticleUpdate) RemoveImageIDs(ids ...int) *ArticleUpdate {
+func (au *ArticleUpdate) RemoveImageIDs(ids ...uuid.UUID) *ArticleUpdate {
 	au.mutation.RemoveImageIDs(ids...)
 	return au
 }
 
 // RemoveImages removes "images" edges to Image entities.
 func (au *ArticleUpdate) RemoveImages(i ...*Image) *ArticleUpdate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -188,7 +182,7 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   article.Table,
 			Columns: article.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: article.FieldID,
 			},
 		},
@@ -199,9 +193,6 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := au.mutation.ArticleGUID(); ok {
-		_spec.SetField(article.FieldArticleGUID, field.TypeUUID, value)
 	}
 	if value, ok := au.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
@@ -227,7 +218,7 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -243,7 +234,7 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -262,7 +253,7 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -289,12 +280,6 @@ type ArticleUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ArticleMutation
-}
-
-// SetArticleGUID sets the "article_guid" field.
-func (auo *ArticleUpdateOne) SetArticleGUID(u uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.SetArticleGUID(u)
-	return auo
 }
 
 // SetTitle sets the "title" field.
@@ -328,14 +313,14 @@ func (auo *ArticleUpdateOne) SetTitleNormalized(s string) *ArticleUpdateOne {
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (auo *ArticleUpdateOne) AddImageIDs(ids ...int) *ArticleUpdateOne {
+func (auo *ArticleUpdateOne) AddImageIDs(ids ...uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.AddImageIDs(ids...)
 	return auo
 }
 
 // AddImages adds the "images" edges to the Image entity.
 func (auo *ArticleUpdateOne) AddImages(i ...*Image) *ArticleUpdateOne {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -354,14 +339,14 @@ func (auo *ArticleUpdateOne) ClearImages() *ArticleUpdateOne {
 }
 
 // RemoveImageIDs removes the "images" edge to Image entities by IDs.
-func (auo *ArticleUpdateOne) RemoveImageIDs(ids ...int) *ArticleUpdateOne {
+func (auo *ArticleUpdateOne) RemoveImageIDs(ids ...uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.RemoveImageIDs(ids...)
 	return auo
 }
 
 // RemoveImages removes "images" edges to Image entities.
 func (auo *ArticleUpdateOne) RemoveImages(i ...*Image) *ArticleUpdateOne {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -462,7 +447,7 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			Table:   article.Table,
 			Columns: article.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: article.FieldID,
 			},
 		},
@@ -491,9 +476,6 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			}
 		}
 	}
-	if value, ok := auo.mutation.ArticleGUID(); ok {
-		_spec.SetField(article.FieldArticleGUID, field.TypeUUID, value)
-	}
 	if value, ok := auo.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 	}
@@ -518,7 +500,7 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -534,7 +516,7 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -553,7 +535,7 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},

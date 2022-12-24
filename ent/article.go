@@ -16,9 +16,7 @@ import (
 type Article struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// ArticleGUID holds the value of the "article_guid" field.
-	ArticleGUID uuid.UUID `json:"article_guid,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Short holds the value of the "short" field.
@@ -57,13 +55,11 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case article.FieldID:
-			values[i] = new(sql.NullInt64)
 		case article.FieldTitle, article.FieldShort, article.FieldContent, article.FieldTitleNormalized:
 			values[i] = new(sql.NullString)
 		case article.FieldUploadDate:
 			values[i] = new(sql.NullTime)
-		case article.FieldArticleGUID:
+		case article.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Article", columns[i])
@@ -81,16 +77,10 @@ func (a *Article) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case article.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			a.ID = int(value.Int64)
-		case article.FieldArticleGUID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field article_guid", values[i])
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				a.ArticleGUID = *value
+				a.ID = *value
 			}
 		case article.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -155,9 +145,6 @@ func (a *Article) String() string {
 	var builder strings.Builder
 	builder.WriteString("Article(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
-	builder.WriteString("article_guid=")
-	builder.WriteString(fmt.Sprintf("%v", a.ArticleGUID))
-	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(a.Title)
 	builder.WriteString(", ")

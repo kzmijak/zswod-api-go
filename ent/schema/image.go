@@ -15,7 +15,7 @@ type Image struct {
 // Fields of the Image.
 func (Image) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("image_guid", uuid.New()),
+		field.UUID("id", uuid.New()).Unique(),
 		field.Bytes("blob"),
 		field.String("content_type"),
 		field.String("title"),

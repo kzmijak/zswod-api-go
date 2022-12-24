@@ -22,12 +22,6 @@ type ArticleCreate struct {
 	hooks    []Hook
 }
 
-// SetArticleGUID sets the "article_guid" field.
-func (ac *ArticleCreate) SetArticleGUID(u uuid.UUID) *ArticleCreate {
-	ac.mutation.SetArticleGUID(u)
-	return ac
-}
-
 // SetTitle sets the "title" field.
 func (ac *ArticleCreate) SetTitle(s string) *ArticleCreate {
 	ac.mutation.SetTitle(s)
@@ -58,15 +52,21 @@ func (ac *ArticleCreate) SetTitleNormalized(s string) *ArticleCreate {
 	return ac
 }
 
+// SetID sets the "id" field.
+func (ac *ArticleCreate) SetID(u uuid.UUID) *ArticleCreate {
+	ac.mutation.SetID(u)
+	return ac
+}
+
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (ac *ArticleCreate) AddImageIDs(ids ...int) *ArticleCreate {
+func (ac *ArticleCreate) AddImageIDs(ids ...uuid.UUID) *ArticleCreate {
 	ac.mutation.AddImageIDs(ids...)
 	return ac
 }
 
 // AddImages adds the "images" edges to the Image entity.
 func (ac *ArticleCreate) AddImages(i ...*Image) *ArticleCreate {
-	ids := make([]int, len(i))
+	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
@@ -149,9 +149,6 @@ func (ac *ArticleCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *ArticleCreate) check() error {
-	if _, ok := ac.mutation.ArticleGUID(); !ok {
-		return &ValidationError{Name: "article_guid", err: errors.New(`ent: missing required field "Article.article_guid"`)}
-	}
 	if _, ok := ac.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Article.title"`)}
 	}
@@ -188,8 +185,13 @@ func (ac *ArticleCreate) sqlSave(ctx context.Context) (*Article, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	return _node, nil
 }
 
@@ -199,14 +201,14 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: article.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: article.FieldID,
 			},
 		}
 	)
-	if value, ok := ac.mutation.ArticleGUID(); ok {
-		_spec.SetField(article.FieldArticleGUID, field.TypeUUID, value)
-		_node.ArticleGUID = value
+	if id, ok := ac.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ac.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
@@ -237,7 +239,7 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: image.FieldID,
 				},
 			},
@@ -290,10 +292,6 @@ func (acb *ArticleCreateBulk) Save(ctx context.Context) ([]*Article, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

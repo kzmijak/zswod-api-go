@@ -33,7 +33,7 @@ func (s *UserService) SignIn(request SignInRequest) (string, error) {
 
 	// TODO: not everybody should be an admin!!!
 	// TODO: pass user guid not email
-	jwt, err := s.jwtService.GenerateToken(request.Email, role.Admin)
+	jwt, err := s.jwtService.GenerateToken(string(user.ID.String()), role.Admin)
 
 	if err != nil {
 		return "", errors.Error(ErrInvalidClaims)

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
@@ -29,7 +30,12 @@ func (s UserService) CreateUser(request CreateUserRequest) (*ent.User, error) {
 
 	salt := string(hash)
 
-	user, err := database.Client.User.Create().SetEmail(request.Email).SetPassword(salt).SetUsername(request.Username).Save(s.ctx)
+	user, err := database.Client.User.Create().
+		SetID(uuid.New()).
+		SetEmail(request.Email).
+		SetPassword(salt).
+		SetUsername(request.Username).
+		Save(s.ctx)
 	if err != nil {
 		return nil, errors.Error(ErrUserCreationFailed)
 	}

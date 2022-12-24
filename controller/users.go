@@ -31,8 +31,6 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 
 	response, err := c.userService.CreateUser(requestBody)
 
-	c.log.Trace("Response Email: " + response.Username)
-
 	if err != nil {
 		c.log.Error(err)
 		ctx.JSON(http.StatusBadRequest, err)
@@ -60,4 +58,16 @@ func (c *Controller) SignIn(ctx *gin.Context) {
 	}
 
 	ctx.IndentedJSON(http.StatusOK, response)
+}
+
+func (c *Controller) GetCurrentUserId(ctx *gin.Context) {
+	token, err := c.ExtractTokenID(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, token)
+
 }
