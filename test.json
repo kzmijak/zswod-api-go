@@ -1,4 +1,6 @@
-{"level":"trace","msg":"Creating user","time":"2022-12-24T16:21:24+01:00"}
-{"level":"trace","msg":"Creating user success","time":"2022-12-24T16:21:24+01:00"}
-tabase","time":"2022-12-24T16:19:58+01:00"}
-12-24T16:18:29+01:00"}
+{"level":"trace","msg":"Creating user","time":"2022-12-24T16:56:08+01:00"}
+{"level":"error","msg":"invalid character '}' looking for beginning of object key string","time":"2022-12-24T16:56:08+01:00"}
+{"level":"trace","msg":"Creating user","time":"2022-12-24T16:56:21+01:00"}
+{"level":"error","msg":"invalid character '}' looking for beginning of object key string","time":"2022-12-24T16:56:21+01:00"}
+{"level":"trace","msg":"Creating user","time":"2022-12-24T16:56:34+01:00"}
+{"level":"error","msg":"err_user_already_exists: Failed to create user, user with provided email already exists","time":"2022-12-24T16:56:34+01:00"}
