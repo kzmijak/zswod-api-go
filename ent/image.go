@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
@@ -18,10 +19,6 @@ type Image struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Blob holds the value of the "blob" field.
-	Blob []byte `json:"blob,omitempty"`
-	// ContentType holds the value of the "content_type" field.
-	ContentType string `json:"content_type,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Alt holds the value of the "alt" field.
@@ -32,15 +29,18 @@ type Image struct {
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges          ImageEdges `json:"edges"`
 	article_images *uuid.UUID
+	image_blob     *uuid.UUID
 }
 
 // ImageEdges holds the relations/edges for other nodes in the graph.
 type ImageEdges struct {
 	// Article holds the value of the article edge.
 	Article *Article `json:"article,omitempty"`
+	// Blob holds the value of the blob edge.
+	Blob *Blob `json:"blob,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ArticleOrErr returns the Article value or an error if the edge
@@ -56,20 +56,33 @@ func (e ImageEdges) ArticleOrErr() (*Article, error) {
 	return nil, &NotLoadedError{edge: "article"}
 }
 
+// BlobOrErr returns the Blob value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ImageEdges) BlobOrErr() (*Blob, error) {
+	if e.loadedTypes[1] {
+		if e.Blob == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: blob.Label}
+		}
+		return e.Blob, nil
+	}
+	return nil, &NotLoadedError{edge: "blob"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case image.FieldBlob:
-			values[i] = new([]byte)
-		case image.FieldContentType, image.FieldTitle, image.FieldAlt:
+		case image.FieldTitle, image.FieldAlt:
 			values[i] = new(sql.NullString)
 		case image.FieldUploadDate:
 			values[i] = new(sql.NullTime)
 		case image.FieldID:
 			values[i] = new(uuid.UUID)
 		case image.ForeignKeys[0]: // article_images
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case image.ForeignKeys[1]: // image_blob
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Image", columns[i])
@@ -91,18 +104,6 @@ func (i *Image) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[j])
 			} else if value != nil {
 				i.ID = *value
-			}
-		case image.FieldBlob:
-			if value, ok := values[j].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field blob", values[j])
-			} else if value != nil {
-				i.Blob = *value
-			}
-		case image.FieldContentType:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field content_type", values[j])
-			} else if value.Valid {
-				i.ContentType = value.String
 			}
 		case image.FieldTitle:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -129,6 +130,13 @@ func (i *Image) assignValues(columns []string, values []any) error {
 				i.article_images = new(uuid.UUID)
 				*i.article_images = *value.S.(*uuid.UUID)
 			}
+		case image.ForeignKeys[1]:
+			if value, ok := values[j].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field image_blob", values[j])
+			} else if value.Valid {
+				i.image_blob = new(uuid.UUID)
+				*i.image_blob = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
@@ -137,6 +145,11 @@ func (i *Image) assignValues(columns []string, values []any) error {
 // QueryArticle queries the "article" edge of the Image entity.
 func (i *Image) QueryArticle() *ArticleQuery {
 	return (&ImageClient{config: i.config}).QueryArticle(i)
+}
+
+// QueryBlob queries the "blob" edge of the Image entity.
+func (i *Image) QueryBlob() *BlobQuery {
+	return (&ImageClient{config: i.config}).QueryBlob(i)
 }
 
 // Update returns a builder for updating this Image.
@@ -162,12 +175,6 @@ func (i *Image) String() string {
 	var builder strings.Builder
 	builder.WriteString("Image(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
-	builder.WriteString("blob=")
-	builder.WriteString(fmt.Sprintf("%v", i.Blob))
-	builder.WriteString(", ")
-	builder.WriteString("content_type=")
-	builder.WriteString(i.ContentType)
-	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(i.Title)
 	builder.WriteString(", ")

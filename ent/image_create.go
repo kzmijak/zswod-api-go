@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
@@ -20,18 +21,6 @@ type ImageCreate struct {
 	config
 	mutation *ImageMutation
 	hooks    []Hook
-}
-
-// SetBlob sets the "blob" field.
-func (ic *ImageCreate) SetBlob(b []byte) *ImageCreate {
-	ic.mutation.SetBlob(b)
-	return ic
-}
-
-// SetContentType sets the "content_type" field.
-func (ic *ImageCreate) SetContentType(s string) *ImageCreate {
-	ic.mutation.SetContentType(s)
-	return ic
 }
 
 // SetTitle sets the "title" field.
@@ -75,6 +64,25 @@ func (ic *ImageCreate) SetNillableArticleID(id *uuid.UUID) *ImageCreate {
 // SetArticle sets the "article" edge to the Article entity.
 func (ic *ImageCreate) SetArticle(a *Article) *ImageCreate {
 	return ic.SetArticleID(a.ID)
+}
+
+// SetBlobID sets the "blob" edge to the Blob entity by ID.
+func (ic *ImageCreate) SetBlobID(id uuid.UUID) *ImageCreate {
+	ic.mutation.SetBlobID(id)
+	return ic
+}
+
+// SetNillableBlobID sets the "blob" edge to the Blob entity by ID if the given value is not nil.
+func (ic *ImageCreate) SetNillableBlobID(id *uuid.UUID) *ImageCreate {
+	if id != nil {
+		ic = ic.SetBlobID(*id)
+	}
+	return ic
+}
+
+// SetBlob sets the "blob" edge to the Blob entity.
+func (ic *ImageCreate) SetBlob(b *Blob) *ImageCreate {
+	return ic.SetBlobID(b.ID)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -153,12 +161,6 @@ func (ic *ImageCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
-	if _, ok := ic.mutation.Blob(); !ok {
-		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Image.blob"`)}
-	}
-	if _, ok := ic.mutation.ContentType(); !ok {
-		return &ValidationError{Name: "content_type", err: errors.New(`ent: missing required field "Image.content_type"`)}
-	}
 	if _, ok := ic.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Image.title"`)}
 	}
@@ -204,14 +206,6 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ic.mutation.Blob(); ok {
-		_spec.SetField(image.FieldBlob, field.TypeBytes, value)
-		_node.Blob = value
-	}
-	if value, ok := ic.mutation.ContentType(); ok {
-		_spec.SetField(image.FieldContentType, field.TypeString, value)
-		_node.ContentType = value
-	}
 	if value, ok := ic.mutation.Title(); ok {
 		_spec.SetField(image.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -242,6 +236,26 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.article_images = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.image_blob = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

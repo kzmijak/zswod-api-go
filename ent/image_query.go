@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -26,6 +27,7 @@ type ImageQuery struct {
 	fields      []string
 	predicates  []predicate.Image
 	withArticle *ArticleQuery
+	withBlob    *BlobQuery
 	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -78,6 +80,28 @@ func (iq *ImageQuery) QueryArticle() *ArticleQuery {
 			sqlgraph.From(image.Table, image.FieldID, selector),
 			sqlgraph.To(article.Table, article.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, image.ArticleTable, image.ArticleColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryBlob chains the current query on the "blob" edge.
+func (iq *ImageQuery) QueryBlob() *BlobQuery {
+	query := &BlobQuery{config: iq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, selector),
+			sqlgraph.To(blob.Table, blob.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, image.BlobTable, image.BlobColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -267,6 +291,7 @@ func (iq *ImageQuery) Clone() *ImageQuery {
 		order:       append([]OrderFunc{}, iq.order...),
 		predicates:  append([]predicate.Image{}, iq.predicates...),
 		withArticle: iq.withArticle.Clone(),
+		withBlob:    iq.withBlob.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
 		path:   iq.path,
@@ -285,18 +310,29 @@ func (iq *ImageQuery) WithArticle(opts ...func(*ArticleQuery)) *ImageQuery {
 	return iq
 }
 
+// WithBlob tells the query-builder to eager-load the nodes that are connected to
+// the "blob" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithBlob(opts ...func(*BlobQuery)) *ImageQuery {
+	query := &BlobQuery{config: iq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withBlob = query
+	return iq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Blob []byte `json:"blob,omitempty"`
+//		Title string `json:"title,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		GroupBy(image.FieldBlob).
+//		GroupBy(image.FieldTitle).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
@@ -319,11 +355,11 @@ func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Blob []byte `json:"blob,omitempty"`
+//		Title string `json:"title,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		Select(image.FieldBlob).
+//		Select(image.FieldTitle).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) Select(fields ...string) *ImageSelect {
 	iq.fields = append(iq.fields, fields...)
@@ -359,11 +395,12 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 		nodes       = []*Image{}
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			iq.withArticle != nil,
+			iq.withBlob != nil,
 		}
 	)
-	if iq.withArticle != nil {
+	if iq.withArticle != nil || iq.withBlob != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -393,6 +430,12 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 			return nil, err
 		}
 	}
+	if query := iq.withBlob; query != nil {
+		if err := iq.loadBlob(ctx, query, nodes, nil,
+			func(n *Image, e *Blob) { n.Edges.Blob = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -418,6 +461,35 @@ func (iq *ImageQuery) loadArticle(ctx context.Context, query *ArticleQuery, node
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "article_images" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *ImageQuery) loadBlob(ctx context.Context, query *BlobQuery, nodes []*Image, init func(*Image), assign func(*Image, *Blob)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Image)
+	for i := range nodes {
+		if nodes[i].image_blob == nil {
+			continue
+		}
+		fk := *nodes[i].image_blob
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(blob.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "image_blob" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
