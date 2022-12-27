@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
@@ -108,8 +109,8 @@ func (iq *ImageQuery) FirstX(ctx context.Context) *Image {
 
 // FirstID returns the first Image ID from the query.
 // Returns a *NotFoundError when no Image ID was found.
-func (iq *ImageQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (iq *ImageQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -121,7 +122,7 @@ func (iq *ImageQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (iq *ImageQuery) FirstIDX(ctx context.Context) int {
+func (iq *ImageQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -159,8 +160,8 @@ func (iq *ImageQuery) OnlyX(ctx context.Context) *Image {
 // OnlyID is like Only, but returns the only Image ID in the query.
 // Returns a *NotSingularError when more than one Image ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (iq *ImageQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (iq *ImageQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = iq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -176,7 +177,7 @@ func (iq *ImageQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (iq *ImageQuery) OnlyIDX(ctx context.Context) int {
+func (iq *ImageQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := iq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,8 +203,8 @@ func (iq *ImageQuery) AllX(ctx context.Context) []*Image {
 }
 
 // IDs executes the query and returns a list of Image IDs.
-func (iq *ImageQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (iq *ImageQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := iq.Select(image.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -211,7 +212,7 @@ func (iq *ImageQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (iq *ImageQuery) IDsX(ctx context.Context) []int {
+func (iq *ImageQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := iq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -290,12 +291,12 @@ func (iq *ImageQuery) WithArticle(opts ...func(*ArticleQuery)) *ImageQuery {
 // Example:
 //
 //	var v []struct {
-//		ImageGUID uuid.UUID `json:"image_guid,omitempty"`
+//		Blob []byte `json:"blob,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		GroupBy(image.FieldImageGUID).
+//		GroupBy(image.FieldBlob).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
@@ -318,11 +319,11 @@ func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 // Example:
 //
 //	var v []struct {
-//		ImageGUID uuid.UUID `json:"image_guid,omitempty"`
+//		Blob []byte `json:"blob,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		Select(image.FieldImageGUID).
+//		Select(image.FieldBlob).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) Select(fields ...string) *ImageSelect {
 	iq.fields = append(iq.fields, fields...)
@@ -396,8 +397,8 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 }
 
 func (iq *ImageQuery) loadArticle(ctx context.Context, query *ArticleQuery, nodes []*Image, init func(*Image), assign func(*Image, *Article)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Image)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Image)
 	for i := range nodes {
 		if nodes[i].article_images == nil {
 			continue
@@ -451,7 +452,7 @@ func (iq *ImageQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   image.Table,
 			Columns: image.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: image.FieldID,
 			},
 		},

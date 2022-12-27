@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
@@ -108,8 +109,8 @@ func (aq *ArticleQuery) FirstX(ctx context.Context) *Article {
 
 // FirstID returns the first Article ID from the query.
 // Returns a *NotFoundError when no Article ID was found.
-func (aq *ArticleQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ArticleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = aq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -121,7 +122,7 @@ func (aq *ArticleQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (aq *ArticleQuery) FirstIDX(ctx context.Context) int {
+func (aq *ArticleQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := aq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -159,8 +160,8 @@ func (aq *ArticleQuery) OnlyX(ctx context.Context) *Article {
 // OnlyID is like Only, but returns the only Article ID in the query.
 // Returns a *NotSingularError when more than one Article ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (aq *ArticleQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (aq *ArticleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = aq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -176,7 +177,7 @@ func (aq *ArticleQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (aq *ArticleQuery) OnlyIDX(ctx context.Context) int {
+func (aq *ArticleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := aq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -202,8 +203,8 @@ func (aq *ArticleQuery) AllX(ctx context.Context) []*Article {
 }
 
 // IDs executes the query and returns a list of Article IDs.
-func (aq *ArticleQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (aq *ArticleQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := aq.Select(article.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -211,7 +212,7 @@ func (aq *ArticleQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (aq *ArticleQuery) IDsX(ctx context.Context) []int {
+func (aq *ArticleQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := aq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -290,12 +291,12 @@ func (aq *ArticleQuery) WithImages(opts ...func(*ImageQuery)) *ArticleQuery {
 // Example:
 //
 //	var v []struct {
-//		ArticleGUID uuid.UUID `json:"article_guid,omitempty"`
+//		Title string `json:"title,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Article.Query().
-//		GroupBy(article.FieldArticleGUID).
+//		GroupBy(article.FieldTitle).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aq *ArticleQuery) GroupBy(field string, fields ...string) *ArticleGroupBy {
@@ -318,11 +319,11 @@ func (aq *ArticleQuery) GroupBy(field string, fields ...string) *ArticleGroupBy 
 // Example:
 //
 //	var v []struct {
-//		ArticleGUID uuid.UUID `json:"article_guid,omitempty"`
+//		Title string `json:"title,omitempty"`
 //	}
 //
 //	client.Article.Query().
-//		Select(article.FieldArticleGUID).
+//		Select(article.FieldTitle).
 //		Scan(ctx, &v)
 func (aq *ArticleQuery) Select(fields ...string) *ArticleSelect {
 	aq.fields = append(aq.fields, fields...)
@@ -391,7 +392,7 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 
 func (aq *ArticleQuery) loadImages(ctx context.Context, query *ImageQuery, nodes []*Article, init func(*Article), assign func(*Article, *Image)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Article)
+	nodeids := make(map[uuid.UUID]*Article)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -447,7 +448,7 @@ func (aq *ArticleQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   article.Table,
 			Columns: article.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: article.FieldID,
 			},
 		},

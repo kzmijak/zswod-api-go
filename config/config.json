@@ -9,5 +9,9 @@
   "server": {
     "domain": "sporlowd.pl",
     "host": "8080"
+  },
+  "auth": {
+    "lifespanHours": "24",
+    "secret": "dfsksljvckxljvkl304522394tjierfgjfklcbv"
   }
 }

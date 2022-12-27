@@ -7,8 +7,6 @@ const (
 	Label = "article"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldArticleGUID holds the string denoting the article_guid field in the database.
-	FieldArticleGUID = "article_guid"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldShort holds the string denoting the short field in the database.
@@ -35,7 +33,6 @@ const (
 // Columns holds all SQL columns for article fields.
 var Columns = []string{
 	FieldID,
-	FieldArticleGUID,
 	FieldTitle,
 	FieldShort,
 	FieldContent,

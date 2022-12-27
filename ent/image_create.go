@@ -22,12 +22,6 @@ type ImageCreate struct {
 	hooks    []Hook
 }
 
-// SetImageGUID sets the "image_guid" field.
-func (ic *ImageCreate) SetImageGUID(u uuid.UUID) *ImageCreate {
-	ic.mutation.SetImageGUID(u)
-	return ic
-}
-
 // SetBlob sets the "blob" field.
 func (ic *ImageCreate) SetBlob(b []byte) *ImageCreate {
 	ic.mutation.SetBlob(b)
@@ -58,14 +52,20 @@ func (ic *ImageCreate) SetUploadDate(t time.Time) *ImageCreate {
 	return ic
 }
 
+// SetID sets the "id" field.
+func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
+	ic.mutation.SetID(u)
+	return ic
+}
+
 // SetArticleID sets the "article" edge to the Article entity by ID.
-func (ic *ImageCreate) SetArticleID(id int) *ImageCreate {
+func (ic *ImageCreate) SetArticleID(id uuid.UUID) *ImageCreate {
 	ic.mutation.SetArticleID(id)
 	return ic
 }
 
 // SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (ic *ImageCreate) SetNillableArticleID(id *int) *ImageCreate {
+func (ic *ImageCreate) SetNillableArticleID(id *uuid.UUID) *ImageCreate {
 	if id != nil {
 		ic = ic.SetArticleID(*id)
 	}
@@ -153,9 +153,6 @@ func (ic *ImageCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
-	if _, ok := ic.mutation.ImageGUID(); !ok {
-		return &ValidationError{Name: "image_guid", err: errors.New(`ent: missing required field "Image.image_guid"`)}
-	}
 	if _, ok := ic.mutation.Blob(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Image.blob"`)}
 	}
@@ -182,8 +179,13 @@ func (ic *ImageCreate) sqlSave(ctx context.Context) (*Image, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	return _node, nil
 }
 
@@ -193,14 +195,14 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: image.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: image.FieldID,
 			},
 		}
 	)
-	if value, ok := ic.mutation.ImageGUID(); ok {
-		_spec.SetField(image.FieldImageGUID, field.TypeUUID, value)
-		_node.ImageGUID = value
+	if id, ok := ic.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
 	if value, ok := ic.mutation.Blob(); ok {
 		_spec.SetField(image.FieldBlob, field.TypeBytes, value)
@@ -231,7 +233,7 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeUUID,
 					Column: article.FieldID,
 				},
 			},
@@ -285,10 +287,6 @@ func (icb *ImageCreateBulk) Save(ctx context.Context) ([]*Image, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

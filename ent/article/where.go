@@ -12,28 +12,28 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Article {
+func ID(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Article {
+func IDEQ(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Article {
+func IDNEQ(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Article {
+func IDIn(ids ...uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -44,7 +44,7 @@ func IDIn(ids ...int) predicate.Article {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Article {
+func IDNotIn(ids ...uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -55,37 +55,30 @@ func IDNotIn(ids ...int) predicate.Article {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Article {
+func IDGT(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Article {
+func IDGTE(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Article {
+func IDLT(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Article {
+func IDLTE(id uuid.UUID) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
-	})
-}
-
-// ArticleGUID applies equality check predicate on the "article_guid" field. It's identical to ArticleGUIDEQ.
-func ArticleGUID(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldArticleGUID), v))
 	})
 }
 
@@ -121,70 +114,6 @@ func UploadDate(v time.Time) predicate.Article {
 func TitleNormalized(v string) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// ArticleGUIDEQ applies the EQ predicate on the "article_guid" field.
-func ArticleGUIDEQ(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldArticleGUID), v))
-	})
-}
-
-// ArticleGUIDNEQ applies the NEQ predicate on the "article_guid" field.
-func ArticleGUIDNEQ(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldArticleGUID), v))
-	})
-}
-
-// ArticleGUIDIn applies the In predicate on the "article_guid" field.
-func ArticleGUIDIn(vs ...uuid.UUID) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldArticleGUID), v...))
-	})
-}
-
-// ArticleGUIDNotIn applies the NotIn predicate on the "article_guid" field.
-func ArticleGUIDNotIn(vs ...uuid.UUID) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldArticleGUID), v...))
-	})
-}
-
-// ArticleGUIDGT applies the GT predicate on the "article_guid" field.
-func ArticleGUIDGT(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldArticleGUID), v))
-	})
-}
-
-// ArticleGUIDGTE applies the GTE predicate on the "article_guid" field.
-func ArticleGUIDGTE(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldArticleGUID), v))
-	})
-}
-
-// ArticleGUIDLT applies the LT predicate on the "article_guid" field.
-func ArticleGUIDLT(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldArticleGUID), v))
-	})
-}
-
-// ArticleGUIDLTE applies the LTE predicate on the "article_guid" field.
-func ArticleGUIDLTE(v uuid.UUID) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldArticleGUID), v))
 	})
 }
 

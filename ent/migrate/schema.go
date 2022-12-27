@@ -10,8 +10,7 @@ import (
 var (
 	// ArticlesColumns holds the columns for the "articles" table.
 	ArticlesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "article_guid", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "title", Type: field.TypeString, Size: 32},
 		{Name: "short", Type: field.TypeString, Size: 128},
 		{Name: "content", Type: field.TypeString},
@@ -26,14 +25,13 @@ var (
 	}
 	// ImagesColumns holds the columns for the "images" table.
 	ImagesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "image_guid", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "blob", Type: field.TypeBytes},
 		{Name: "content_type", Type: field.TypeString},
 		{Name: "title", Type: field.TypeString},
 		{Name: "alt", Type: field.TypeString},
 		{Name: "upload_date", Type: field.TypeTime},
-		{Name: "article_images", Type: field.TypeInt, Nullable: true},
+		{Name: "article_images", Type: field.TypeUUID, Nullable: true},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -43,7 +41,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "images_articles_images",
-				Columns:    []*schema.Column{ImagesColumns[7]},
+				Columns:    []*schema.Column{ImagesColumns[6]},
 				RefColumns: []*schema.Column{ArticlesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -51,8 +49,7 @@ var (
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "username", Type: field.TypeString},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
 	}

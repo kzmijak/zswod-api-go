@@ -15,7 +15,7 @@ type Article struct {
 // Fields of the Article.
 func (Article) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("article_guid", uuid.New()),
+		field.UUID("id", uuid.New()).Unique(),
 		field.String("title").MinLen(6).MaxLen(32),
 		field.String("short").MinLen(12).MaxLen(128),
 		field.String("content"),

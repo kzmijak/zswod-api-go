@@ -37,16 +37,15 @@ type ArticleMutation struct {
 	config
 	op               Op
 	typ              string
-	id               *int
-	article_guid     *uuid.UUID
+	id               *uuid.UUID
 	title            *string
 	short            *string
 	content          *string
 	upload_date      *time.Time
 	title_normalized *string
 	clearedFields    map[string]struct{}
-	images           map[int]struct{}
-	removedimages    map[int]struct{}
+	images           map[uuid.UUID]struct{}
+	removedimages    map[uuid.UUID]struct{}
 	clearedimages    bool
 	done             bool
 	oldValue         func(context.Context) (*Article, error)
@@ -73,7 +72,7 @@ func newArticleMutation(c config, op Op, opts ...articleOption) *ArticleMutation
 }
 
 // withArticleID sets the ID field of the mutation.
-func withArticleID(id int) articleOption {
+func withArticleID(id uuid.UUID) articleOption {
 	return func(m *ArticleMutation) {
 		var (
 			err   error
@@ -123,9 +122,15 @@ func (m ArticleMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Article entities.
+func (m *ArticleMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ArticleMutation) ID() (id int, exists bool) {
+func (m *ArticleMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -136,12 +141,12 @@ func (m *ArticleMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ArticleMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ArticleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -149,42 +154,6 @@ func (m *ArticleMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetArticleGUID sets the "article_guid" field.
-func (m *ArticleMutation) SetArticleGUID(u uuid.UUID) {
-	m.article_guid = &u
-}
-
-// ArticleGUID returns the value of the "article_guid" field in the mutation.
-func (m *ArticleMutation) ArticleGUID() (r uuid.UUID, exists bool) {
-	v := m.article_guid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldArticleGUID returns the old "article_guid" field's value of the Article entity.
-// If the Article object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ArticleMutation) OldArticleGUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldArticleGUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldArticleGUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldArticleGUID: %w", err)
-	}
-	return oldValue.ArticleGUID, nil
-}
-
-// ResetArticleGUID resets all changes to the "article_guid" field.
-func (m *ArticleMutation) ResetArticleGUID() {
-	m.article_guid = nil
 }
 
 // SetTitle sets the "title" field.
@@ -368,9 +337,9 @@ func (m *ArticleMutation) ResetTitleNormalized() {
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by ids.
-func (m *ArticleMutation) AddImageIDs(ids ...int) {
+func (m *ArticleMutation) AddImageIDs(ids ...uuid.UUID) {
 	if m.images == nil {
-		m.images = make(map[int]struct{})
+		m.images = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		m.images[ids[i]] = struct{}{}
@@ -388,9 +357,9 @@ func (m *ArticleMutation) ImagesCleared() bool {
 }
 
 // RemoveImageIDs removes the "images" edge to the Image entity by IDs.
-func (m *ArticleMutation) RemoveImageIDs(ids ...int) {
+func (m *ArticleMutation) RemoveImageIDs(ids ...uuid.UUID) {
 	if m.removedimages == nil {
-		m.removedimages = make(map[int]struct{})
+		m.removedimages = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
 		delete(m.images, ids[i])
@@ -399,7 +368,7 @@ func (m *ArticleMutation) RemoveImageIDs(ids ...int) {
 }
 
 // RemovedImages returns the removed IDs of the "images" edge to the Image entity.
-func (m *ArticleMutation) RemovedImagesIDs() (ids []int) {
+func (m *ArticleMutation) RemovedImagesIDs() (ids []uuid.UUID) {
 	for id := range m.removedimages {
 		ids = append(ids, id)
 	}
@@ -407,7 +376,7 @@ func (m *ArticleMutation) RemovedImagesIDs() (ids []int) {
 }
 
 // ImagesIDs returns the "images" edge IDs in the mutation.
-func (m *ArticleMutation) ImagesIDs() (ids []int) {
+func (m *ArticleMutation) ImagesIDs() (ids []uuid.UUID) {
 	for id := range m.images {
 		ids = append(ids, id)
 	}
@@ -440,10 +409,7 @@ func (m *ArticleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ArticleMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.article_guid != nil {
-		fields = append(fields, article.FieldArticleGUID)
-	}
+	fields := make([]string, 0, 5)
 	if m.title != nil {
 		fields = append(fields, article.FieldTitle)
 	}
@@ -467,8 +433,6 @@ func (m *ArticleMutation) Fields() []string {
 // schema.
 func (m *ArticleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case article.FieldArticleGUID:
-		return m.ArticleGUID()
 	case article.FieldTitle:
 		return m.Title()
 	case article.FieldShort:
@@ -488,8 +452,6 @@ func (m *ArticleMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ArticleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case article.FieldArticleGUID:
-		return m.OldArticleGUID(ctx)
 	case article.FieldTitle:
 		return m.OldTitle(ctx)
 	case article.FieldShort:
@@ -509,13 +471,6 @@ func (m *ArticleMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *ArticleMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case article.FieldArticleGUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetArticleGUID(v)
-		return nil
 	case article.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
@@ -600,9 +555,6 @@ func (m *ArticleMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ArticleMutation) ResetField(name string) error {
 	switch name {
-	case article.FieldArticleGUID:
-		m.ResetArticleGUID()
-		return nil
 	case article.FieldTitle:
 		m.ResetTitle()
 		return nil
@@ -711,15 +663,14 @@ type ImageMutation struct {
 	config
 	op             Op
 	typ            string
-	id             *int
-	image_guid     *uuid.UUID
+	id             *uuid.UUID
 	blob           *[]byte
 	content_type   *string
 	title          *string
 	alt            *string
 	upload_date    *time.Time
 	clearedFields  map[string]struct{}
-	article        *int
+	article        *uuid.UUID
 	clearedarticle bool
 	done           bool
 	oldValue       func(context.Context) (*Image, error)
@@ -746,7 +697,7 @@ func newImageMutation(c config, op Op, opts ...imageOption) *ImageMutation {
 }
 
 // withImageID sets the ID field of the mutation.
-func withImageID(id int) imageOption {
+func withImageID(id uuid.UUID) imageOption {
 	return func(m *ImageMutation) {
 		var (
 			err   error
@@ -796,9 +747,15 @@ func (m ImageMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Image entities.
+func (m *ImageMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *ImageMutation) ID() (id int, exists bool) {
+func (m *ImageMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -809,12 +766,12 @@ func (m *ImageMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *ImageMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *ImageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -822,42 +779,6 @@ func (m *ImageMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetImageGUID sets the "image_guid" field.
-func (m *ImageMutation) SetImageGUID(u uuid.UUID) {
-	m.image_guid = &u
-}
-
-// ImageGUID returns the value of the "image_guid" field in the mutation.
-func (m *ImageMutation) ImageGUID() (r uuid.UUID, exists bool) {
-	v := m.image_guid
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageGUID returns the old "image_guid" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldImageGUID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageGUID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageGUID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageGUID: %w", err)
-	}
-	return oldValue.ImageGUID, nil
-}
-
-// ResetImageGUID resets all changes to the "image_guid" field.
-func (m *ImageMutation) ResetImageGUID() {
-	m.image_guid = nil
 }
 
 // SetBlob sets the "blob" field.
@@ -1041,7 +962,7 @@ func (m *ImageMutation) ResetUploadDate() {
 }
 
 // SetArticleID sets the "article" edge to the Article entity by id.
-func (m *ImageMutation) SetArticleID(id int) {
+func (m *ImageMutation) SetArticleID(id uuid.UUID) {
 	m.article = &id
 }
 
@@ -1056,7 +977,7 @@ func (m *ImageMutation) ArticleCleared() bool {
 }
 
 // ArticleID returns the "article" edge ID in the mutation.
-func (m *ImageMutation) ArticleID() (id int, exists bool) {
+func (m *ImageMutation) ArticleID() (id uuid.UUID, exists bool) {
 	if m.article != nil {
 		return *m.article, true
 	}
@@ -1066,7 +987,7 @@ func (m *ImageMutation) ArticleID() (id int, exists bool) {
 // ArticleIDs returns the "article" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ArticleID instead. It exists only for internal usage by the builders.
-func (m *ImageMutation) ArticleIDs() (ids []int) {
+func (m *ImageMutation) ArticleIDs() (ids []uuid.UUID) {
 	if id := m.article; id != nil {
 		ids = append(ids, *id)
 	}
@@ -1098,10 +1019,7 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.image_guid != nil {
-		fields = append(fields, image.FieldImageGUID)
-	}
+	fields := make([]string, 0, 5)
 	if m.blob != nil {
 		fields = append(fields, image.FieldBlob)
 	}
@@ -1125,8 +1043,6 @@ func (m *ImageMutation) Fields() []string {
 // schema.
 func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case image.FieldImageGUID:
-		return m.ImageGUID()
 	case image.FieldBlob:
 		return m.Blob()
 	case image.FieldContentType:
@@ -1146,8 +1062,6 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case image.FieldImageGUID:
-		return m.OldImageGUID(ctx)
 	case image.FieldBlob:
 		return m.OldBlob(ctx)
 	case image.FieldContentType:
@@ -1167,13 +1081,6 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ImageMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case image.FieldImageGUID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageGUID(v)
-		return nil
 	case image.FieldBlob:
 		v, ok := value.([]byte)
 		if !ok {
@@ -1258,9 +1165,6 @@ func (m *ImageMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ImageMutation) ResetField(name string) error {
 	switch name {
-	case image.FieldImageGUID:
-		m.ResetImageGUID()
-		return nil
 	case image.FieldBlob:
 		m.ResetBlob()
 		return nil
@@ -1359,8 +1263,7 @@ type UserMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
-	username      *string
+	id            *uuid.UUID
 	password      *string
 	email         *string
 	clearedFields map[string]struct{}
@@ -1389,7 +1292,7 @@ func newUserMutation(c config, op Op, opts ...userOption) *UserMutation {
 }
 
 // withUserID sets the ID field of the mutation.
-func withUserID(id int) userOption {
+func withUserID(id uuid.UUID) userOption {
 	return func(m *UserMutation) {
 		var (
 			err   error
@@ -1441,13 +1344,13 @@ func (m UserMutation) Tx() (*Tx, error) {
 
 // SetID sets the value of the id field. Note that this
 // operation is only accepted on creation of User entities.
-func (m *UserMutation) SetID(id int) {
+func (m *UserMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *UserMutation) ID() (id int, exists bool) {
+func (m *UserMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -1458,12 +1361,12 @@ func (m *UserMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *UserMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -1471,42 +1374,6 @@ func (m *UserMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetUsername sets the "username" field.
-func (m *UserMutation) SetUsername(s string) {
-	m.username = &s
-}
-
-// Username returns the value of the "username" field in the mutation.
-func (m *UserMutation) Username() (r string, exists bool) {
-	v := m.username
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUsername returns the old "username" field's value of the User entity.
-// If the User object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UserMutation) OldUsername(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUsername is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUsername requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUsername: %w", err)
-	}
-	return oldValue.Username, nil
-}
-
-// ResetUsername resets all changes to the "username" field.
-func (m *UserMutation) ResetUsername() {
-	m.username = nil
 }
 
 // SetPassword sets the "password" field.
@@ -1600,10 +1467,7 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.username != nil {
-		fields = append(fields, user.FieldUsername)
-	}
+	fields := make([]string, 0, 2)
 	if m.password != nil {
 		fields = append(fields, user.FieldPassword)
 	}
@@ -1618,8 +1482,6 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case user.FieldUsername:
-		return m.Username()
 	case user.FieldPassword:
 		return m.Password()
 	case user.FieldEmail:
@@ -1633,8 +1495,6 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case user.FieldUsername:
-		return m.OldUsername(ctx)
 	case user.FieldPassword:
 		return m.OldPassword(ctx)
 	case user.FieldEmail:
@@ -1648,13 +1508,6 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case user.FieldUsername:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUsername(v)
-		return nil
 	case user.FieldPassword:
 		v, ok := value.(string)
 		if !ok {
@@ -1718,9 +1571,6 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
-	case user.FieldUsername:
-		m.ResetUsername()
-		return nil
 	case user.FieldPassword:
 		m.ResetPassword()
 		return nil

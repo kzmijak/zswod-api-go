@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/migrate"
 
 	"github.com/kzmijak/zswod_api_go/ent/article"
@@ -177,7 +178,7 @@ func (c *ArticleClient) UpdateOne(a *Article) *ArticleUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ArticleClient) UpdateOneID(id int) *ArticleUpdateOne {
+func (c *ArticleClient) UpdateOneID(id uuid.UUID) *ArticleUpdateOne {
 	mutation := newArticleMutation(c.config, OpUpdateOne, withArticleID(id))
 	return &ArticleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -194,7 +195,7 @@ func (c *ArticleClient) DeleteOne(a *Article) *ArticleDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ArticleClient) DeleteOneID(id int) *ArticleDeleteOne {
+func (c *ArticleClient) DeleteOneID(id uuid.UUID) *ArticleDeleteOne {
 	builder := c.Delete().Where(article.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -209,12 +210,12 @@ func (c *ArticleClient) Query() *ArticleQuery {
 }
 
 // Get returns a Article entity by its id.
-func (c *ArticleClient) Get(ctx context.Context, id int) (*Article, error) {
+func (c *ArticleClient) Get(ctx context.Context, id uuid.UUID) (*Article, error) {
 	return c.Query().Where(article.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ArticleClient) GetX(ctx context.Context, id int) *Article {
+func (c *ArticleClient) GetX(ctx context.Context, id uuid.UUID) *Article {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -283,7 +284,7 @@ func (c *ImageClient) UpdateOne(i *Image) *ImageUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *ImageClient) UpdateOneID(id int) *ImageUpdateOne {
+func (c *ImageClient) UpdateOneID(id uuid.UUID) *ImageUpdateOne {
 	mutation := newImageMutation(c.config, OpUpdateOne, withImageID(id))
 	return &ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -300,7 +301,7 @@ func (c *ImageClient) DeleteOne(i *Image) *ImageDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ImageClient) DeleteOneID(id int) *ImageDeleteOne {
+func (c *ImageClient) DeleteOneID(id uuid.UUID) *ImageDeleteOne {
 	builder := c.Delete().Where(image.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -315,12 +316,12 @@ func (c *ImageClient) Query() *ImageQuery {
 }
 
 // Get returns a Image entity by its id.
-func (c *ImageClient) Get(ctx context.Context, id int) (*Image, error) {
+func (c *ImageClient) Get(ctx context.Context, id uuid.UUID) (*Image, error) {
 	return c.Query().Where(image.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *ImageClient) GetX(ctx context.Context, id int) *Image {
+func (c *ImageClient) GetX(ctx context.Context, id uuid.UUID) *Image {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -389,7 +390,7 @@ func (c *UserClient) UpdateOne(u *User) *UserUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *UserClient) UpdateOneID(id int) *UserUpdateOne {
+func (c *UserClient) UpdateOneID(id uuid.UUID) *UserUpdateOne {
 	mutation := newUserMutation(c.config, OpUpdateOne, withUserID(id))
 	return &UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -406,7 +407,7 @@ func (c *UserClient) DeleteOne(u *User) *UserDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *UserClient) DeleteOneID(id int) *UserDeleteOne {
+func (c *UserClient) DeleteOneID(id uuid.UUID) *UserDeleteOne {
 	builder := c.Delete().Where(user.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -421,12 +422,12 @@ func (c *UserClient) Query() *UserQuery {
 }
 
 // Get returns a User entity by its id.
-func (c *UserClient) Get(ctx context.Context, id int) (*User, error) {
+func (c *UserClient) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	return c.Query().Where(user.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *UserClient) GetX(ctx context.Context, id int) *User {
+func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

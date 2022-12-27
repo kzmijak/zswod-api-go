@@ -1,35 +1,43 @@
 package user
 
 import (
-	"context"
-
-	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/ent/user"
+	"github.com/kzmijak/zswod_api_go/models/role"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type SignInRequest struct {
-	Username string `json:"username"`
+	Email string `json:"email"`
 	Password string `json:"password"`
 }
 
 const (
 	ErrUserNotFound = "err_user_not_found: Could not match any user with provided username"
 	ErrInvalidPassword = "err_invalid_password: Password for the user is incorrect"
+	ErrInvalidClaims = "err_invalid_claims: Could not generate token for this user"
 )
 
-func SignIn(ctx context.Context, request SignInRequest) (*ent.User, error) {
-	user, err := database.Client.User.Query().Where(user.Username(request.Username)).Only(ctx);
+func (s *UserService) SignIn(request SignInRequest) (string, error) {
+	user, err := database.Client.User.Query().Where(user.Email(request.Email)).Only(s.ctx);
 
 	if err != nil {
-		return nil ,errors.Error(ErrUserNotFound)
-	}
-	
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
-		return nil, errors.Error(ErrInvalidPassword)
+		return "" ,errors.Error(ErrUserNotFound)
 	}
 
-	return user, nil;
+	
+	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
+		return "", errors.Error(ErrInvalidPassword)
+	}
+
+	// TODO: not everybody should be an admin!!!
+	// TODO: pass user guid not email
+	jwt, err := s.jwtService.GenerateToken(string(user.ID.String()), role.Admin)
+
+	if err != nil {
+		return "", errors.Error(ErrInvalidClaims)
+	}
+
+	return jwt, nil;
 }
