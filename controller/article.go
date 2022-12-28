@@ -24,3 +24,16 @@ func (c *Controller) CreateArticle(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, response)
 }
+
+func (c *Controller) GetArticleByTitle(ctx *gin.Context) {
+	titleString := ctx.Param("title")
+
+	response, err := c.articleService.GetArticleByTitle(titleString)
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, response)
+}

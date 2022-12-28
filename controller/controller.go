@@ -72,10 +72,12 @@ func (c *Controller) Run() {
 			blob.GET("/:uuid", c.GetBlobByUuid)
 		}
 
-		// TODO: Authorized users only
 		article := v1.Group("/article")
 		{
+			// TODO: Authorized users only
 			article.POST("/create", c.CreateArticle)
+
+			article.GET("/:title", c.GetArticleByTitle)
 		}
 	}
 
