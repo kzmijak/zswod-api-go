@@ -23,15 +23,26 @@ var (
 		Columns:    ArticlesColumns,
 		PrimaryKey: []*schema.Column{ArticlesColumns[0]},
 	}
-	// ImagesColumns holds the columns for the "images" table.
-	ImagesColumns = []*schema.Column{
+	// BlobsColumns holds the columns for the "blobs" table.
+	BlobsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "blob", Type: field.TypeBytes},
 		{Name: "content_type", Type: field.TypeString},
+	}
+	// BlobsTable holds the schema information for the "blobs" table.
+	BlobsTable = &schema.Table{
+		Name:       "blobs",
+		Columns:    BlobsColumns,
+		PrimaryKey: []*schema.Column{BlobsColumns[0]},
+	}
+	// ImagesColumns holds the columns for the "images" table.
+	ImagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "alt", Type: field.TypeString},
 		{Name: "upload_date", Type: field.TypeTime},
 		{Name: "article_images", Type: field.TypeUUID, Nullable: true},
+		{Name: "image_blob", Type: field.TypeUUID, Nullable: true},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -41,8 +52,14 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "images_articles_images",
-				Columns:    []*schema.Column{ImagesColumns[6]},
+				Columns:    []*schema.Column{ImagesColumns[4]},
 				RefColumns: []*schema.Column{ArticlesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "images_blobs_blob",
+				Columns:    []*schema.Column{ImagesColumns[5]},
+				RefColumns: []*schema.Column{BlobsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -62,6 +79,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ArticlesTable,
+		BlobsTable,
 		ImagesTable,
 		UsersTable,
 	}
@@ -69,4 +87,5 @@ var (
 
 func init() {
 	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
+	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 }

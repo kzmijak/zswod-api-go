@@ -12,6 +12,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/migrate"
 
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 
@@ -27,6 +28,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Article is the client for interacting with the Article builders.
 	Article *ArticleClient
+	// Blob is the client for interacting with the Blob builders.
+	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
 	// User is the client for interacting with the User builders.
@@ -45,6 +48,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Article = NewArticleClient(c.config)
+	c.Blob = NewBlobClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -81,6 +85,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:     ctx,
 		config:  cfg,
 		Article: NewArticleClient(cfg),
+		Blob:    NewBlobClient(cfg),
 		Image:   NewImageClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -103,6 +108,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:     ctx,
 		config:  cfg,
 		Article: NewArticleClient(cfg),
+		Blob:    NewBlobClient(cfg),
 		Image:   NewImageClient(cfg),
 		User:    NewUserClient(cfg),
 	}, nil
@@ -134,6 +140,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Article.Use(hooks...)
+	c.Blob.Use(hooks...)
 	c.Image.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -244,6 +251,96 @@ func (c *ArticleClient) Hooks() []Hook {
 	return c.hooks.Article
 }
 
+// BlobClient is a client for the Blob schema.
+type BlobClient struct {
+	config
+}
+
+// NewBlobClient returns a client for the Blob from the given config.
+func NewBlobClient(c config) *BlobClient {
+	return &BlobClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `blob.Hooks(f(g(h())))`.
+func (c *BlobClient) Use(hooks ...Hook) {
+	c.hooks.Blob = append(c.hooks.Blob, hooks...)
+}
+
+// Create returns a builder for creating a Blob entity.
+func (c *BlobClient) Create() *BlobCreate {
+	mutation := newBlobMutation(c.config, OpCreate)
+	return &BlobCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Blob entities.
+func (c *BlobClient) CreateBulk(builders ...*BlobCreate) *BlobCreateBulk {
+	return &BlobCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Blob.
+func (c *BlobClient) Update() *BlobUpdate {
+	mutation := newBlobMutation(c.config, OpUpdate)
+	return &BlobUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BlobClient) UpdateOne(b *Blob) *BlobUpdateOne {
+	mutation := newBlobMutation(c.config, OpUpdateOne, withBlob(b))
+	return &BlobUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BlobClient) UpdateOneID(id uuid.UUID) *BlobUpdateOne {
+	mutation := newBlobMutation(c.config, OpUpdateOne, withBlobID(id))
+	return &BlobUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Blob.
+func (c *BlobClient) Delete() *BlobDelete {
+	mutation := newBlobMutation(c.config, OpDelete)
+	return &BlobDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BlobClient) DeleteOne(b *Blob) *BlobDeleteOne {
+	return c.DeleteOneID(b.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BlobClient) DeleteOneID(id uuid.UUID) *BlobDeleteOne {
+	builder := c.Delete().Where(blob.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BlobDeleteOne{builder}
+}
+
+// Query returns a query builder for Blob.
+func (c *BlobClient) Query() *BlobQuery {
+	return &BlobQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Blob entity by its id.
+func (c *BlobClient) Get(ctx context.Context, id uuid.UUID) (*Blob, error) {
+	return c.Query().Where(blob.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BlobClient) GetX(ctx context.Context, id uuid.UUID) *Blob {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *BlobClient) Hooks() []Hook {
+	return c.hooks.Blob
+}
+
 // ImageClient is a client for the Image schema.
 type ImageClient struct {
 	config
@@ -338,6 +435,22 @@ func (c *ImageClient) QueryArticle(i *Image) *ArticleQuery {
 			sqlgraph.From(image.Table, image.FieldID, id),
 			sqlgraph.To(article.Table, article.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, image.ArticleTable, image.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBlob queries the blob edge of a Image.
+func (c *ImageClient) QueryBlob(i *Image) *BlobQuery {
+	query := &BlobQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(blob.Table, blob.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, image.BlobTable, image.BlobColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

@@ -16,8 +16,6 @@ type Image struct {
 func (Image) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
-		field.Bytes("blob"),
-		field.String("content_type"),
 		field.String("title"),
 		field.String("alt"),
 		field.Time("upload_date"),
@@ -29,5 +27,6 @@ func (Image) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("article", Article.Type).
 			Ref("images").Unique(),
+		edge.To("blob", Blob.Type).Unique(),
 	}
 }

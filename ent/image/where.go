@@ -82,20 +82,6 @@ func IDLTE(id uuid.UUID) predicate.Image {
 	})
 }
 
-// Blob applies equality check predicate on the "blob" field. It's identical to BlobEQ.
-func Blob(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBlob), v))
-	})
-}
-
-// ContentType applies equality check predicate on the "content_type" field. It's identical to ContentTypeEQ.
-func ContentType(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldContentType), v))
-	})
-}
-
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
@@ -114,169 +100,6 @@ func Alt(v string) predicate.Image {
 func UploadDate(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// BlobEQ applies the EQ predicate on the "blob" field.
-func BlobEQ(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBlob), v))
-	})
-}
-
-// BlobNEQ applies the NEQ predicate on the "blob" field.
-func BlobNEQ(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldBlob), v))
-	})
-}
-
-// BlobIn applies the In predicate on the "blob" field.
-func BlobIn(vs ...[]byte) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldBlob), v...))
-	})
-}
-
-// BlobNotIn applies the NotIn predicate on the "blob" field.
-func BlobNotIn(vs ...[]byte) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldBlob), v...))
-	})
-}
-
-// BlobGT applies the GT predicate on the "blob" field.
-func BlobGT(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldBlob), v))
-	})
-}
-
-// BlobGTE applies the GTE predicate on the "blob" field.
-func BlobGTE(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldBlob), v))
-	})
-}
-
-// BlobLT applies the LT predicate on the "blob" field.
-func BlobLT(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldBlob), v))
-	})
-}
-
-// BlobLTE applies the LTE predicate on the "blob" field.
-func BlobLTE(v []byte) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldBlob), v))
-	})
-}
-
-// ContentTypeEQ applies the EQ predicate on the "content_type" field.
-func ContentTypeEQ(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeNEQ applies the NEQ predicate on the "content_type" field.
-func ContentTypeNEQ(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeIn applies the In predicate on the "content_type" field.
-func ContentTypeIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldContentType), v...))
-	})
-}
-
-// ContentTypeNotIn applies the NotIn predicate on the "content_type" field.
-func ContentTypeNotIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldContentType), v...))
-	})
-}
-
-// ContentTypeGT applies the GT predicate on the "content_type" field.
-func ContentTypeGT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeGTE applies the GTE predicate on the "content_type" field.
-func ContentTypeGTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeLT applies the LT predicate on the "content_type" field.
-func ContentTypeLT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeLTE applies the LTE predicate on the "content_type" field.
-func ContentTypeLTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeContains applies the Contains predicate on the "content_type" field.
-func ContentTypeContains(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeHasPrefix applies the HasPrefix predicate on the "content_type" field.
-func ContentTypeHasPrefix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeHasSuffix applies the HasSuffix predicate on the "content_type" field.
-func ContentTypeHasSuffix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeEqualFold applies the EqualFold predicate on the "content_type" field.
-func ContentTypeEqualFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldContentType), v))
-	})
-}
-
-// ContentTypeContainsFold applies the ContainsFold predicate on the "content_type" field.
-func ContentTypeContainsFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldContentType), v))
 	})
 }
 
@@ -561,6 +384,34 @@ func HasArticleWith(preds ...predicate.Article) predicate.Image {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ArticleInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBlob applies the HasEdge predicate on the "blob" edge.
+func HasBlob() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BlobTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBlobWith applies the HasEdge predicate on the "blob" edge with a given conditions (other predicates).
+func HasBlobWith(preds ...predicate.Blob) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BlobInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

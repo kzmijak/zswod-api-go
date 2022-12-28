@@ -11,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 	"github.com/kzmijak/zswod_api_go/ent/user"
@@ -28,6 +29,7 @@ const (
 
 	// Node types.
 	TypeArticle = "Article"
+	TypeBlob    = "Blob"
 	TypeImage   = "Image"
 	TypeUser    = "User"
 )
@@ -658,20 +660,391 @@ func (m *ArticleMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Article edge %s", name)
 }
 
+// BlobMutation represents an operation that mutates the Blob nodes in the graph.
+type BlobMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	blob          *[]byte
+	content_type  *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Blob, error)
+	predicates    []predicate.Blob
+}
+
+var _ ent.Mutation = (*BlobMutation)(nil)
+
+// blobOption allows management of the mutation configuration using functional options.
+type blobOption func(*BlobMutation)
+
+// newBlobMutation creates new mutation for the Blob entity.
+func newBlobMutation(c config, op Op, opts ...blobOption) *BlobMutation {
+	m := &BlobMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBlob,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBlobID sets the ID field of the mutation.
+func withBlobID(id uuid.UUID) blobOption {
+	return func(m *BlobMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Blob
+		)
+		m.oldValue = func(ctx context.Context) (*Blob, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Blob.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBlob sets the old Blob of the mutation.
+func withBlob(node *Blob) blobOption {
+	return func(m *BlobMutation) {
+		m.oldValue = func(context.Context) (*Blob, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BlobMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BlobMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Blob entities.
+func (m *BlobMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BlobMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BlobMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Blob.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetBlob sets the "blob" field.
+func (m *BlobMutation) SetBlob(b []byte) {
+	m.blob = &b
+}
+
+// Blob returns the value of the "blob" field in the mutation.
+func (m *BlobMutation) Blob() (r []byte, exists bool) {
+	v := m.blob
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBlob returns the old "blob" field's value of the Blob entity.
+// If the Blob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BlobMutation) OldBlob(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBlob is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBlob requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBlob: %w", err)
+	}
+	return oldValue.Blob, nil
+}
+
+// ResetBlob resets all changes to the "blob" field.
+func (m *BlobMutation) ResetBlob() {
+	m.blob = nil
+}
+
+// SetContentType sets the "content_type" field.
+func (m *BlobMutation) SetContentType(s string) {
+	m.content_type = &s
+}
+
+// ContentType returns the value of the "content_type" field in the mutation.
+func (m *BlobMutation) ContentType() (r string, exists bool) {
+	v := m.content_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContentType returns the old "content_type" field's value of the Blob entity.
+// If the Blob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BlobMutation) OldContentType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContentType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContentType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContentType: %w", err)
+	}
+	return oldValue.ContentType, nil
+}
+
+// ResetContentType resets all changes to the "content_type" field.
+func (m *BlobMutation) ResetContentType() {
+	m.content_type = nil
+}
+
+// Where appends a list predicates to the BlobMutation builder.
+func (m *BlobMutation) Where(ps ...predicate.Blob) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *BlobMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Blob).
+func (m *BlobMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BlobMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.blob != nil {
+		fields = append(fields, blob.FieldBlob)
+	}
+	if m.content_type != nil {
+		fields = append(fields, blob.FieldContentType)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BlobMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case blob.FieldBlob:
+		return m.Blob()
+	case blob.FieldContentType:
+		return m.ContentType()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BlobMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case blob.FieldBlob:
+		return m.OldBlob(ctx)
+	case blob.FieldContentType:
+		return m.OldContentType(ctx)
+	}
+	return nil, fmt.Errorf("unknown Blob field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BlobMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case blob.FieldBlob:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBlob(v)
+		return nil
+	case blob.FieldContentType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContentType(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Blob field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BlobMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BlobMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BlobMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Blob numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BlobMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BlobMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BlobMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Blob nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BlobMutation) ResetField(name string) error {
+	switch name {
+	case blob.FieldBlob:
+		m.ResetBlob()
+		return nil
+	case blob.FieldContentType:
+		m.ResetContentType()
+		return nil
+	}
+	return fmt.Errorf("unknown Blob field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BlobMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BlobMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BlobMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BlobMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BlobMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BlobMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BlobMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Blob unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BlobMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Blob edge %s", name)
+}
+
 // ImageMutation represents an operation that mutates the Image nodes in the graph.
 type ImageMutation struct {
 	config
 	op             Op
 	typ            string
 	id             *uuid.UUID
-	blob           *[]byte
-	content_type   *string
 	title          *string
 	alt            *string
 	upload_date    *time.Time
 	clearedFields  map[string]struct{}
 	article        *uuid.UUID
 	clearedarticle bool
+	blob           *uuid.UUID
+	clearedblob    bool
 	done           bool
 	oldValue       func(context.Context) (*Image, error)
 	predicates     []predicate.Image
@@ -779,78 +1152,6 @@ func (m *ImageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetBlob sets the "blob" field.
-func (m *ImageMutation) SetBlob(b []byte) {
-	m.blob = &b
-}
-
-// Blob returns the value of the "blob" field in the mutation.
-func (m *ImageMutation) Blob() (r []byte, exists bool) {
-	v := m.blob
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldBlob returns the old "blob" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldBlob(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldBlob is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldBlob requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldBlob: %w", err)
-	}
-	return oldValue.Blob, nil
-}
-
-// ResetBlob resets all changes to the "blob" field.
-func (m *ImageMutation) ResetBlob() {
-	m.blob = nil
-}
-
-// SetContentType sets the "content_type" field.
-func (m *ImageMutation) SetContentType(s string) {
-	m.content_type = &s
-}
-
-// ContentType returns the value of the "content_type" field in the mutation.
-func (m *ImageMutation) ContentType() (r string, exists bool) {
-	v := m.content_type
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldContentType returns the old "content_type" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldContentType(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldContentType is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldContentType requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldContentType: %w", err)
-	}
-	return oldValue.ContentType, nil
-}
-
-// ResetContentType resets all changes to the "content_type" field.
-func (m *ImageMutation) ResetContentType() {
-	m.content_type = nil
 }
 
 // SetTitle sets the "title" field.
@@ -1000,6 +1301,45 @@ func (m *ImageMutation) ResetArticle() {
 	m.clearedarticle = false
 }
 
+// SetBlobID sets the "blob" edge to the Blob entity by id.
+func (m *ImageMutation) SetBlobID(id uuid.UUID) {
+	m.blob = &id
+}
+
+// ClearBlob clears the "blob" edge to the Blob entity.
+func (m *ImageMutation) ClearBlob() {
+	m.clearedblob = true
+}
+
+// BlobCleared reports if the "blob" edge to the Blob entity was cleared.
+func (m *ImageMutation) BlobCleared() bool {
+	return m.clearedblob
+}
+
+// BlobID returns the "blob" edge ID in the mutation.
+func (m *ImageMutation) BlobID() (id uuid.UUID, exists bool) {
+	if m.blob != nil {
+		return *m.blob, true
+	}
+	return
+}
+
+// BlobIDs returns the "blob" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BlobID instead. It exists only for internal usage by the builders.
+func (m *ImageMutation) BlobIDs() (ids []uuid.UUID) {
+	if id := m.blob; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBlob resets all changes to the "blob" edge.
+func (m *ImageMutation) ResetBlob() {
+	m.blob = nil
+	m.clearedblob = false
+}
+
 // Where appends a list predicates to the ImageMutation builder.
 func (m *ImageMutation) Where(ps ...predicate.Image) {
 	m.predicates = append(m.predicates, ps...)
@@ -1019,13 +1359,7 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 5)
-	if m.blob != nil {
-		fields = append(fields, image.FieldBlob)
-	}
-	if m.content_type != nil {
-		fields = append(fields, image.FieldContentType)
-	}
+	fields := make([]string, 0, 3)
 	if m.title != nil {
 		fields = append(fields, image.FieldTitle)
 	}
@@ -1043,10 +1377,6 @@ func (m *ImageMutation) Fields() []string {
 // schema.
 func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case image.FieldBlob:
-		return m.Blob()
-	case image.FieldContentType:
-		return m.ContentType()
 	case image.FieldTitle:
 		return m.Title()
 	case image.FieldAlt:
@@ -1062,10 +1392,6 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case image.FieldBlob:
-		return m.OldBlob(ctx)
-	case image.FieldContentType:
-		return m.OldContentType(ctx)
 	case image.FieldTitle:
 		return m.OldTitle(ctx)
 	case image.FieldAlt:
@@ -1081,20 +1407,6 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ImageMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case image.FieldBlob:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetBlob(v)
-		return nil
-	case image.FieldContentType:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetContentType(v)
-		return nil
 	case image.FieldTitle:
 		v, ok := value.(string)
 		if !ok {
@@ -1165,12 +1477,6 @@ func (m *ImageMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ImageMutation) ResetField(name string) error {
 	switch name {
-	case image.FieldBlob:
-		m.ResetBlob()
-		return nil
-	case image.FieldContentType:
-		m.ResetContentType()
-		return nil
 	case image.FieldTitle:
 		m.ResetTitle()
 		return nil
@@ -1186,9 +1492,12 @@ func (m *ImageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.article != nil {
 		edges = append(edges, image.EdgeArticle)
+	}
+	if m.blob != nil {
+		edges = append(edges, image.EdgeBlob)
 	}
 	return edges
 }
@@ -1201,13 +1510,17 @@ func (m *ImageMutation) AddedIDs(name string) []ent.Value {
 		if id := m.article; id != nil {
 			return []ent.Value{*id}
 		}
+	case image.EdgeBlob:
+		if id := m.blob; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	return edges
 }
 
@@ -1219,9 +1532,12 @@ func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedarticle {
 		edges = append(edges, image.EdgeArticle)
+	}
+	if m.clearedblob {
+		edges = append(edges, image.EdgeBlob)
 	}
 	return edges
 }
@@ -1232,6 +1548,8 @@ func (m *ImageMutation) EdgeCleared(name string) bool {
 	switch name {
 	case image.EdgeArticle:
 		return m.clearedarticle
+	case image.EdgeBlob:
+		return m.clearedblob
 	}
 	return false
 }
@@ -1243,6 +1561,9 @@ func (m *ImageMutation) ClearEdge(name string) error {
 	case image.EdgeArticle:
 		m.ClearArticle()
 		return nil
+	case image.EdgeBlob:
+		m.ClearBlob()
+		return nil
 	}
 	return fmt.Errorf("unknown Image unique edge %s", name)
 }
@@ -1253,6 +1574,9 @@ func (m *ImageMutation) ResetEdge(name string) error {
 	switch name {
 	case image.EdgeArticle:
 		m.ResetArticle()
+		return nil
+	case image.EdgeBlob:
+		m.ResetBlob()
 		return nil
 	}
 	return fmt.Errorf("unknown Image edge %s", name)
