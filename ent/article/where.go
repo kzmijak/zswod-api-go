@@ -110,13 +110,6 @@ func UploadDate(v time.Time) predicate.Article {
 	})
 }
 
-// TitleNormalized applies equality check predicate on the "title_normalized" field. It's identical to TitleNormalizedEQ.
-func TitleNormalized(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
-	})
-}
-
 // TitleEQ applies the EQ predicate on the "title" field.
 func TitleEQ(v string) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
@@ -478,105 +471,6 @@ func UploadDateLTE(v time.Time) predicate.Article {
 	})
 }
 
-// TitleNormalizedEQ applies the EQ predicate on the "title_normalized" field.
-func TitleNormalizedEQ(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedNEQ applies the NEQ predicate on the "title_normalized" field.
-func TitleNormalizedNEQ(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedIn applies the In predicate on the "title_normalized" field.
-func TitleNormalizedIn(vs ...string) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldTitleNormalized), v...))
-	})
-}
-
-// TitleNormalizedNotIn applies the NotIn predicate on the "title_normalized" field.
-func TitleNormalizedNotIn(vs ...string) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldTitleNormalized), v...))
-	})
-}
-
-// TitleNormalizedGT applies the GT predicate on the "title_normalized" field.
-func TitleNormalizedGT(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedGTE applies the GTE predicate on the "title_normalized" field.
-func TitleNormalizedGTE(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedLT applies the LT predicate on the "title_normalized" field.
-func TitleNormalizedLT(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedLTE applies the LTE predicate on the "title_normalized" field.
-func TitleNormalizedLTE(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedContains applies the Contains predicate on the "title_normalized" field.
-func TitleNormalizedContains(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedHasPrefix applies the HasPrefix predicate on the "title_normalized" field.
-func TitleNormalizedHasPrefix(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedHasSuffix applies the HasSuffix predicate on the "title_normalized" field.
-func TitleNormalizedHasSuffix(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedEqualFold applies the EqualFold predicate on the "title_normalized" field.
-func TitleNormalizedEqualFold(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldTitleNormalized), v))
-	})
-}
-
-// TitleNormalizedContainsFold applies the ContainsFold predicate on the "title_normalized" field.
-func TitleNormalizedContainsFold(v string) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldTitleNormalized), v))
-	})
-}
-
 // HasImages applies the HasEdge predicate on the "images" edge.
 func HasImages() predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
@@ -596,6 +490,34 @@ func HasImagesWith(preds ...predicate.Image) predicate.Article {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ImagesInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasTitleNormalized applies the HasEdge predicate on the "title_normalized" edge.
+func HasTitleNormalized() predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TitleNormalizedTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, TitleNormalizedTable, TitleNormalizedColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTitleNormalizedWith applies the HasEdge predicate on the "title_normalized" edge with a given conditions (other predicates).
+func HasTitleNormalizedWith(preds ...predicate.ArticleTitleGuid) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TitleNormalizedInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, TitleNormalizedTable, TitleNormalizedColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

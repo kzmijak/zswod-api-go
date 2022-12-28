@@ -9,6 +9,9 @@ import (
 // Article is the predicate function for article builders.
 type Article func(*sql.Selector)
 
+// ArticleTitleGuid is the predicate function for articletitleguid builders.
+type ArticleTitleGuid func(*sql.Selector)
+
 // Blob is the predicate function for blob builders.
 type Blob func(*sql.Selector)
 

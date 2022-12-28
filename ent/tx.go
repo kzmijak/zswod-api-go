@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Article is the client for interacting with the Article builders.
 	Article *ArticleClient
+	// ArticleTitleGuid is the client for interacting with the ArticleTitleGuid builders.
+	ArticleTitleGuid *ArticleTitleGuidClient
 	// Blob is the client for interacting with the Blob builders.
 	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
@@ -152,6 +154,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Article = NewArticleClient(tx.config)
+	tx.ArticleTitleGuid = NewArticleTitleGuidClient(tx.config)
 	tx.Blob = NewBlobClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.User = NewUserClient(tx.config)

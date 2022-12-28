@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 )
 
 // Article is the model entity for the Article schema.
@@ -25,8 +26,6 @@ type Article struct {
 	Content string `json:"content,omitempty"`
 	// UploadDate holds the value of the "upload_date" field.
 	UploadDate time.Time `json:"upload_date,omitempty"`
-	// TitleNormalized holds the value of the "title_normalized" field.
-	TitleNormalized string `json:"title_normalized,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
 	Edges ArticleEdges `json:"edges"`
@@ -36,9 +35,11 @@ type Article struct {
 type ArticleEdges struct {
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
+	// TitleNormalized holds the value of the title_normalized edge.
+	TitleNormalized *ArticleTitleGuid `json:"title_normalized,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ImagesOrErr returns the Images value or an error if the edge
@@ -50,12 +51,25 @@ func (e ArticleEdges) ImagesOrErr() ([]*Image, error) {
 	return nil, &NotLoadedError{edge: "images"}
 }
 
+// TitleNormalizedOrErr returns the TitleNormalized value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ArticleEdges) TitleNormalizedOrErr() (*ArticleTitleGuid, error) {
+	if e.loadedTypes[1] {
+		if e.TitleNormalized == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: articletitleguid.Label}
+		}
+		return e.TitleNormalized, nil
+	}
+	return nil, &NotLoadedError{edge: "title_normalized"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Article) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case article.FieldTitle, article.FieldShort, article.FieldContent, article.FieldTitleNormalized:
+		case article.FieldTitle, article.FieldShort, article.FieldContent:
 			values[i] = new(sql.NullString)
 		case article.FieldUploadDate:
 			values[i] = new(sql.NullTime)
@@ -106,12 +120,6 @@ func (a *Article) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.UploadDate = value.Time
 			}
-		case article.FieldTitleNormalized:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title_normalized", values[i])
-			} else if value.Valid {
-				a.TitleNormalized = value.String
-			}
 		}
 	}
 	return nil
@@ -120,6 +128,11 @@ func (a *Article) assignValues(columns []string, values []any) error {
 // QueryImages queries the "images" edge of the Article entity.
 func (a *Article) QueryImages() *ImageQuery {
 	return (&ArticleClient{config: a.config}).QueryImages(a)
+}
+
+// QueryTitleNormalized queries the "title_normalized" edge of the Article entity.
+func (a *Article) QueryTitleNormalized() *ArticleTitleGuidQuery {
+	return (&ArticleClient{config: a.config}).QueryTitleNormalized(a)
 }
 
 // Update returns a builder for updating this Article.
@@ -156,9 +169,6 @@ func (a *Article) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("upload_date=")
 	builder.WriteString(a.UploadDate.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("title_normalized=")
-	builder.WriteString(a.TitleNormalized)
 	builder.WriteByte(')')
 	return builder.String()
 }

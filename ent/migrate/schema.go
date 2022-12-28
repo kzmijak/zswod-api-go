@@ -15,13 +15,32 @@ var (
 		{Name: "short", Type: field.TypeString, Size: 128},
 		{Name: "content", Type: field.TypeString},
 		{Name: "upload_date", Type: field.TypeTime},
-		{Name: "title_normalized", Type: field.TypeString},
 	}
 	// ArticlesTable holds the schema information for the "articles" table.
 	ArticlesTable = &schema.Table{
 		Name:       "articles",
 		Columns:    ArticlesColumns,
 		PrimaryKey: []*schema.Column{ArticlesColumns[0]},
+	}
+	// ArticleTitleGuidsColumns holds the columns for the "article_title_guids" table.
+	ArticleTitleGuidsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "title_normalized", Type: field.TypeString},
+		{Name: "article_title_normalized", Type: field.TypeUUID, Unique: true},
+	}
+	// ArticleTitleGuidsTable holds the schema information for the "article_title_guids" table.
+	ArticleTitleGuidsTable = &schema.Table{
+		Name:       "article_title_guids",
+		Columns:    ArticleTitleGuidsColumns,
+		PrimaryKey: []*schema.Column{ArticleTitleGuidsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "article_title_guids_articles_title_normalized",
+				Columns:    []*schema.Column{ArticleTitleGuidsColumns[2]},
+				RefColumns: []*schema.Column{ArticlesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// BlobsColumns holds the columns for the "blobs" table.
 	BlobsColumns = []*schema.Column{
@@ -79,6 +98,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ArticlesTable,
+		ArticleTitleGuidsTable,
 		BlobsTable,
 		ImagesTable,
 		UsersTable,
@@ -86,6 +106,7 @@ var (
 )
 
 func init() {
+	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 }

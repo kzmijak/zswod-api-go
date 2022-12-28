@@ -12,6 +12,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/migrate"
 
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/user"
@@ -28,6 +29,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Article is the client for interacting with the Article builders.
 	Article *ArticleClient
+	// ArticleTitleGuid is the client for interacting with the ArticleTitleGuid builders.
+	ArticleTitleGuid *ArticleTitleGuidClient
 	// Blob is the client for interacting with the Blob builders.
 	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
@@ -48,6 +51,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Article = NewArticleClient(c.config)
+	c.ArticleTitleGuid = NewArticleTitleGuidClient(c.config)
 	c.Blob = NewBlobClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -82,12 +86,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Article: NewArticleClient(cfg),
-		Blob:    NewBlobClient(cfg),
-		Image:   NewImageClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Article:          NewArticleClient(cfg),
+		ArticleTitleGuid: NewArticleTitleGuidClient(cfg),
+		Blob:             NewBlobClient(cfg),
+		Image:            NewImageClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -105,12 +110,13 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Article: NewArticleClient(cfg),
-		Blob:    NewBlobClient(cfg),
-		Image:   NewImageClient(cfg),
-		User:    NewUserClient(cfg),
+		ctx:              ctx,
+		config:           cfg,
+		Article:          NewArticleClient(cfg),
+		ArticleTitleGuid: NewArticleTitleGuidClient(cfg),
+		Blob:             NewBlobClient(cfg),
+		Image:            NewImageClient(cfg),
+		User:             NewUserClient(cfg),
 	}, nil
 }
 
@@ -140,6 +146,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Article.Use(hooks...)
+	c.ArticleTitleGuid.Use(hooks...)
 	c.Blob.Use(hooks...)
 	c.Image.Use(hooks...)
 	c.User.Use(hooks...)
@@ -246,9 +253,131 @@ func (c *ArticleClient) QueryImages(a *Article) *ImageQuery {
 	return query
 }
 
+// QueryTitleNormalized queries the title_normalized edge of a Article.
+func (c *ArticleClient) QueryTitleNormalized(a *Article) *ArticleTitleGuidQuery {
+	query := &ArticleTitleGuidQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, id),
+			sqlgraph.To(articletitleguid.Table, articletitleguid.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, article.TitleNormalizedTable, article.TitleNormalizedColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ArticleClient) Hooks() []Hook {
 	return c.hooks.Article
+}
+
+// ArticleTitleGuidClient is a client for the ArticleTitleGuid schema.
+type ArticleTitleGuidClient struct {
+	config
+}
+
+// NewArticleTitleGuidClient returns a client for the ArticleTitleGuid from the given config.
+func NewArticleTitleGuidClient(c config) *ArticleTitleGuidClient {
+	return &ArticleTitleGuidClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `articletitleguid.Hooks(f(g(h())))`.
+func (c *ArticleTitleGuidClient) Use(hooks ...Hook) {
+	c.hooks.ArticleTitleGuid = append(c.hooks.ArticleTitleGuid, hooks...)
+}
+
+// Create returns a builder for creating a ArticleTitleGuid entity.
+func (c *ArticleTitleGuidClient) Create() *ArticleTitleGuidCreate {
+	mutation := newArticleTitleGuidMutation(c.config, OpCreate)
+	return &ArticleTitleGuidCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ArticleTitleGuid entities.
+func (c *ArticleTitleGuidClient) CreateBulk(builders ...*ArticleTitleGuidCreate) *ArticleTitleGuidCreateBulk {
+	return &ArticleTitleGuidCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ArticleTitleGuid.
+func (c *ArticleTitleGuidClient) Update() *ArticleTitleGuidUpdate {
+	mutation := newArticleTitleGuidMutation(c.config, OpUpdate)
+	return &ArticleTitleGuidUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ArticleTitleGuidClient) UpdateOne(atg *ArticleTitleGuid) *ArticleTitleGuidUpdateOne {
+	mutation := newArticleTitleGuidMutation(c.config, OpUpdateOne, withArticleTitleGuid(atg))
+	return &ArticleTitleGuidUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ArticleTitleGuidClient) UpdateOneID(id uuid.UUID) *ArticleTitleGuidUpdateOne {
+	mutation := newArticleTitleGuidMutation(c.config, OpUpdateOne, withArticleTitleGuidID(id))
+	return &ArticleTitleGuidUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ArticleTitleGuid.
+func (c *ArticleTitleGuidClient) Delete() *ArticleTitleGuidDelete {
+	mutation := newArticleTitleGuidMutation(c.config, OpDelete)
+	return &ArticleTitleGuidDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ArticleTitleGuidClient) DeleteOne(atg *ArticleTitleGuid) *ArticleTitleGuidDeleteOne {
+	return c.DeleteOneID(atg.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ArticleTitleGuidClient) DeleteOneID(id uuid.UUID) *ArticleTitleGuidDeleteOne {
+	builder := c.Delete().Where(articletitleguid.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ArticleTitleGuidDeleteOne{builder}
+}
+
+// Query returns a query builder for ArticleTitleGuid.
+func (c *ArticleTitleGuidClient) Query() *ArticleTitleGuidQuery {
+	return &ArticleTitleGuidQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ArticleTitleGuid entity by its id.
+func (c *ArticleTitleGuidClient) Get(ctx context.Context, id uuid.UUID) (*ArticleTitleGuid, error) {
+	return c.Query().Where(articletitleguid.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ArticleTitleGuidClient) GetX(ctx context.Context, id uuid.UUID) *ArticleTitleGuid {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryArticle queries the article edge of a ArticleTitleGuid.
+func (c *ArticleTitleGuidClient) QueryArticle(atg *ArticleTitleGuid) *ArticleQuery {
+	query := &ArticleQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := atg.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(articletitleguid.Table, articletitleguid.FieldID, id),
+			sqlgraph.To(article.Table, article.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, articletitleguid.ArticleTable, articletitleguid.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(atg.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ArticleTitleGuidClient) Hooks() []Hook {
+	return c.hooks.ArticleTitleGuid
 }
 
 // BlobClient is a client for the Blob schema.

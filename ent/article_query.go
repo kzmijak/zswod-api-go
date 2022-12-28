@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -20,13 +21,14 @@ import (
 // ArticleQuery is the builder for querying Article entities.
 type ArticleQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Article
-	withImages *ImageQuery
+	limit               *int
+	offset              *int
+	unique              *bool
+	order               []OrderFunc
+	fields              []string
+	predicates          []predicate.Article
+	withImages          *ImageQuery
+	withTitleNormalized *ArticleTitleGuidQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -78,6 +80,28 @@ func (aq *ArticleQuery) QueryImages() *ImageQuery {
 			sqlgraph.From(article.Table, article.FieldID, selector),
 			sqlgraph.To(image.Table, image.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, article.ImagesTable, article.ImagesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryTitleNormalized chains the current query on the "title_normalized" edge.
+func (aq *ArticleQuery) QueryTitleNormalized() *ArticleTitleGuidQuery {
+	query := &ArticleTitleGuidQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, selector),
+			sqlgraph.To(articletitleguid.Table, articletitleguid.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, article.TitleNormalizedTable, article.TitleNormalizedColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -261,12 +285,13 @@ func (aq *ArticleQuery) Clone() *ArticleQuery {
 		return nil
 	}
 	return &ArticleQuery{
-		config:     aq.config,
-		limit:      aq.limit,
-		offset:     aq.offset,
-		order:      append([]OrderFunc{}, aq.order...),
-		predicates: append([]predicate.Article{}, aq.predicates...),
-		withImages: aq.withImages.Clone(),
+		config:              aq.config,
+		limit:               aq.limit,
+		offset:              aq.offset,
+		order:               append([]OrderFunc{}, aq.order...),
+		predicates:          append([]predicate.Article{}, aq.predicates...),
+		withImages:          aq.withImages.Clone(),
+		withTitleNormalized: aq.withTitleNormalized.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
@@ -282,6 +307,17 @@ func (aq *ArticleQuery) WithImages(opts ...func(*ImageQuery)) *ArticleQuery {
 		opt(query)
 	}
 	aq.withImages = query
+	return aq
+}
+
+// WithTitleNormalized tells the query-builder to eager-load the nodes that are connected to
+// the "title_normalized" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ArticleQuery) WithTitleNormalized(opts ...func(*ArticleTitleGuidQuery)) *ArticleQuery {
+	query := &ArticleTitleGuidQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withTitleNormalized = query
 	return aq
 }
 
@@ -358,8 +394,9 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 	var (
 		nodes       = []*Article{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			aq.withImages != nil,
+			aq.withTitleNormalized != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -384,6 +421,12 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 		if err := aq.loadImages(ctx, query, nodes,
 			func(n *Article) { n.Edges.Images = []*Image{} },
 			func(n *Article, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withTitleNormalized; query != nil {
+		if err := aq.loadTitleNormalized(ctx, query, nodes, nil,
+			func(n *Article, e *ArticleTitleGuid) { n.Edges.TitleNormalized = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -416,6 +459,34 @@ func (aq *ArticleQuery) loadImages(ctx context.Context, query *ImageQuery, nodes
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "article_images" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ArticleQuery) loadTitleNormalized(ctx context.Context, query *ArticleTitleGuidQuery, nodes []*Article, init func(*Article), assign func(*Article, *ArticleTitleGuid)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Article)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.ArticleTitleGuid(func(s *sql.Selector) {
+		s.Where(sql.InValues(article.TitleNormalizedColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.article_title_normalized
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "article_title_normalized" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "article_title_normalized" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
