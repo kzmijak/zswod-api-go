@@ -66,6 +66,7 @@ func (c *Controller) Run() {
 		blob := v1.Group("/blob")
 		{
 			blob.POST("/upload", c.UploadBlob)
+			blob.GET("/:uuid", c.GetBlobByUuid)
 		}
 	}
 
