@@ -25,7 +25,7 @@ var (
 	// ArticleTitleGuidsColumns holds the columns for the "article_title_guids" table.
 	ArticleTitleGuidsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "title_normalized", Type: field.TypeString},
+		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "article_title_normalized", Type: field.TypeUUID, Unique: true},
 	}
 	// ArticleTitleGuidsTable holds the schema information for the "article_title_guids" table.
@@ -59,9 +59,9 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "alt", Type: field.TypeString},
+		{Name: "url", Type: field.TypeString},
 		{Name: "upload_date", Type: field.TypeTime},
 		{Name: "article_images", Type: field.TypeUUID, Nullable: true},
-		{Name: "image_blob", Type: field.TypeUUID, Nullable: true},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -71,14 +71,8 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "images_articles_images",
-				Columns:    []*schema.Column{ImagesColumns[4]},
-				RefColumns: []*schema.Column{ArticlesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "images_blobs_blob",
 				Columns:    []*schema.Column{ImagesColumns[5]},
-				RefColumns: []*schema.Column{BlobsColumns[0]},
+				RefColumns: []*schema.Column{ArticlesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -108,5 +102,4 @@ var (
 func init() {
 	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
-	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 }

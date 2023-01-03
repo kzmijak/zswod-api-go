@@ -11,12 +11,12 @@ const (
 	FieldTitle = "title"
 	// FieldAlt holds the string denoting the alt field in the database.
 	FieldAlt = "alt"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
 	// FieldUploadDate holds the string denoting the upload_date field in the database.
 	FieldUploadDate = "upload_date"
 	// EdgeArticle holds the string denoting the article edge name in mutations.
 	EdgeArticle = "article"
-	// EdgeBlob holds the string denoting the blob edge name in mutations.
-	EdgeBlob = "blob"
 	// Table holds the table name of the image in the database.
 	Table = "images"
 	// ArticleTable is the table that holds the article relation/edge.
@@ -26,13 +26,6 @@ const (
 	ArticleInverseTable = "articles"
 	// ArticleColumn is the table column denoting the article relation/edge.
 	ArticleColumn = "article_images"
-	// BlobTable is the table that holds the blob relation/edge.
-	BlobTable = "images"
-	// BlobInverseTable is the table name for the Blob entity.
-	// It exists in this package in order to avoid circular dependency with the "blob" package.
-	BlobInverseTable = "blobs"
-	// BlobColumn is the table column denoting the blob relation/edge.
-	BlobColumn = "image_blob"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -40,6 +33,7 @@ var Columns = []string{
 	FieldID,
 	FieldTitle,
 	FieldAlt,
+	FieldURL,
 	FieldUploadDate,
 }
 
@@ -47,7 +41,6 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"article_images",
-	"image_blob",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

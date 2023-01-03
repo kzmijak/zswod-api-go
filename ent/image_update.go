@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -43,6 +42,12 @@ func (iu *ImageUpdate) SetAlt(s string) *ImageUpdate {
 	return iu
 }
 
+// SetURL sets the "url" field.
+func (iu *ImageUpdate) SetURL(s string) *ImageUpdate {
+	iu.mutation.SetURL(s)
+	return iu
+}
+
 // SetUploadDate sets the "upload_date" field.
 func (iu *ImageUpdate) SetUploadDate(t time.Time) *ImageUpdate {
 	iu.mutation.SetUploadDate(t)
@@ -68,25 +73,6 @@ func (iu *ImageUpdate) SetArticle(a *Article) *ImageUpdate {
 	return iu.SetArticleID(a.ID)
 }
 
-// SetBlobID sets the "blob" edge to the Blob entity by ID.
-func (iu *ImageUpdate) SetBlobID(id uuid.UUID) *ImageUpdate {
-	iu.mutation.SetBlobID(id)
-	return iu
-}
-
-// SetNillableBlobID sets the "blob" edge to the Blob entity by ID if the given value is not nil.
-func (iu *ImageUpdate) SetNillableBlobID(id *uuid.UUID) *ImageUpdate {
-	if id != nil {
-		iu = iu.SetBlobID(*id)
-	}
-	return iu
-}
-
-// SetBlob sets the "blob" edge to the Blob entity.
-func (iu *ImageUpdate) SetBlob(b *Blob) *ImageUpdate {
-	return iu.SetBlobID(b.ID)
-}
-
 // Mutation returns the ImageMutation object of the builder.
 func (iu *ImageUpdate) Mutation() *ImageMutation {
 	return iu.mutation
@@ -95,12 +81,6 @@ func (iu *ImageUpdate) Mutation() *ImageMutation {
 // ClearArticle clears the "article" edge to the Article entity.
 func (iu *ImageUpdate) ClearArticle() *ImageUpdate {
 	iu.mutation.ClearArticle()
-	return iu
-}
-
-// ClearBlob clears the "blob" edge to the Blob entity.
-func (iu *ImageUpdate) ClearBlob() *ImageUpdate {
-	iu.mutation.ClearBlob()
 	return iu
 }
 
@@ -182,6 +162,9 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.Alt(); ok {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 	}
+	if value, ok := iu.mutation.URL(); ok {
+		_spec.SetField(image.FieldURL, field.TypeString, value)
+	}
 	if value, ok := iu.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
 	}
@@ -212,41 +195,6 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: article.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iu.mutation.BlobCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.BlobIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
 				},
 			},
 		}
@@ -286,6 +234,12 @@ func (iuo *ImageUpdateOne) SetAlt(s string) *ImageUpdateOne {
 	return iuo
 }
 
+// SetURL sets the "url" field.
+func (iuo *ImageUpdateOne) SetURL(s string) *ImageUpdateOne {
+	iuo.mutation.SetURL(s)
+	return iuo
+}
+
 // SetUploadDate sets the "upload_date" field.
 func (iuo *ImageUpdateOne) SetUploadDate(t time.Time) *ImageUpdateOne {
 	iuo.mutation.SetUploadDate(t)
@@ -311,25 +265,6 @@ func (iuo *ImageUpdateOne) SetArticle(a *Article) *ImageUpdateOne {
 	return iuo.SetArticleID(a.ID)
 }
 
-// SetBlobID sets the "blob" edge to the Blob entity by ID.
-func (iuo *ImageUpdateOne) SetBlobID(id uuid.UUID) *ImageUpdateOne {
-	iuo.mutation.SetBlobID(id)
-	return iuo
-}
-
-// SetNillableBlobID sets the "blob" edge to the Blob entity by ID if the given value is not nil.
-func (iuo *ImageUpdateOne) SetNillableBlobID(id *uuid.UUID) *ImageUpdateOne {
-	if id != nil {
-		iuo = iuo.SetBlobID(*id)
-	}
-	return iuo
-}
-
-// SetBlob sets the "blob" edge to the Blob entity.
-func (iuo *ImageUpdateOne) SetBlob(b *Blob) *ImageUpdateOne {
-	return iuo.SetBlobID(b.ID)
-}
-
 // Mutation returns the ImageMutation object of the builder.
 func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 	return iuo.mutation
@@ -338,12 +273,6 @@ func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 // ClearArticle clears the "article" edge to the Article entity.
 func (iuo *ImageUpdateOne) ClearArticle() *ImageUpdateOne {
 	iuo.mutation.ClearArticle()
-	return iuo
-}
-
-// ClearBlob clears the "blob" edge to the Blob entity.
-func (iuo *ImageUpdateOne) ClearBlob() *ImageUpdateOne {
-	iuo.mutation.ClearBlob()
 	return iuo
 }
 
@@ -455,6 +384,9 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	if value, ok := iuo.mutation.Alt(); ok {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 	}
+	if value, ok := iuo.mutation.URL(); ok {
+		_spec.SetField(image.FieldURL, field.TypeString, value)
+	}
 	if value, ok := iuo.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
 	}
@@ -485,41 +417,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: article.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iuo.mutation.BlobCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.BlobIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
 				},
 			},
 		}

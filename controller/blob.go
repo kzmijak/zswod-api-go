@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,9 @@ func (c *Controller) UploadBlob(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, response)
+	blobUrl := fmt.Sprint(ctx.Request.Host, ctx.Request.URL.String(), "/", response.ID.String()) 
+
+	ctx.IndentedJSON(http.StatusOK, blobUrl)
 }
 
 func (c *Controller) GetBlobByUuid(ctx *gin.Context) {

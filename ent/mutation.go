@@ -1430,12 +1430,11 @@ type ImageMutation struct {
 	id             *uuid.UUID
 	title          *string
 	alt            *string
+	url            *string
 	upload_date    *time.Time
 	clearedFields  map[string]struct{}
 	article        *uuid.UUID
 	clearedarticle bool
-	blob           *uuid.UUID
-	clearedblob    bool
 	done           bool
 	oldValue       func(context.Context) (*Image, error)
 	predicates     []predicate.Image
@@ -1617,6 +1616,42 @@ func (m *ImageMutation) ResetAlt() {
 	m.alt = nil
 }
 
+// SetURL sets the "url" field.
+func (m *ImageMutation) SetURL(s string) {
+	m.url = &s
+}
+
+// URL returns the value of the "url" field in the mutation.
+func (m *ImageMutation) URL() (r string, exists bool) {
+	v := m.url
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldURL returns the old "url" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldURL(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldURL requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
+	}
+	return oldValue.URL, nil
+}
+
+// ResetURL resets all changes to the "url" field.
+func (m *ImageMutation) ResetURL() {
+	m.url = nil
+}
+
 // SetUploadDate sets the "upload_date" field.
 func (m *ImageMutation) SetUploadDate(t time.Time) {
 	m.upload_date = &t
@@ -1692,45 +1727,6 @@ func (m *ImageMutation) ResetArticle() {
 	m.clearedarticle = false
 }
 
-// SetBlobID sets the "blob" edge to the Blob entity by id.
-func (m *ImageMutation) SetBlobID(id uuid.UUID) {
-	m.blob = &id
-}
-
-// ClearBlob clears the "blob" edge to the Blob entity.
-func (m *ImageMutation) ClearBlob() {
-	m.clearedblob = true
-}
-
-// BlobCleared reports if the "blob" edge to the Blob entity was cleared.
-func (m *ImageMutation) BlobCleared() bool {
-	return m.clearedblob
-}
-
-// BlobID returns the "blob" edge ID in the mutation.
-func (m *ImageMutation) BlobID() (id uuid.UUID, exists bool) {
-	if m.blob != nil {
-		return *m.blob, true
-	}
-	return
-}
-
-// BlobIDs returns the "blob" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// BlobID instead. It exists only for internal usage by the builders.
-func (m *ImageMutation) BlobIDs() (ids []uuid.UUID) {
-	if id := m.blob; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetBlob resets all changes to the "blob" edge.
-func (m *ImageMutation) ResetBlob() {
-	m.blob = nil
-	m.clearedblob = false
-}
-
 // Where appends a list predicates to the ImageMutation builder.
 func (m *ImageMutation) Where(ps ...predicate.Image) {
 	m.predicates = append(m.predicates, ps...)
@@ -1750,12 +1746,15 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.title != nil {
 		fields = append(fields, image.FieldTitle)
 	}
 	if m.alt != nil {
 		fields = append(fields, image.FieldAlt)
+	}
+	if m.url != nil {
+		fields = append(fields, image.FieldURL)
 	}
 	if m.upload_date != nil {
 		fields = append(fields, image.FieldUploadDate)
@@ -1772,6 +1771,8 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 		return m.Title()
 	case image.FieldAlt:
 		return m.Alt()
+	case image.FieldURL:
+		return m.URL()
 	case image.FieldUploadDate:
 		return m.UploadDate()
 	}
@@ -1787,6 +1788,8 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldTitle(ctx)
 	case image.FieldAlt:
 		return m.OldAlt(ctx)
+	case image.FieldURL:
+		return m.OldURL(ctx)
 	case image.FieldUploadDate:
 		return m.OldUploadDate(ctx)
 	}
@@ -1811,6 +1814,13 @@ func (m *ImageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAlt(v)
+		return nil
+	case image.FieldURL:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetURL(v)
 		return nil
 	case image.FieldUploadDate:
 		v, ok := value.(time.Time)
@@ -1874,6 +1884,9 @@ func (m *ImageMutation) ResetField(name string) error {
 	case image.FieldAlt:
 		m.ResetAlt()
 		return nil
+	case image.FieldURL:
+		m.ResetURL()
+		return nil
 	case image.FieldUploadDate:
 		m.ResetUploadDate()
 		return nil
@@ -1883,12 +1896,9 @@ func (m *ImageMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ImageMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.article != nil {
 		edges = append(edges, image.EdgeArticle)
-	}
-	if m.blob != nil {
-		edges = append(edges, image.EdgeBlob)
 	}
 	return edges
 }
@@ -1901,17 +1911,13 @@ func (m *ImageMutation) AddedIDs(name string) []ent.Value {
 		if id := m.article; id != nil {
 			return []ent.Value{*id}
 		}
-	case image.EdgeBlob:
-		if id := m.blob; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ImageMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -1923,12 +1929,9 @@ func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ImageMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedarticle {
 		edges = append(edges, image.EdgeArticle)
-	}
-	if m.clearedblob {
-		edges = append(edges, image.EdgeBlob)
 	}
 	return edges
 }
@@ -1939,8 +1942,6 @@ func (m *ImageMutation) EdgeCleared(name string) bool {
 	switch name {
 	case image.EdgeArticle:
 		return m.clearedarticle
-	case image.EdgeBlob:
-		return m.clearedblob
 	}
 	return false
 }
@@ -1952,9 +1953,6 @@ func (m *ImageMutation) ClearEdge(name string) error {
 	case image.EdgeArticle:
 		m.ClearArticle()
 		return nil
-	case image.EdgeBlob:
-		m.ClearBlob()
-		return nil
 	}
 	return fmt.Errorf("unknown Image unique edge %s", name)
 }
@@ -1965,9 +1963,6 @@ func (m *ImageMutation) ResetEdge(name string) error {
 	switch name {
 	case image.EdgeArticle:
 		m.ResetArticle()
-		return nil
-	case image.EdgeBlob:
-		m.ResetBlob()
 		return nil
 	}
 	return fmt.Errorf("unknown Image edge %s", name)

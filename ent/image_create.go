@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
@@ -32,6 +31,12 @@ func (ic *ImageCreate) SetTitle(s string) *ImageCreate {
 // SetAlt sets the "alt" field.
 func (ic *ImageCreate) SetAlt(s string) *ImageCreate {
 	ic.mutation.SetAlt(s)
+	return ic
+}
+
+// SetURL sets the "url" field.
+func (ic *ImageCreate) SetURL(s string) *ImageCreate {
+	ic.mutation.SetURL(s)
 	return ic
 }
 
@@ -64,25 +69,6 @@ func (ic *ImageCreate) SetNillableArticleID(id *uuid.UUID) *ImageCreate {
 // SetArticle sets the "article" edge to the Article entity.
 func (ic *ImageCreate) SetArticle(a *Article) *ImageCreate {
 	return ic.SetArticleID(a.ID)
-}
-
-// SetBlobID sets the "blob" edge to the Blob entity by ID.
-func (ic *ImageCreate) SetBlobID(id uuid.UUID) *ImageCreate {
-	ic.mutation.SetBlobID(id)
-	return ic
-}
-
-// SetNillableBlobID sets the "blob" edge to the Blob entity by ID if the given value is not nil.
-func (ic *ImageCreate) SetNillableBlobID(id *uuid.UUID) *ImageCreate {
-	if id != nil {
-		ic = ic.SetBlobID(*id)
-	}
-	return ic
-}
-
-// SetBlob sets the "blob" edge to the Blob entity.
-func (ic *ImageCreate) SetBlob(b *Blob) *ImageCreate {
-	return ic.SetBlobID(b.ID)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -167,6 +153,9 @@ func (ic *ImageCreate) check() error {
 	if _, ok := ic.mutation.Alt(); !ok {
 		return &ValidationError{Name: "alt", err: errors.New(`ent: missing required field "Image.alt"`)}
 	}
+	if _, ok := ic.mutation.URL(); !ok {
+		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Image.url"`)}
+	}
 	if _, ok := ic.mutation.UploadDate(); !ok {
 		return &ValidationError{Name: "upload_date", err: errors.New(`ent: missing required field "Image.upload_date"`)}
 	}
@@ -214,6 +203,10 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 		_node.Alt = value
 	}
+	if value, ok := ic.mutation.URL(); ok {
+		_spec.SetField(image.FieldURL, field.TypeString, value)
+		_node.URL = value
+	}
 	if value, ok := ic.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
 		_node.UploadDate = value
@@ -236,26 +229,6 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.article_images = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.image_blob = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

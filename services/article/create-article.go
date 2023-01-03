@@ -24,7 +24,7 @@ type CreateArticleRequest struct {
 
 func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, error) {
 	titleSanitized := sanitize(req.Title)
-	titleUrlFriendly := titleSanitized[:12]
+	titleUrlFriendly := titleSanitized[:64]
 
 	
 	article, err := database.Client.Article.Create().
@@ -53,7 +53,6 @@ func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, e
 	return article, nil
 }
 
-
 func sanitize(input string) string {
 	reg, err := regexp.Compile("[ąćęłńóśźż]")
     if err != nil {
@@ -61,7 +60,6 @@ func sanitize(input string) string {
     }
     input = reg.ReplaceAllString(input, "")
 
-    // Zamienić spacje na myślniki
     input = strings.Replace(input, " ", "-", -1)
 
     return input
