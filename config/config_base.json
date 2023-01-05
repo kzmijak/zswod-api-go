@@ -1,7 +1,8 @@
 {
   "database": {
     "driverName": "",
-    "dsn": ""
+    "dsn": "",
+    "env": ""
   },
   "logger": {
     "filePath": ""

@@ -7,7 +7,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/models/role"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/kzmijak/zswod_api_go/utils/encryption"
 )
 
 type CreateUserRequest struct {
@@ -17,7 +17,6 @@ type CreateUserRequest struct {
 }
 
 const (
-	ErrCouldNotSaltPassword = "ErrCouldNotSaltPassword: Failed to encrypt the given password"
 	ErrUserCreationFailed = "ErrUserCreationFailed: Failed to save the user in the database"
 	ErrUserAlreadyExists = "ErrUserAlreadyExists: Failed to create user, user with provided email already exists"
 	ErrInvalidRole = "ErrInvalidRole: Provided user does not exist"
@@ -32,12 +31,10 @@ func (s UserService) CreateUser(request CreateUserRequest) (*ent.User, error) {
 		return nil, errors.Error(ErrUserAlreadyExists)
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	salt, err := encryption.HashString(request.Password)
 	if err != nil {
-		return nil, errors.Error(ErrCouldNotSaltPassword)
+		return nil, err
 	}
-
-	salt := string(hash)
 
 	user, err := database.Client.User.Create().
 		SetID(uuid.New()).

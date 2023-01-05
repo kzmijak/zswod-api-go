@@ -8,6 +8,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	entRole "github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/models/role"
+	"github.com/kzmijak/zswod_api_go/utils/encryption"
 )
 
 var Client *ent.Client; 
@@ -30,8 +31,10 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 		return ErrSchemaCreationFail
 	}
 
-	if err := seedAdmin(ctx); err != nil {
-		return ErrSchemaCreationFail
+	if cfg.Env == "dev" {
+		if err := seedAdmin(ctx); err != nil {
+			return ErrSchemaCreationFail
+		}
 	}
 	
 	return nil;
@@ -76,7 +79,9 @@ func seedAdmin(ctx context.Context) error {
 		return nil
 	}
 
-	err = Client.User.Create().SetID(uuid.UUID{}).SetEmail("root@sporlowd.pl").SetPassword("root").SetRolesID(role.Admin.String()).Exec(ctx)
+	adminPassword, _ := encryption.HashString("root")
+
+	err = Client.User.Create().SetID(uuid.UUID{}).SetEmail("root@sporlowd.pl").SetPassword(adminPassword).SetRolesID(role.Admin.String()).Exec(ctx)
 
 	return err
 }
