@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -21,15 +20,9 @@ type RoleCreate struct {
 	hooks    []Hook
 }
 
-// SetName sets the "name" field.
-func (rc *RoleCreate) SetName(s string) *RoleCreate {
-	rc.mutation.SetName(s)
-	return rc
-}
-
 // SetID sets the "id" field.
-func (rc *RoleCreate) SetID(u uuid.UUID) *RoleCreate {
-	rc.mutation.SetID(u)
+func (rc *RoleCreate) SetID(s string) *RoleCreate {
+	rc.mutation.SetID(s)
 	return rc
 }
 
@@ -124,9 +117,6 @@ func (rc *RoleCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rc *RoleCreate) check() error {
-	if _, ok := rc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Role.name"`)}
-	}
 	return nil
 }
 
@@ -139,10 +129,10 @@ func (rc *RoleCreate) sqlSave(ctx context.Context) (*Role, error) {
 		return nil, err
 	}
 	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected Role.ID type: %T", _spec.ID.Value)
 		}
 	}
 	return _node, nil
@@ -154,18 +144,14 @@ func (rc *RoleCreate) createSpec() (*Role, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: role.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeString,
 				Column: role.FieldID,
 			},
 		}
 	)
 	if id, ok := rc.mutation.ID(); ok {
 		_node.ID = id
-		_spec.ID.Value = &id
-	}
-	if value, ok := rc.mutation.Name(); ok {
-		_spec.SetField(role.FieldName, field.TypeString, value)
-		_node.Name = value
+		_spec.ID.Value = id
 	}
 	if nodes := rc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

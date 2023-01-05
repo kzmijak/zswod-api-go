@@ -7,8 +7,6 @@ const (
 	Label = "role"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// Table holds the table name of the role in the database.
@@ -23,7 +21,6 @@ const (
 // Columns holds all SQL columns for role fields.
 var Columns = []string{
 	FieldID,
-	FieldName,
 }
 
 var (

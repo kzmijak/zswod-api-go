@@ -79,8 +79,7 @@ var (
 	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "name", Type: field.TypeString},
+		{Name: "id", Type: field.TypeString, Unique: true},
 	}
 	// RolesTable holds the schema information for the "roles" table.
 	RolesTable = &schema.Table{
@@ -102,7 +101,7 @@ var (
 	}
 	// RoleUsersColumns holds the columns for the "role_users" table.
 	RoleUsersColumns = []*schema.Column{
-		{Name: "role_id", Type: field.TypeUUID},
+		{Name: "role_id", Type: field.TypeString},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// RoleUsersTable holds the schema information for the "role_users" table.

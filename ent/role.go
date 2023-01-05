@@ -7,17 +7,14 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/role"
 )
 
 // Role is the model entity for the Role schema.
 type Role struct {
-	config `json:"-"`
+	config
 	// ID of the ent.
-	ID uuid.UUID `json:"id,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	ID string `json:"id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RoleQuery when eager-loading is set.
 	Edges RoleEdges `json:"edges"`
@@ -46,10 +43,8 @@ func (*Role) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case role.FieldName:
-			values[i] = new(sql.NullString)
 		case role.FieldID:
-			values[i] = new(uuid.UUID)
+			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Role", columns[i])
 		}
@@ -66,16 +61,10 @@ func (r *Role) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case role.FieldID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field id", values[i])
-			} else if value != nil {
-				r.ID = *value
-			}
-		case role.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				r.Name = value.String
+				r.ID = value.String
 			}
 		}
 	}
@@ -109,9 +98,7 @@ func (r *Role) Unwrap() *Role {
 func (r *Role) String() string {
 	var builder strings.Builder
 	builder.WriteString("Role(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
-	builder.WriteString("name=")
-	builder.WriteString(r.Name)
+	builder.WriteString(fmt.Sprintf("id=%v", r.ID))
 	builder.WriteByte(')')
 	return builder.String()
 }

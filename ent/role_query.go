@@ -109,8 +109,8 @@ func (rq *RoleQuery) FirstX(ctx context.Context) *Role {
 
 // FirstID returns the first Role ID from the query.
 // Returns a *NotFoundError when no Role ID was found.
-func (rq *RoleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (rq *RoleQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = rq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -122,7 +122,7 @@ func (rq *RoleQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (rq *RoleQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (rq *RoleQuery) FirstIDX(ctx context.Context) string {
 	id, err := rq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -160,8 +160,8 @@ func (rq *RoleQuery) OnlyX(ctx context.Context) *Role {
 // OnlyID is like Only, but returns the only Role ID in the query.
 // Returns a *NotSingularError when more than one Role ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (rq *RoleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (rq *RoleQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = rq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -177,7 +177,7 @@ func (rq *RoleQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (rq *RoleQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (rq *RoleQuery) OnlyIDX(ctx context.Context) string {
 	id, err := rq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,8 +203,8 @@ func (rq *RoleQuery) AllX(ctx context.Context) []*Role {
 }
 
 // IDs executes the query and returns a list of Role IDs.
-func (rq *RoleQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (rq *RoleQuery) IDs(ctx context.Context) ([]string, error) {
+	var ids []string
 	if err := rq.Select(role.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (rq *RoleQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (rq *RoleQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (rq *RoleQuery) IDsX(ctx context.Context) []string {
 	ids, err := rq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -287,18 +287,6 @@ func (rq *RoleQuery) WithUsers(opts ...func(*UserQuery)) *RoleQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
-//
-// Example:
-//
-//	var v []struct {
-//		Name string `json:"name,omitempty"`
-//		Count int `json:"count,omitempty"`
-//	}
-//
-//	client.Role.Query().
-//		GroupBy(role.FieldName).
-//		Aggregate(ent.Count()).
-//		Scan(ctx, &v)
 func (rq *RoleQuery) GroupBy(field string, fields ...string) *RoleGroupBy {
 	grbuild := &RoleGroupBy{config: rq.config}
 	grbuild.fields = append([]string{field}, fields...)
@@ -315,16 +303,6 @@ func (rq *RoleQuery) GroupBy(field string, fields ...string) *RoleGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
-//
-// Example:
-//
-//	var v []struct {
-//		Name string `json:"name,omitempty"`
-//	}
-//
-//	client.Role.Query().
-//		Select(role.FieldName).
-//		Scan(ctx, &v)
 func (rq *RoleQuery) Select(fields ...string) *RoleSelect {
 	rq.fields = append(rq.fields, fields...)
 	selbuild := &RoleSelect{RoleQuery: rq}
@@ -392,7 +370,7 @@ func (rq *RoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Role, e
 
 func (rq *RoleQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Role, init func(*Role), assign func(*Role, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Role)
+	byID := make(map[string]*Role)
 	nids := make(map[uuid.UUID]map[*Role]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
@@ -421,10 +399,10 @@ func (rq *RoleQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*R
 			if err != nil {
 				return nil, err
 			}
-			return append([]any{new(uuid.UUID)}, values...), nil
+			return append([]any{new(sql.NullString)}, values...), nil
 		}
 		spec.Assign = func(columns []string, values []any) error {
-			outValue := *values[0].(*uuid.UUID)
+			outValue := values[0].(*sql.NullString).String
 			inValue := *values[1].(*uuid.UUID)
 			if nids[inValue] == nil {
 				nids[inValue] = map[*Role]struct{}{byID[outValue]: {}}
@@ -475,7 +453,7 @@ func (rq *RoleQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   role.Table,
 			Columns: role.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeString,
 				Column: role.FieldID,
 			},
 		},

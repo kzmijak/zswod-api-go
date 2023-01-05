@@ -623,7 +623,7 @@ func (c *RoleClient) UpdateOne(r *Role) *RoleUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *RoleClient) UpdateOneID(id uuid.UUID) *RoleUpdateOne {
+func (c *RoleClient) UpdateOneID(id string) *RoleUpdateOne {
 	mutation := newRoleMutation(c.config, OpUpdateOne, withRoleID(id))
 	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -640,7 +640,7 @@ func (c *RoleClient) DeleteOne(r *Role) *RoleDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RoleClient) DeleteOneID(id uuid.UUID) *RoleDeleteOne {
+func (c *RoleClient) DeleteOneID(id string) *RoleDeleteOne {
 	builder := c.Delete().Where(role.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -655,12 +655,12 @@ func (c *RoleClient) Query() *RoleQuery {
 }
 
 // Get returns a Role entity by its id.
-func (c *RoleClient) Get(ctx context.Context, id uuid.UUID) (*Role, error) {
+func (c *RoleClient) Get(ctx context.Context, id string) (*Role, error) {
 	return c.Query().Where(role.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *RoleClient) GetX(ctx context.Context, id uuid.UUID) *Role {
+func (c *RoleClient) GetX(ctx context.Context, id string) *Role {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

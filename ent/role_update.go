@@ -29,12 +29,6 @@ func (ru *RoleUpdate) Where(ps ...predicate.Role) *RoleUpdate {
 	return ru
 }
 
-// SetName sets the "name" field.
-func (ru *RoleUpdate) SetName(s string) *RoleUpdate {
-	ru.mutation.SetName(s)
-	return ru
-}
-
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (ru *RoleUpdate) AddUserIDs(ids ...uuid.UUID) *RoleUpdate {
 	ru.mutation.AddUserIDs(ids...)
@@ -136,7 +130,7 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   role.Table,
 			Columns: role.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeString,
 				Column: role.FieldID,
 			},
 		},
@@ -147,9 +141,6 @@ func (ru *RoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := ru.mutation.Name(); ok {
-		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
 	if ru.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -222,12 +213,6 @@ type RoleUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *RoleMutation
-}
-
-// SetName sets the "name" field.
-func (ruo *RoleUpdateOne) SetName(s string) *RoleUpdateOne {
-	ruo.mutation.SetName(s)
-	return ruo
 }
 
 // AddUserIDs adds the "users" edge to the User entity by IDs.
@@ -344,7 +329,7 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 			Table:   role.Table,
 			Columns: role.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeString,
 				Column: role.FieldID,
 			},
 		},
@@ -372,9 +357,6 @@ func (ruo *RoleUpdateOne) sqlSave(ctx context.Context) (_node *Role, err error) 
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := ruo.mutation.Name(); ok {
-		_spec.SetField(role.FieldName, field.TypeString, value)
 	}
 	if ruo.mutation.UsersCleared() {
 		edge := &sqlgraph.EdgeSpec{

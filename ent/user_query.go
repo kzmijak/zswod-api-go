@@ -393,7 +393,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 func (uq *UserQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes []*User, init func(*User), assign func(*User, *Role)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*User)
-	nids := make(map[uuid.UUID]map[*User]struct{})
+	nids := make(map[string]map[*User]struct{})
 	for i, node := range nodes {
 		edgeIDs[i] = node.ID
 		byID[node.ID] = node
@@ -425,7 +425,7 @@ func (uq *UserQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes []*U
 		}
 		spec.Assign = func(columns []string, values []any) error {
 			outValue := *values[0].(*uuid.UUID)
-			inValue := *values[1].(*uuid.UUID)
+			inValue := values[1].(*sql.NullString).String
 			if nids[inValue] == nil {
 				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
 				return assign(columns[1:], values[1:])
