@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/modules/config"
 	"github.com/kzmijak/zswod_api_go/modules/logger"
@@ -48,6 +49,19 @@ func (c *Controller) WithConfig(cfg *config.Config) *Controller {
 func (c *Controller) Run() {
 	router := gin.Default()
 
+	router.Use(cors.New(cors.Config{
+        AllowOrigins:     []string{"http://sporlowd.pl:3000"},
+        AllowMethods:     []string{"*"},
+        // AllowHeaders:     []string{"Origin, X-Requested-With, Content-Type, Accept"},
+        AllowHeaders: []string{"*"},
+        ExposeHeaders:    []string{"Content-Length"},
+        AllowCredentials: true,
+        // AllowOriginFunc: func(origin string) bool {
+        //     return origin == "http://sporlowd.pl:3000"
+        // },
+        // MaxAge: 12 * time.Hour,
+    }))
+
 	c.jwtService = jwt.New().WithConfig(c.cfg.Auth)
 	c.userService = user.New().WithJwtService(c.jwtService).WithContext(c.ctx)
 	c.blobService = blob.New().WithContext(c.ctx)
@@ -60,11 +74,11 @@ func (c *Controller) Run() {
 		{
 			users.Use(c.JwtAuthMiddleware())
 			users.GET("", c.GetAllUsers)
-			users.GET("/current", c.GetCurrentUserId)
+			users.GET("/current", c.GetCurrentUser)
 		}
 		auth := v1.Group("/auth") 
 		{
-			auth.POST("", c.CreateUser)
+			auth.POST("sign-up", c.CreateUser)
 			auth.POST("sign-in", c.SignIn)	
 		}
 

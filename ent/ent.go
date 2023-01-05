@@ -14,6 +14,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -39,6 +40,7 @@ func columnChecker(table string) func(string) error {
 		articletitleguid.Table: articletitleguid.ValidColumn,
 		blob.Table:             blob.ValidColumn,
 		image.Table:            image.ValidColumn,
+		role.Table:             role.ValidColumn,
 		user.Table:             user.ValidColumn,
 	}
 	check, ok := checks[table]

@@ -20,6 +20,8 @@ type Tx struct {
 	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// Role is the client for interacting with the Role builders.
+	Role *RoleClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -157,6 +159,7 @@ func (tx *Tx) init() {
 	tx.ArticleTitleGuid = NewArticleTitleGuidClient(tx.config)
 	tx.Blob = NewBlobClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.Role = NewRoleClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

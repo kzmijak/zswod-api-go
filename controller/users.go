@@ -7,6 +7,10 @@ import (
 	"github.com/kzmijak/zswod_api_go/services/user"
 )
 
+const (
+	ErrPasswordsNotMatching = "ErrPasswordsNotMatching: Passwords should match"
+)
+
 func (c *Controller) GetAllUsers(ctx *gin.Context) {
 	c.log.Trace("Getting users")
 	users, err := c.userService.GetAllUsers()
@@ -18,8 +22,13 @@ func (c *Controller) GetAllUsers(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, users)
 }
 
+type CreateUserRequest struct {
+	user.CreateUserRequest
+	PasswordConfirm string `json:"passwordConfirm"`
+}
+
 func (c Controller) CreateUser(ctx *gin.Context) {
-	var requestBody user.CreateUserRequest 
+	var requestBody CreateUserRequest 
 
 	c.log.Trace("Creating user")
 	
@@ -29,7 +38,12 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	response, err := c.userService.CreateUser(requestBody)
+	if requestBody.Password != requestBody.PasswordConfirm {
+		ctx.JSON(http.StatusBadRequest, ErrPasswordsNotMatching)
+		return
+	}
+
+	_, err := c.userService.CreateUser(requestBody.CreateUserRequest)
 
 	if err != nil {
 		c.log.Error(err)
@@ -39,7 +53,7 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 
 	c.log.Trace("Creating user success")
 
-	ctx.IndentedJSON(http.StatusOK, response)
+	ctx.IndentedJSON(http.StatusAccepted, nil)
 }
 
 func (c *Controller) SignIn(ctx *gin.Context) {
@@ -60,7 +74,7 @@ func (c *Controller) SignIn(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, response)
 }
 
-func (c *Controller) GetCurrentUserId(ctx *gin.Context) {
+func (c *Controller) GetCurrentUser(ctx *gin.Context) {
 	token, err := c.ExtractTokenID(ctx)
 
 	if err != nil {
