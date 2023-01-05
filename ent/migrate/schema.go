@@ -92,35 +92,19 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
+		{Name: "role_users", Type: field.TypeString, Nullable: true},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
-	}
-	// RoleUsersColumns holds the columns for the "role_users" table.
-	RoleUsersColumns = []*schema.Column{
-		{Name: "role_id", Type: field.TypeString},
-		{Name: "user_id", Type: field.TypeUUID},
-	}
-	// RoleUsersTable holds the schema information for the "role_users" table.
-	RoleUsersTable = &schema.Table{
-		Name:       "role_users",
-		Columns:    RoleUsersColumns,
-		PrimaryKey: []*schema.Column{RoleUsersColumns[0], RoleUsersColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "role_users_role_id",
-				Columns:    []*schema.Column{RoleUsersColumns[0]},
+				Symbol:     "users_roles_users",
+				Columns:    []*schema.Column{UsersColumns[3]},
 				RefColumns: []*schema.Column{RolesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "role_users_user_id",
-				Columns:    []*schema.Column{RoleUsersColumns[1]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -132,13 +116,11 @@ var (
 		ImagesTable,
 		RolesTable,
 		UsersTable,
-		RoleUsersTable,
 	}
 )
 
 func init() {
 	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
-	RoleUsersTable.ForeignKeys[0].RefTable = RolesTable
-	RoleUsersTable.ForeignKeys[1].RefTable = UsersTable
+	UsersTable.ForeignKeys[0].RefTable = RolesTable
 }

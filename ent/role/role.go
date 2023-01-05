@@ -11,23 +11,19 @@ const (
 	EdgeUsers = "users"
 	// Table holds the table name of the role in the database.
 	Table = "roles"
-	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
-	UsersTable = "role_users"
+	// UsersTable is the table that holds the users relation/edge.
+	UsersTable = "users"
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
+	// UsersColumn is the table column denoting the users relation/edge.
+	UsersColumn = "role_users"
 )
 
 // Columns holds all SQL columns for role fields.
 var Columns = []string{
 	FieldID,
 }
-
-var (
-	// UsersPrimaryKey and UsersColumn2 are the table columns denoting the
-	// primary key for the users relation (M2M).
-	UsersPrimaryKey = []string{"role_id", "user_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

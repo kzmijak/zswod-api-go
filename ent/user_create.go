@@ -39,19 +39,23 @@ func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	return uc
 }
 
-// AddRoleIDs adds the "roles" edge to the Role entity by IDs.
-func (uc *UserCreate) AddRoleIDs(ids ...string) *UserCreate {
-	uc.mutation.AddRoleIDs(ids...)
+// SetRolesID sets the "roles" edge to the Role entity by ID.
+func (uc *UserCreate) SetRolesID(id string) *UserCreate {
+	uc.mutation.SetRolesID(id)
 	return uc
 }
 
-// AddRoles adds the "roles" edges to the Role entity.
-func (uc *UserCreate) AddRoles(r ...*Role) *UserCreate {
-	ids := make([]string, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableRolesID sets the "roles" edge to the Role entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableRolesID(id *string) *UserCreate {
+	if id != nil {
+		uc = uc.SetRolesID(*id)
 	}
-	return uc.AddRoleIDs(ids...)
+	return uc
+}
+
+// SetRoles sets the "roles" edge to the Role entity.
+func (uc *UserCreate) SetRoles(r *Role) *UserCreate {
+	return uc.SetRolesID(r.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -182,10 +186,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := uc.mutation.RolesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   user.RolesTable,
-			Columns: user.RolesPrimaryKey,
+			Columns: []string{user.RolesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -197,6 +201,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.role_users = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

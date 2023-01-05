@@ -4,11 +4,15 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kzmijak/zswod_api_go/models/role"
 	"github.com/kzmijak/zswod_api_go/services/user"
+	"golang.org/x/exp/slices"
 )
 
 const (
 	ErrPasswordsNotMatching = "ErrPasswordsNotMatching: Passwords should match"
+	ErrInvalidRole = "ErrInvalidRole: User has invalid role"
+	ErrForbiddenRole = "ErrForbiddenRole: Only website administrators can create users with this role"
 )
 
 func (c *Controller) GetAllUsers(ctx *gin.Context) {
@@ -38,6 +42,21 @@ func (c Controller) CreateUser(ctx *gin.Context) {
 		return
 	}
 
+	elevatedRoles := []role.Role{
+		role.Admin, 
+		role.Teacher,
+	}
+
+	requestRole, _ := role.FromString(requestBody.Role)
+	if slices.Contains(elevatedRoles, requestRole) {
+		tokenRole, err := c.ExtractTokenRole(ctx)
+
+		if err != nil || *tokenRole != role.Admin  {
+			ctx.JSON(http.StatusForbidden, ErrForbiddenRole)
+			return 
+		}
+	}
+	
 	if requestBody.Password != requestBody.PasswordConfirm {
 		ctx.JSON(http.StatusBadRequest, ErrPasswordsNotMatching)
 		return
@@ -83,5 +102,4 @@ func (c *Controller) GetCurrentUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, token)
-
 }

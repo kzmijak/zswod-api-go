@@ -52,14 +52,9 @@ func (c *Controller) Run() {
 	router.Use(cors.New(cors.Config{
         AllowOrigins:     []string{"http://sporlowd.pl:3000"},
         AllowMethods:     []string{"*"},
-        // AllowHeaders:     []string{"Origin, X-Requested-With, Content-Type, Accept"},
         AllowHeaders: []string{"*"},
         ExposeHeaders:    []string{"Content-Length"},
         AllowCredentials: true,
-        // AllowOriginFunc: func(origin string) bool {
-        //     return origin == "http://sporlowd.pl:3000"
-        // },
-        // MaxAge: 12 * time.Hour,
     }))
 
 	c.jwtService = jwt.New().WithConfig(c.cfg.Auth)
@@ -70,9 +65,8 @@ func (c *Controller) Run() {
 
 	v1 := router.Group("/api/v1")
 	{
-		users := v1.Group("/users")
+		users := v1.Group("/users").Use(c.RequireAuthenticated)
 		{
-			users.Use(c.JwtAuthMiddleware())
 			users.GET("", c.GetAllUsers)
 			users.GET("/current", c.GetCurrentUser)
 		}
@@ -82,18 +76,15 @@ func (c *Controller) Run() {
 			auth.POST("sign-in", c.SignIn)	
 		}
 
-		// TODO: Admin only
 		blob := v1.Group("/blob")
 		{
-			blob.POST("", c.UploadBlob)
+			blob.POST("", c.UploadBlob).Use(c.RequireTeacher)
 			blob.GET("/:uuid", c.GetBlobByUuid)
 		}
 
 		article := v1.Group("/article")
 		{
-			// TODO: Authorized users only
-			article.POST("/create", c.CreateArticle)
-
+			article.POST("/create", c.CreateArticle).Use(c.RequireTeacher)
 			article.GET("/:title", c.GetArticleByTitle)
 		}
 	}

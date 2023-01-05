@@ -4,7 +4,9 @@ import (
 	"context"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	entRole "github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/models/role"
 )
 
@@ -25,6 +27,10 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 	}
 
 	if err := seedRoles(ctx); err != nil {
+		return ErrSchemaCreationFail
+	}
+
+	if err := seedAdmin(ctx); err != nil {
 		return ErrSchemaCreationFail
 	}
 	
@@ -56,6 +62,21 @@ func seedRoles(ctx context.Context) error {
 	}
 
 	_, err = Client.Role.CreateBulk(bulk...).Save(ctx)
+
+	return err
+}
+
+func seedAdmin(ctx context.Context) error {
+	adminsCount, err := Client.Role.Query().Where(entRole.ID(role.Admin.String())).QueryUsers().Count(ctx)
+	if err != nil {
+		return ErrCouldNotQuery
+	}
+
+	if adminsCount > 0 {
+		return nil
+	}
+
+	err = Client.User.Create().SetID(uuid.UUID{}).SetEmail("root@sporlowd.pl").SetPassword("root").SetRolesID(role.Admin.String()).Exec(ctx)
 
 	return err
 }

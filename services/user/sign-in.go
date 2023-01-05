@@ -14,9 +14,11 @@ type SignInRequest struct {
 }
 
 const (
-	ErrUserNotFound = "err_user_not_found: Could not match any user with provided username"
-	ErrInvalidPassword = "err_invalid_password: Password for the user is incorrect"
-	ErrInvalidClaims = "err_invalid_claims: Could not generate token for this user"
+	ErrUserNotFound = "ErrUserNotFound: Could not match any user with provided username"
+	ErrInvalidPassword = "ErrInvalidPassword: Password for the user is incorrect"
+	ErrInvalidClaims = "ErrInvalidClaims: Could not generate token for this user"
+	ErrNoRoles = "ErrNoRoles: User has no roles and could not be retrieved"
+	ErrUnknownRole = "ErrUnknownRole: User has unknown roles and could not be retrieved"
 )
 
 func (s *UserService) SignIn(request SignInRequest) (string, error) {
@@ -25,15 +27,22 @@ func (s *UserService) SignIn(request SignInRequest) (string, error) {
 	if err != nil {
 		return "" ,errors.Error(ErrUserNotFound)
 	}
-
 	
+	userRole, err := user.QueryRoles().Only(s.ctx)
+	if err != nil {
+		return "", errors.Error(ErrNoRoles)
+	}
+
+	role, exists := role.FromString(userRole.ID)
+	if exists {
+		return "", errors.Error(ErrUnknownRole)
+	}
+
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password)); err != nil {
 		return "", errors.Error(ErrInvalidPassword)
 	}
 
-	// TODO: not everybody should be an admin!!!
-	// TODO: pass user guid not email
-	jwt, err := s.jwtService.GenerateToken(string(user.ID.String()), role.Admin)
+	jwt, err := s.jwtService.GenerateToken(string(user.ID.String()), role)
 
 	if err != nil {
 		return "", errors.Error(ErrInvalidClaims)

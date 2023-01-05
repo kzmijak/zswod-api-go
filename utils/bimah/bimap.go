@@ -29,8 +29,8 @@ func (bm BiMap[TEnum]) GetByKey(key TEnum) string {
 	return value
 }
 
-func (bm BiMap[TEnum]) GetByValue(value string) TEnum {
-	key := bm.valueKey[value]
+func (bm BiMap[TEnum]) GetByValue(value string) (TEnum, bool) {
+	key, exists := bm.valueKey[value]
 
-	return key
+	return key, exists
 }

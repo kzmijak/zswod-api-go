@@ -1,8 +1,7 @@
-{"level":"fatal","msg":"Failed to initialize databaseErrSchemaCreationFail: Failed creating schema resource","time":"2023-01-05T18:27:43+01:00"}
-"}
-00"}
-{"level":"trace","msg":"Uploading blob","time":"2022-12-28T19:50:58+01:00"}
-Creating user","time":"2022-12-24T16:56:21+01:00"}
-{"level":"error","msg":"invalid character '}' looking for beginning of object key string","time":"2022-12-24T16:56:21+01:00"}
-{"level":"trace","msg":"Creating user","time":"2022-12-24T16:56:34+01:00"}
-{"level":"error","msg":"err_user_already_exists: Failed to create user, user with provided email already exists","time":"2022-12-24T16:56:34+01:00"}
+{"level":"trace","msg":"Creating user","time":"2023-01-05T20:17:29+01:00"}
+{"level":"trace","msg":"Creating user","time":"2023-01-05T20:16:04+01:00"}
+{"level":"error","msg":"ErrUserAlreadyExists: Failed to create user, user with provided email already exists","time":"2023-01-05T20:16:04+01:00"}
+{"level":"trace","msg":"Creating user","time":"2023-01-05T20:16:19+01:00"}
+{"level":"trace","msg":"Creating user success","time":"2023-01-05T20:16:19+01:00"}
+{"level":"trace","msg":"Creating user","time":"2023-01-05T20:16:31+01:00"}
+ists: Failed to create user, user with provided email already exists","time":"2022-12-24T16:56:34+01:00"}

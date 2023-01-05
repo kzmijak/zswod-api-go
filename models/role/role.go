@@ -1,6 +1,9 @@
 package role
 
-import bimap "github.com/kzmijak/zswod_api_go/utils/bimah"
+import (
+	bimap "github.com/kzmijak/zswod_api_go/utils/bimah"
+	"golang.org/x/exp/slices"
+)
 
 type Role int 
 
@@ -12,6 +15,10 @@ const (
 	Student
 )
 
+var authority = []Role{
+	Admin, Teacher, LegalGuardian, Student, Unknown,
+}
+
 var roleStringMap = bimap.NewBiMap[Role]().
 	WithMember(Admin, "Admin").
 	WithMember(Teacher, "Teacher").
@@ -21,4 +28,12 @@ var roleStringMap = bimap.NewBiMap[Role]().
 
 func (r Role) String() string {
 	return roleStringMap.GetByKey(r)
+}
+
+func FromString(role string) (Role, bool) {
+	return roleStringMap.GetByValue(role)
+}
+
+func (r Role) OrHigher() []Role{
+	return authority[:slices.Index(authority, r)]
 }
