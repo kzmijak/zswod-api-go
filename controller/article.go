@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
 )
@@ -21,9 +22,17 @@ type CreateArticleBody struct {
 func (c *Controller) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleBody
 
+	tx, err := database.Client.Tx(c.ctx)
+	defer tx.Rollback()
+
+	if err != nil {
+		ctx.JSON(http.StatusConflict, err)
+		return
+	}
+
 	if err := ctx.BindJSON(&requestBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
-		return
+		return 
 	}
 
 	article, err := c.articleService.CreateArticle(requestBody.Article)
@@ -47,6 +56,7 @@ func (c *Controller) CreateArticle(ctx *gin.Context) {
 		}
 	}
 
+	tx.Commit()
 	ctx.IndentedJSON(http.StatusOK, article.ID)
 }
 

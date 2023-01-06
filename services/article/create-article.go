@@ -22,10 +22,14 @@ type CreateArticleRequest struct {
 	Content string `json:"content"`
 }
 
-func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, error) {
-	titleSanitized := sanitize(req.Title)
-	titleUrlFriendly := titleSanitized[:64]
 
+func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, error) {
+	const MAX_LENGTH = 64	
+
+	titleSanitized := sanitize(req.Title)
+	if len(titleSanitized) > MAX_LENGTH {
+		titleSanitized = titleSanitized[:MAX_LENGTH - 1]
+	}
 	
 	article, err := database.Client.Article.Create().
 		SetID(uuid.New()).
@@ -42,7 +46,7 @@ func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, e
 	_, err = database.Client.ArticleTitleGuid.
 		Create().
 		SetID(uuid.New()).
-		SetTitleNormalized(titleUrlFriendly).
+		SetTitleNormalized(titleSanitized).
 		SetArticle(article).
 		Save(s.ctx)
 
