@@ -45,7 +45,7 @@ var (
 	// BlobsColumns holds the columns for the "blobs" table.
 	BlobsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "blob", Type: field.TypeBytes},
+		{Name: "blob", Type: field.TypeBytes, SchemaType: map[string]string{"mysql": "mediumblob"}},
 		{Name: "content_type", Type: field.TypeString},
 	}
 	// BlobsTable holds the schema information for the "blobs" table.

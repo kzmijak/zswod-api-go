@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -15,7 +16,10 @@ type Blob struct {
 func (Blob) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
-		field.Bytes("blob"),
+		field.Bytes("blob").
+			SchemaType(map[string]string{
+			dialect.MySQL: "mediumblob",
+		}),
 		field.String("content_type"),
 	}
 }
