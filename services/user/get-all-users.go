@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ErrCouldNotQuery = "err_could_not_query: Failed to query for users"
+	ErrCouldNotQuery = "ErrCouldNotQuery: Failed to query for users"
 )
 
 func (s UserService) GetAllUsers() ([]*ent.User, error)  {

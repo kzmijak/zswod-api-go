@@ -34,7 +34,7 @@ func (s *UserService) SignIn(request SignInRequest) (string, error) {
 	}
 
 	role, exists := role.FromString(userRole.ID)
-	if exists {
+	if !exists {
 		return "", errors.Error(ErrUnknownRole)
 	}
 

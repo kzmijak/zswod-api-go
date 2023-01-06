@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ErrInvalidFile = "err_invalid_file: Failed to set logger output file"
+	ErrInvalidFile = "ErrInvalidFile: Failed to set logger output file"
 )
 
 type Logger struct {

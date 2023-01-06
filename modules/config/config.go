@@ -10,8 +10,8 @@ import (
 const baseConfigPath = "config/config.json"
 
 const (
-	ErrFileNotFound = errors.Error("err_file_not_found: Provided filename does not lead to any file")
-	ErrCannotParseJson = errors.Error("err_cannot_parse_json: Provided object failed to be parsed from JSON")
+	ErrFileNotFound = errors.Error("ErrFileNotFound: Provided filename does not lead to any file")
+	ErrCannotParseJson = errors.Error("ErrCannotParseJson: Provided object failed to be parsed from JSON")
 )
 
 func Initialize() (*Config, error) {

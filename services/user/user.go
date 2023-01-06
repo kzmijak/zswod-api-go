@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	ErrNoContext = "err_no_context: Context is required to run this method"
-	ErrNoJwtService = "err_no_jwt_service: Jwt Service instance is required to run this method"
+	ErrNoContext = "ErrNoContext: Context is required to run this method"
+	ErrNoJwtService = "ErrNoJwtService: Jwt Service instance is required to run this method"
 )
 
 type UserService struct {

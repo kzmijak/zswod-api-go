@@ -10,9 +10,9 @@ const (
 )
 
 const (
-	ErrConfigRequired= "err_config_required: Config is required to run this method"
-	ErrFailedToConvertLifespan = "err_failed_to_convert_lifespan: Failed to read lifespan from config"
-	ErrFailedSigningToken      = "err_failed_signing_token: Failed to sign token with secret from config"
+ErrConfigRequired						 = "ErrConfigRequired: Config is required to run this method"
+	ErrFailedToConvertLifespan = "ErrFailedToConvertLifespan: Failed to read lifespan from config"
+	ErrFailedSigningToken      = "ErrFailedSigningToken: Failed to sign token with secret from config"
 )
 
 type JwtService struct {

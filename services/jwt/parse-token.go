@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	ErrUnexpectedSigningMethod = "err_unexpected_signing_method: Unexpected signing method"
+	ErrUnexpectedSigningMethod = "ErrUnexpectedSigningMethod: Unexpected signing method"
 )
 
 func (s JwtService) ParseToken(tokenString string) (*jwt.Token, error) {
