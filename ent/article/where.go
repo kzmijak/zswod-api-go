@@ -103,7 +103,7 @@ func Content(v string) predicate.Article {
 	})
 }
 
-// UploadDate applies equality check predicate on the "upload_date" field. It's identical to UploadDateEQ.
+// UploadDate applies equality check predicate on the "uploadDate" field. It's identical to UploadDateEQ.
 func UploadDate(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUploadDate), v))
@@ -407,21 +407,21 @@ func ContentContainsFold(v string) predicate.Article {
 	})
 }
 
-// UploadDateEQ applies the EQ predicate on the "upload_date" field.
+// UploadDateEQ applies the EQ predicate on the "uploadDate" field.
 func UploadDateEQ(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUploadDate), v))
 	})
 }
 
-// UploadDateNEQ applies the NEQ predicate on the "upload_date" field.
+// UploadDateNEQ applies the NEQ predicate on the "uploadDate" field.
 func UploadDateNEQ(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldUploadDate), v))
 	})
 }
 
-// UploadDateIn applies the In predicate on the "upload_date" field.
+// UploadDateIn applies the In predicate on the "uploadDate" field.
 func UploadDateIn(vs ...time.Time) predicate.Article {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -432,7 +432,7 @@ func UploadDateIn(vs ...time.Time) predicate.Article {
 	})
 }
 
-// UploadDateNotIn applies the NotIn predicate on the "upload_date" field.
+// UploadDateNotIn applies the NotIn predicate on the "uploadDate" field.
 func UploadDateNotIn(vs ...time.Time) predicate.Article {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -443,28 +443,28 @@ func UploadDateNotIn(vs ...time.Time) predicate.Article {
 	})
 }
 
-// UploadDateGT applies the GT predicate on the "upload_date" field.
+// UploadDateGT applies the GT predicate on the "uploadDate" field.
 func UploadDateGT(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldUploadDate), v))
 	})
 }
 
-// UploadDateGTE applies the GTE predicate on the "upload_date" field.
+// UploadDateGTE applies the GTE predicate on the "uploadDate" field.
 func UploadDateGTE(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldUploadDate), v))
 	})
 }
 
-// UploadDateLT applies the LT predicate on the "upload_date" field.
+// UploadDateLT applies the LT predicate on the "uploadDate" field.
 func UploadDateLT(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldUploadDate), v))
 	})
 }
 
-// UploadDateLTE applies the LTE predicate on the "upload_date" field.
+// UploadDateLTE applies the LTE predicate on the "uploadDate" field.
 func UploadDateLTE(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUploadDate), v))
@@ -499,7 +499,7 @@ func HasImagesWith(preds ...predicate.Image) predicate.Article {
 	})
 }
 
-// HasTitleNormalized applies the HasEdge predicate on the "title_normalized" edge.
+// HasTitleNormalized applies the HasEdge predicate on the "titleNormalized" edge.
 func HasTitleNormalized() predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -511,7 +511,7 @@ func HasTitleNormalized() predicate.Article {
 	})
 }
 
-// HasTitleNormalizedWith applies the HasEdge predicate on the "title_normalized" edge with a given conditions (other predicates).
+// HasTitleNormalizedWith applies the HasEdge predicate on the "titleNormalized" edge with a given conditions (other predicates).
 func HasTitleNormalizedWith(preds ...predicate.ArticleTitleGuid) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(

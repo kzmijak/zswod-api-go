@@ -7,7 +7,7 @@ const (
 	Label = "article_title_guid"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldTitleNormalized holds the string denoting the title_normalized field in the database.
+	// FieldTitleNormalized holds the string denoting the titlenormalized field in the database.
 	FieldTitleNormalized = "title_normalized"
 	// EdgeArticle holds the string denoting the article edge name in mutations.
 	EdgeArticle = "article"

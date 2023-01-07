@@ -86,7 +86,7 @@ func Blob(v []byte) predicate.Blob {
 	})
 }
 
-// ContentType applies equality check predicate on the "content_type" field. It's identical to ContentTypeEQ.
+// ContentType applies equality check predicate on the "contentType" field. It's identical to ContentTypeEQ.
 func ContentType(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldContentType), v))
@@ -157,21 +157,21 @@ func BlobLTE(v []byte) predicate.Blob {
 	})
 }
 
-// ContentTypeEQ applies the EQ predicate on the "content_type" field.
+// ContentTypeEQ applies the EQ predicate on the "contentType" field.
 func ContentTypeEQ(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeNEQ applies the NEQ predicate on the "content_type" field.
+// ContentTypeNEQ applies the NEQ predicate on the "contentType" field.
 func ContentTypeNEQ(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeIn applies the In predicate on the "content_type" field.
+// ContentTypeIn applies the In predicate on the "contentType" field.
 func ContentTypeIn(vs ...string) predicate.Blob {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -182,7 +182,7 @@ func ContentTypeIn(vs ...string) predicate.Blob {
 	})
 }
 
-// ContentTypeNotIn applies the NotIn predicate on the "content_type" field.
+// ContentTypeNotIn applies the NotIn predicate on the "contentType" field.
 func ContentTypeNotIn(vs ...string) predicate.Blob {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -193,63 +193,63 @@ func ContentTypeNotIn(vs ...string) predicate.Blob {
 	})
 }
 
-// ContentTypeGT applies the GT predicate on the "content_type" field.
+// ContentTypeGT applies the GT predicate on the "contentType" field.
 func ContentTypeGT(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeGTE applies the GTE predicate on the "content_type" field.
+// ContentTypeGTE applies the GTE predicate on the "contentType" field.
 func ContentTypeGTE(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeLT applies the LT predicate on the "content_type" field.
+// ContentTypeLT applies the LT predicate on the "contentType" field.
 func ContentTypeLT(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeLTE applies the LTE predicate on the "content_type" field.
+// ContentTypeLTE applies the LTE predicate on the "contentType" field.
 func ContentTypeLTE(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeContains applies the Contains predicate on the "content_type" field.
+// ContentTypeContains applies the Contains predicate on the "contentType" field.
 func ContentTypeContains(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.Contains(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeHasPrefix applies the HasPrefix predicate on the "content_type" field.
+// ContentTypeHasPrefix applies the HasPrefix predicate on the "contentType" field.
 func ContentTypeHasPrefix(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.HasPrefix(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeHasSuffix applies the HasSuffix predicate on the "content_type" field.
+// ContentTypeHasSuffix applies the HasSuffix predicate on the "contentType" field.
 func ContentTypeHasSuffix(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeEqualFold applies the EqualFold predicate on the "content_type" field.
+// ContentTypeEqualFold applies the EqualFold predicate on the "contentType" field.
 func ContentTypeEqualFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.EqualFold(s.C(FieldContentType), v))
 	})
 }
 
-// ContentTypeContainsFold applies the ContainsFold predicate on the "content_type" field.
+// ContentTypeContainsFold applies the ContainsFold predicate on the "contentType" field.
 func ContentTypeContainsFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldContentType), v))

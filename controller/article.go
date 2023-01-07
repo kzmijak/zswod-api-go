@@ -9,6 +9,11 @@ import (
 	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
+const (
+	ErrInvalidOffset = "ErrInvalidOffset: Offset is invalid"
+	ErrInvalidAmount = "ErrInvalidAmount: Amount is invalid"
+)
+
 type ImageBody struct {
 	Title string `json:"title"`
 	Alt string `json:"alt"`		
@@ -21,24 +26,25 @@ type CreateArticleBody struct {
 
 func (c *Controller) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleBody
+	var err error
+	var status = http.StatusBadRequest
+	defer handleError(&err, ctx, &status)
 
 	tx, err := database.Client.Tx(c.ctx)
 	defer tx.Rollback()
 
 	if err != nil {
-		ctx.JSON(http.StatusConflict, err)
+		status = http.StatusConflict
 		return
 	}
 
 	if err := ctx.BindJSON(&requestBody); err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
 		return 
 	}
 
 	article, err := c.articleService.CreateArticle(requestBody.Article)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 
@@ -51,7 +57,6 @@ func (c *Controller) CreateArticle(ctx *gin.Context) {
 		})
 
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, err)
 			return
 		}
 	}
@@ -66,9 +71,30 @@ func (c *Controller) GetArticleByTitle(ctx *gin.Context) {
 	response, err := c.articleService.GetArticleByTitle(titleString)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		handleError(&err, ctx)
 		return
 	}
 
 	ctx.IndentedJSON(http.StatusOK, response)
+}
+
+type GetArticleHeadersRequest struct {
+	Offset int `form:"offset"`
+	Amount int `form:"amount"`
+}
+func (c *Controller) GetArticleHeadersList(ctx *gin.Context) {
+	var query GetArticleHeadersRequest
+	var err error
+	defer handleError(&err, ctx)
+	
+	if err = ctx.ShouldBindQuery(&query); err != nil {
+		return
+	}
+	
+	headers, err := c.articleService.GetArticleHeaders(query.Amount, query.Offset)
+	if err != nil {
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, headers)
 }

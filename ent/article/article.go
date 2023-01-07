@@ -13,12 +13,12 @@ const (
 	FieldShort = "short"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldUploadDate holds the string denoting the upload_date field in the database.
+	// FieldUploadDate holds the string denoting the uploaddate field in the database.
 	FieldUploadDate = "upload_date"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
-	// EdgeTitleNormalized holds the string denoting the title_normalized edge name in mutations.
-	EdgeTitleNormalized = "title_normalized"
+	// EdgeTitleNormalized holds the string denoting the titlenormalized edge name in mutations.
+	EdgeTitleNormalized = "titleNormalized"
 	// Table holds the table name of the article in the database.
 	Table = "articles"
 	// ImagesTable is the table that holds the images relation/edge.
@@ -28,12 +28,12 @@ const (
 	ImagesInverseTable = "images"
 	// ImagesColumn is the table column denoting the images relation/edge.
 	ImagesColumn = "article_images"
-	// TitleNormalizedTable is the table that holds the title_normalized relation/edge.
+	// TitleNormalizedTable is the table that holds the titleNormalized relation/edge.
 	TitleNormalizedTable = "article_title_guids"
 	// TitleNormalizedInverseTable is the table name for the ArticleTitleGuid entity.
 	// It exists in this package in order to avoid circular dependency with the "articletitleguid" package.
 	TitleNormalizedInverseTable = "article_title_guids"
-	// TitleNormalizedColumn is the table column denoting the title_normalized relation/edge.
+	// TitleNormalizedColumn is the table column denoting the titleNormalized relation/edge.
 	TitleNormalizedColumn = "article_title_normalized"
 )
 

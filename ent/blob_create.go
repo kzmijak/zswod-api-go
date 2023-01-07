@@ -26,7 +26,7 @@ func (bc *BlobCreate) SetBlob(b []byte) *BlobCreate {
 	return bc
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (bc *BlobCreate) SetContentType(s string) *BlobCreate {
 	bc.mutation.SetContentType(s)
 	return bc
@@ -118,7 +118,7 @@ func (bc *BlobCreate) check() error {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Blob.blob"`)}
 	}
 	if _, ok := bc.mutation.ContentType(); !ok {
-		return &ValidationError{Name: "content_type", err: errors.New(`ent: missing required field "Blob.content_type"`)}
+		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
 	}
 	return nil
 }

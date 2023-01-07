@@ -21,7 +21,7 @@ type ArticleTitleGuidCreate struct {
 	hooks    []Hook
 }
 
-// SetTitleNormalized sets the "title_normalized" field.
+// SetTitleNormalized sets the "titleNormalized" field.
 func (atgc *ArticleTitleGuidCreate) SetTitleNormalized(s string) *ArticleTitleGuidCreate {
 	atgc.mutation.SetTitleNormalized(s)
 	return atgc
@@ -121,7 +121,7 @@ func (atgc *ArticleTitleGuidCreate) ExecX(ctx context.Context) {
 // check runs all checks and user-defined validators on the builder.
 func (atgc *ArticleTitleGuidCreate) check() error {
 	if _, ok := atgc.mutation.TitleNormalized(); !ok {
-		return &ValidationError{Name: "title_normalized", err: errors.New(`ent: missing required field "ArticleTitleGuid.title_normalized"`)}
+		return &ValidationError{Name: "titleNormalized", err: errors.New(`ent: missing required field "ArticleTitleGuid.titleNormalized"`)}
 	}
 	if _, ok := atgc.mutation.ArticleID(); !ok {
 		return &ValidationError{Name: "article", err: errors.New(`ent: missing required edge "ArticleTitleGuid.article"`)}

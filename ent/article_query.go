@@ -87,7 +87,7 @@ func (aq *ArticleQuery) QueryImages() *ImageQuery {
 	return query
 }
 
-// QueryTitleNormalized chains the current query on the "title_normalized" edge.
+// QueryTitleNormalized chains the current query on the "titleNormalized" edge.
 func (aq *ArticleQuery) QueryTitleNormalized() *ArticleTitleGuidQuery {
 	query := &ArticleTitleGuidQuery{config: aq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -311,7 +311,7 @@ func (aq *ArticleQuery) WithImages(opts ...func(*ImageQuery)) *ArticleQuery {
 }
 
 // WithTitleNormalized tells the query-builder to eager-load the nodes that are connected to
-// the "title_normalized" edge. The optional arguments are used to configure the query builder of the edge.
+// the "titleNormalized" edge. The optional arguments are used to configure the query builder of the edge.
 func (aq *ArticleQuery) WithTitleNormalized(opts ...func(*ArticleTitleGuidQuery)) *ArticleQuery {
 	query := &ArticleTitleGuidQuery{config: aq.config}
 	for _, opt := range opts {

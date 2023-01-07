@@ -9,7 +9,7 @@ const (
 	FieldID = "id"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
-	// FieldContentType holds the string denoting the content_type field in the database.
+	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
 	// Table holds the table name of the blob in the database.
 	Table = "blobs"

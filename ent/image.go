@@ -24,8 +24,8 @@ type Image struct {
 	Alt string `json:"alt,omitempty"`
 	// URL holds the value of the "url" field.
 	URL string `json:"url,omitempty"`
-	// UploadDate holds the value of the "upload_date" field.
-	UploadDate time.Time `json:"upload_date,omitempty"`
+	// UploadDate holds the value of the "uploadDate" field.
+	UploadDate time.Time `json:"uploadDate,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges          ImageEdges `json:"edges"`
@@ -108,7 +108,7 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			}
 		case image.FieldUploadDate:
 			if value, ok := values[j].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field upload_date", values[j])
+				return fmt.Errorf("unexpected type %T for field uploadDate", values[j])
 			} else if value.Valid {
 				i.UploadDate = value.Time
 			}
@@ -161,7 +161,7 @@ func (i *Image) String() string {
 	builder.WriteString("url=")
 	builder.WriteString(i.URL)
 	builder.WriteString(", ")
-	builder.WriteString("upload_date=")
+	builder.WriteString("uploadDate=")
 	builder.WriteString(i.UploadDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()

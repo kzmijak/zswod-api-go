@@ -29,7 +29,7 @@ func (atgu *ArticleTitleGuidUpdate) Where(ps ...predicate.ArticleTitleGuid) *Art
 	return atgu
 }
 
-// SetTitleNormalized sets the "title_normalized" field.
+// SetTitleNormalized sets the "titleNormalized" field.
 func (atgu *ArticleTitleGuidUpdate) SetTitleNormalized(s string) *ArticleTitleGuidUpdate {
 	atgu.mutation.SetTitleNormalized(s)
 	return atgu
@@ -200,7 +200,7 @@ type ArticleTitleGuidUpdateOne struct {
 	mutation *ArticleTitleGuidMutation
 }
 
-// SetTitleNormalized sets the "title_normalized" field.
+// SetTitleNormalized sets the "titleNormalized" field.
 func (atguo *ArticleTitleGuidUpdateOne) SetTitleNormalized(s string) *ArticleTitleGuidUpdateOne {
 	atguo.mutation.SetTitleNormalized(s)
 	return atguo

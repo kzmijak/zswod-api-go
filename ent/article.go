@@ -24,8 +24,8 @@ type Article struct {
 	Short string `json:"short,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
-	// UploadDate holds the value of the "upload_date" field.
-	UploadDate time.Time `json:"upload_date,omitempty"`
+	// UploadDate holds the value of the "uploadDate" field.
+	UploadDate time.Time `json:"uploadDate,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
 	Edges ArticleEdges `json:"edges"`
@@ -35,8 +35,8 @@ type Article struct {
 type ArticleEdges struct {
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
-	// TitleNormalized holds the value of the title_normalized edge.
-	TitleNormalized *ArticleTitleGuid `json:"title_normalized,omitempty"`
+	// TitleNormalized holds the value of the titleNormalized edge.
+	TitleNormalized *ArticleTitleGuid `json:"titleNormalized,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -61,7 +61,7 @@ func (e ArticleEdges) TitleNormalizedOrErr() (*ArticleTitleGuid, error) {
 		}
 		return e.TitleNormalized, nil
 	}
-	return nil, &NotLoadedError{edge: "title_normalized"}
+	return nil, &NotLoadedError{edge: "titleNormalized"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -116,7 +116,7 @@ func (a *Article) assignValues(columns []string, values []any) error {
 			}
 		case article.FieldUploadDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field upload_date", values[i])
+				return fmt.Errorf("unexpected type %T for field uploadDate", values[i])
 			} else if value.Valid {
 				a.UploadDate = value.Time
 			}
@@ -130,7 +130,7 @@ func (a *Article) QueryImages() *ImageQuery {
 	return (&ArticleClient{config: a.config}).QueryImages(a)
 }
 
-// QueryTitleNormalized queries the "title_normalized" edge of the Article entity.
+// QueryTitleNormalized queries the "titleNormalized" edge of the Article entity.
 func (a *Article) QueryTitleNormalized() *ArticleTitleGuidQuery {
 	return (&ArticleClient{config: a.config}).QueryTitleNormalized(a)
 }
@@ -167,7 +167,7 @@ func (a *Article) String() string {
 	builder.WriteString("content=")
 	builder.WriteString(a.Content)
 	builder.WriteString(", ")
-	builder.WriteString("upload_date=")
+	builder.WriteString("uploadDate=")
 	builder.WriteString(a.UploadDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()

@@ -16,13 +16,13 @@ type ArticleTitleGuid struct {
 func (ArticleTitleGuid) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
-		field.String("title_normalized").Unique(),
+		field.String("titleNormalized").Unique(),
 	}
 }
 
 // Edges of the ArticleTitleGuid.
 func (ArticleTitleGuid) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("article", Article.Type).Ref("title_normalized").Unique().Required(),
+		edge.From("article", Article.Type).Ref("titleNormalized").Unique().Required(),
 	}
 }

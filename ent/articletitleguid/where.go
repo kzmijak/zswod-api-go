@@ -80,28 +80,28 @@ func IDLTE(id uuid.UUID) predicate.ArticleTitleGuid {
 	})
 }
 
-// TitleNormalized applies equality check predicate on the "title_normalized" field. It's identical to TitleNormalizedEQ.
+// TitleNormalized applies equality check predicate on the "titleNormalized" field. It's identical to TitleNormalizedEQ.
 func TitleNormalized(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedEQ applies the EQ predicate on the "title_normalized" field.
+// TitleNormalizedEQ applies the EQ predicate on the "titleNormalized" field.
 func TitleNormalizedEQ(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedNEQ applies the NEQ predicate on the "title_normalized" field.
+// TitleNormalizedNEQ applies the NEQ predicate on the "titleNormalized" field.
 func TitleNormalizedNEQ(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedIn applies the In predicate on the "title_normalized" field.
+// TitleNormalizedIn applies the In predicate on the "titleNormalized" field.
 func TitleNormalizedIn(vs ...string) predicate.ArticleTitleGuid {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -112,7 +112,7 @@ func TitleNormalizedIn(vs ...string) predicate.ArticleTitleGuid {
 	})
 }
 
-// TitleNormalizedNotIn applies the NotIn predicate on the "title_normalized" field.
+// TitleNormalizedNotIn applies the NotIn predicate on the "titleNormalized" field.
 func TitleNormalizedNotIn(vs ...string) predicate.ArticleTitleGuid {
 	v := make([]any, len(vs))
 	for i := range v {
@@ -123,63 +123,63 @@ func TitleNormalizedNotIn(vs ...string) predicate.ArticleTitleGuid {
 	})
 }
 
-// TitleNormalizedGT applies the GT predicate on the "title_normalized" field.
+// TitleNormalizedGT applies the GT predicate on the "titleNormalized" field.
 func TitleNormalizedGT(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedGTE applies the GTE predicate on the "title_normalized" field.
+// TitleNormalizedGTE applies the GTE predicate on the "titleNormalized" field.
 func TitleNormalizedGTE(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedLT applies the LT predicate on the "title_normalized" field.
+// TitleNormalizedLT applies the LT predicate on the "titleNormalized" field.
 func TitleNormalizedLT(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedLTE applies the LTE predicate on the "title_normalized" field.
+// TitleNormalizedLTE applies the LTE predicate on the "titleNormalized" field.
 func TitleNormalizedLTE(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedContains applies the Contains predicate on the "title_normalized" field.
+// TitleNormalizedContains applies the Contains predicate on the "titleNormalized" field.
 func TitleNormalizedContains(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.Contains(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedHasPrefix applies the HasPrefix predicate on the "title_normalized" field.
+// TitleNormalizedHasPrefix applies the HasPrefix predicate on the "titleNormalized" field.
 func TitleNormalizedHasPrefix(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.HasPrefix(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedHasSuffix applies the HasSuffix predicate on the "title_normalized" field.
+// TitleNormalizedHasSuffix applies the HasSuffix predicate on the "titleNormalized" field.
 func TitleNormalizedHasSuffix(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedEqualFold applies the EqualFold predicate on the "title_normalized" field.
+// TitleNormalizedEqualFold applies the EqualFold predicate on the "titleNormalized" field.
 func TitleNormalizedEqualFold(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.EqualFold(s.C(FieldTitleNormalized), v))
 	})
 }
 
-// TitleNormalizedContainsFold applies the ContainsFold predicate on the "title_normalized" field.
+// TitleNormalizedContainsFold applies the ContainsFold predicate on the "titleNormalized" field.
 func TitleNormalizedContainsFold(v string) predicate.ArticleTitleGuid {
 	return predicate.ArticleTitleGuid(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldTitleNormalized), v))

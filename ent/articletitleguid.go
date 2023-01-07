@@ -17,8 +17,8 @@ type ArticleTitleGuid struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// TitleNormalized holds the value of the "title_normalized" field.
-	TitleNormalized string `json:"title_normalized,omitempty"`
+	// TitleNormalized holds the value of the "titleNormalized" field.
+	TitleNormalized string `json:"titleNormalized,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleTitleGuidQuery when eager-loading is set.
 	Edges                    ArticleTitleGuidEdges `json:"edges"`
@@ -81,7 +81,7 @@ func (atg *ArticleTitleGuid) assignValues(columns []string, values []any) error 
 			}
 		case articletitleguid.FieldTitleNormalized:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title_normalized", values[i])
+				return fmt.Errorf("unexpected type %T for field titleNormalized", values[i])
 			} else if value.Valid {
 				atg.TitleNormalized = value.String
 			}
@@ -125,7 +125,7 @@ func (atg *ArticleTitleGuid) String() string {
 	var builder strings.Builder
 	builder.WriteString("ArticleTitleGuid(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", atg.ID))
-	builder.WriteString("title_normalized=")
+	builder.WriteString("titleNormalized=")
 	builder.WriteString(atg.TitleNormalized)
 	builder.WriteByte(')')
 	return builder.String()

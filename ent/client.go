@@ -260,7 +260,7 @@ func (c *ArticleClient) QueryImages(a *Article) *ImageQuery {
 	return query
 }
 
-// QueryTitleNormalized queries the title_normalized edge of a Article.
+// QueryTitleNormalized queries the titleNormalized edge of a Article.
 func (c *ArticleClient) QueryTitleNormalized(a *Article) *ArticleTitleGuidQuery {
 	query := &ArticleTitleGuidQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {

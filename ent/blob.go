@@ -18,8 +18,8 @@ type Blob struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
-	// ContentType holds the value of the "content_type" field.
-	ContentType string `json:"content_type,omitempty"`
+	// ContentType holds the value of the "contentType" field.
+	ContentType string `json:"contentType,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -62,7 +62,7 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 			}
 		case blob.FieldContentType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field content_type", values[i])
+				return fmt.Errorf("unexpected type %T for field contentType", values[i])
 			} else if value.Valid {
 				b.ContentType = value.String
 			}
@@ -97,7 +97,7 @@ func (b *Blob) String() string {
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", b.Blob))
 	builder.WriteString(", ")
-	builder.WriteString("content_type=")
+	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)
 	builder.WriteByte(')')
 	return builder.String()

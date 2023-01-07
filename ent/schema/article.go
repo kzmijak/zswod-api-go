@@ -19,7 +19,7 @@ func (Article) Fields() []ent.Field {
 		field.String("title").MinLen(6).MaxLen(32),
 		field.String("short").MinLen(12).MaxLen(128),
 		field.String("content"),
-		field.Time("upload_date"),
+		field.Time("uploadDate"),
 	}
 }
 
@@ -27,6 +27,6 @@ func (Article) Fields() []ent.Field {
 func (Article) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("images", Image.Type),
-		edge.To("title_normalized", ArticleTitleGuid.Type).Unique(),
+		edge.To("titleNormalized", ArticleTitleGuid.Type).Unique(),
 	}
 }

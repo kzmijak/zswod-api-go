@@ -41,7 +41,7 @@ func (ac *ArticleCreate) SetContent(s string) *ArticleCreate {
 	return ac
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (ac *ArticleCreate) SetUploadDate(t time.Time) *ArticleCreate {
 	ac.mutation.SetUploadDate(t)
 	return ac
@@ -68,13 +68,13 @@ func (ac *ArticleCreate) AddImages(i ...*Image) *ArticleCreate {
 	return ac.AddImageIDs(ids...)
 }
 
-// SetTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID.
+// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (ac *ArticleCreate) SetTitleNormalizedID(id uuid.UUID) *ArticleCreate {
 	ac.mutation.SetTitleNormalizedID(id)
 	return ac
 }
 
-// SetNillableTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
+// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
 func (ac *ArticleCreate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleCreate {
 	if id != nil {
 		ac = ac.SetTitleNormalizedID(*id)
@@ -82,7 +82,7 @@ func (ac *ArticleCreate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleCre
 	return ac
 }
 
-// SetTitleNormalized sets the "title_normalized" edge to the ArticleTitleGuid entity.
+// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (ac *ArticleCreate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleCreate {
 	return ac.SetTitleNormalizedID(a.ID)
 }
@@ -183,7 +183,7 @@ func (ac *ArticleCreate) check() error {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Article.content"`)}
 	}
 	if _, ok := ac.mutation.UploadDate(); !ok {
-		return &ValidationError{Name: "upload_date", err: errors.New(`ent: missing required field "Article.upload_date"`)}
+		return &ValidationError{Name: "uploadDate", err: errors.New(`ent: missing required field "Article.uploadDate"`)}
 	}
 	return nil
 }

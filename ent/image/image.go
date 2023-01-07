@@ -13,7 +13,7 @@ const (
 	FieldAlt = "alt"
 	// FieldURL holds the string denoting the url field in the database.
 	FieldURL = "url"
-	// FieldUploadDate holds the string denoting the upload_date field in the database.
+	// FieldUploadDate holds the string denoting the uploaddate field in the database.
 	FieldUploadDate = "upload_date"
 	// EdgeArticle holds the string denoting the article edge name in mutations.
 	EdgeArticle = "article"

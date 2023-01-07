@@ -35,7 +35,7 @@ var (
 		PrimaryKey: []*schema.Column{ArticleTitleGuidsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "article_title_guids_articles_title_normalized",
+				Symbol:     "article_title_guids_articles_titleNormalized",
 				Columns:    []*schema.Column{ArticleTitleGuidsColumns[2]},
 				RefColumns: []*schema.Column{ArticlesColumns[0]},
 				OnDelete:   schema.NoAction,

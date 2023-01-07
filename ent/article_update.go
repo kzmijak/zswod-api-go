@@ -49,7 +49,7 @@ func (au *ArticleUpdate) SetContent(s string) *ArticleUpdate {
 	return au
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (au *ArticleUpdate) SetUploadDate(t time.Time) *ArticleUpdate {
 	au.mutation.SetUploadDate(t)
 	return au
@@ -70,13 +70,13 @@ func (au *ArticleUpdate) AddImages(i ...*Image) *ArticleUpdate {
 	return au.AddImageIDs(ids...)
 }
 
-// SetTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID.
+// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (au *ArticleUpdate) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdate {
 	au.mutation.SetTitleNormalizedID(id)
 	return au
 }
 
-// SetNillableTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
+// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
 func (au *ArticleUpdate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleUpdate {
 	if id != nil {
 		au = au.SetTitleNormalizedID(*id)
@@ -84,7 +84,7 @@ func (au *ArticleUpdate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleUpd
 	return au
 }
 
-// SetTitleNormalized sets the "title_normalized" edge to the ArticleTitleGuid entity.
+// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (au *ArticleUpdate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpdate {
 	return au.SetTitleNormalizedID(a.ID)
 }
@@ -115,7 +115,7 @@ func (au *ArticleUpdate) RemoveImages(i ...*Image) *ArticleUpdate {
 	return au.RemoveImageIDs(ids...)
 }
 
-// ClearTitleNormalized clears the "title_normalized" edge to the ArticleTitleGuid entity.
+// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (au *ArticleUpdate) ClearTitleNormalized() *ArticleUpdate {
 	au.mutation.ClearTitleNormalized()
 	return au
@@ -352,7 +352,7 @@ func (auo *ArticleUpdateOne) SetContent(s string) *ArticleUpdateOne {
 	return auo
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (auo *ArticleUpdateOne) SetUploadDate(t time.Time) *ArticleUpdateOne {
 	auo.mutation.SetUploadDate(t)
 	return auo
@@ -373,13 +373,13 @@ func (auo *ArticleUpdateOne) AddImages(i ...*Image) *ArticleUpdateOne {
 	return auo.AddImageIDs(ids...)
 }
 
-// SetTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID.
+// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (auo *ArticleUpdateOne) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.SetTitleNormalizedID(id)
 	return auo
 }
 
-// SetNillableTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
+// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
 func (auo *ArticleUpdateOne) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleUpdateOne {
 	if id != nil {
 		auo = auo.SetTitleNormalizedID(*id)
@@ -387,7 +387,7 @@ func (auo *ArticleUpdateOne) SetNillableTitleNormalizedID(id *uuid.UUID) *Articl
 	return auo
 }
 
-// SetTitleNormalized sets the "title_normalized" edge to the ArticleTitleGuid entity.
+// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (auo *ArticleUpdateOne) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpdateOne {
 	return auo.SetTitleNormalizedID(a.ID)
 }
@@ -418,7 +418,7 @@ func (auo *ArticleUpdateOne) RemoveImages(i ...*Image) *ArticleUpdateOne {
 	return auo.RemoveImageIDs(ids...)
 }
 
-// ClearTitleNormalized clears the "title_normalized" edge to the ArticleTitleGuid entity.
+// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (auo *ArticleUpdateOne) ClearTitleNormalized() *ArticleUpdateOne {
 	auo.mutation.ClearTitleNormalized()
 	return auo

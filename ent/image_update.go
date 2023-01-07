@@ -48,7 +48,7 @@ func (iu *ImageUpdate) SetURL(s string) *ImageUpdate {
 	return iu
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (iu *ImageUpdate) SetUploadDate(t time.Time) *ImageUpdate {
 	iu.mutation.SetUploadDate(t)
 	return iu
@@ -240,7 +240,7 @@ func (iuo *ImageUpdateOne) SetURL(s string) *ImageUpdateOne {
 	return iuo
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (iuo *ImageUpdateOne) SetUploadDate(t time.Time) *ImageUpdateOne {
 	iuo.mutation.SetUploadDate(t)
 	return iuo

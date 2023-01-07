@@ -84,8 +84,9 @@ func (c *Controller) Run() {
 
 		article := v1.Group("/article")
 		{
-			article.POST("/create", c.CreateArticle).Use(c.RequireTeacher)
 			article.GET("/:title", c.GetArticleByTitle)
+			article.GET("", c.GetArticleHeadersList)
+			article.POST("/create", c.CreateArticle).Use(c.RequireTeacher)
 		}
 	}
 

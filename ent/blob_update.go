@@ -33,7 +33,7 @@ func (bu *BlobUpdate) SetBlob(b []byte) *BlobUpdate {
 	return bu
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (bu *BlobUpdate) SetContentType(s string) *BlobUpdate {
 	bu.mutation.SetContentType(s)
 	return bu
@@ -147,7 +147,7 @@ func (buo *BlobUpdateOne) SetBlob(b []byte) *BlobUpdateOne {
 	return buo
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (buo *BlobUpdateOne) SetContentType(s string) *BlobUpdateOne {
 	buo.mutation.SetContentType(s)
 	return buo

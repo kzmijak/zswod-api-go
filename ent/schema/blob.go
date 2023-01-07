@@ -20,7 +20,7 @@ func (Blob) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumblob",
 		}),
-		field.String("content_type"),
+		field.String("contentType"),
 	}
 }
 

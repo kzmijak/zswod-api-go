@@ -41,22 +41,22 @@ const (
 // ArticleMutation represents an operation that mutates the Article nodes in the graph.
 type ArticleMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	title                   *string
-	short                   *string
-	content                 *string
-	upload_date             *time.Time
-	clearedFields           map[string]struct{}
-	images                  map[uuid.UUID]struct{}
-	removedimages           map[uuid.UUID]struct{}
-	clearedimages           bool
-	title_normalized        *uuid.UUID
-	clearedtitle_normalized bool
-	done                    bool
-	oldValue                func(context.Context) (*Article, error)
-	predicates              []predicate.Article
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	title                  *string
+	short                  *string
+	content                *string
+	uploadDate             *time.Time
+	clearedFields          map[string]struct{}
+	images                 map[uuid.UUID]struct{}
+	removedimages          map[uuid.UUID]struct{}
+	clearedimages          bool
+	titleNormalized        *uuid.UUID
+	clearedtitleNormalized bool
+	done                   bool
+	oldValue               func(context.Context) (*Article, error)
+	predicates             []predicate.Article
 }
 
 var _ ent.Mutation = (*ArticleMutation)(nil)
@@ -271,21 +271,21 @@ func (m *ArticleMutation) ResetContent() {
 	m.content = nil
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (m *ArticleMutation) SetUploadDate(t time.Time) {
-	m.upload_date = &t
+	m.uploadDate = &t
 }
 
-// UploadDate returns the value of the "upload_date" field in the mutation.
+// UploadDate returns the value of the "uploadDate" field in the mutation.
 func (m *ArticleMutation) UploadDate() (r time.Time, exists bool) {
-	v := m.upload_date
+	v := m.uploadDate
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUploadDate returns the old "upload_date" field's value of the Article entity.
+// OldUploadDate returns the old "uploadDate" field's value of the Article entity.
 // If the Article object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *ArticleMutation) OldUploadDate(ctx context.Context) (v time.Time, err error) {
@@ -302,9 +302,9 @@ func (m *ArticleMutation) OldUploadDate(ctx context.Context) (v time.Time, err e
 	return oldValue.UploadDate, nil
 }
 
-// ResetUploadDate resets all changes to the "upload_date" field.
+// ResetUploadDate resets all changes to the "uploadDate" field.
 func (m *ArticleMutation) ResetUploadDate() {
-	m.upload_date = nil
+	m.uploadDate = nil
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by ids.
@@ -361,43 +361,43 @@ func (m *ArticleMutation) ResetImages() {
 	m.removedimages = nil
 }
 
-// SetTitleNormalizedID sets the "title_normalized" edge to the ArticleTitleGuid entity by id.
+// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by id.
 func (m *ArticleMutation) SetTitleNormalizedID(id uuid.UUID) {
-	m.title_normalized = &id
+	m.titleNormalized = &id
 }
 
-// ClearTitleNormalized clears the "title_normalized" edge to the ArticleTitleGuid entity.
+// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (m *ArticleMutation) ClearTitleNormalized() {
-	m.clearedtitle_normalized = true
+	m.clearedtitleNormalized = true
 }
 
-// TitleNormalizedCleared reports if the "title_normalized" edge to the ArticleTitleGuid entity was cleared.
+// TitleNormalizedCleared reports if the "titleNormalized" edge to the ArticleTitleGuid entity was cleared.
 func (m *ArticleMutation) TitleNormalizedCleared() bool {
-	return m.clearedtitle_normalized
+	return m.clearedtitleNormalized
 }
 
-// TitleNormalizedID returns the "title_normalized" edge ID in the mutation.
+// TitleNormalizedID returns the "titleNormalized" edge ID in the mutation.
 func (m *ArticleMutation) TitleNormalizedID() (id uuid.UUID, exists bool) {
-	if m.title_normalized != nil {
-		return *m.title_normalized, true
+	if m.titleNormalized != nil {
+		return *m.titleNormalized, true
 	}
 	return
 }
 
-// TitleNormalizedIDs returns the "title_normalized" edge IDs in the mutation.
+// TitleNormalizedIDs returns the "titleNormalized" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TitleNormalizedID instead. It exists only for internal usage by the builders.
 func (m *ArticleMutation) TitleNormalizedIDs() (ids []uuid.UUID) {
-	if id := m.title_normalized; id != nil {
+	if id := m.titleNormalized; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTitleNormalized resets all changes to the "title_normalized" edge.
+// ResetTitleNormalized resets all changes to the "titleNormalized" edge.
 func (m *ArticleMutation) ResetTitleNormalized() {
-	m.title_normalized = nil
-	m.clearedtitle_normalized = false
+	m.titleNormalized = nil
+	m.clearedtitleNormalized = false
 }
 
 // Where appends a list predicates to the ArticleMutation builder.
@@ -429,7 +429,7 @@ func (m *ArticleMutation) Fields() []string {
 	if m.content != nil {
 		fields = append(fields, article.FieldContent)
 	}
-	if m.upload_date != nil {
+	if m.uploadDate != nil {
 		fields = append(fields, article.FieldUploadDate)
 	}
 	return fields
@@ -573,7 +573,7 @@ func (m *ArticleMutation) AddedEdges() []string {
 	if m.images != nil {
 		edges = append(edges, article.EdgeImages)
 	}
-	if m.title_normalized != nil {
+	if m.titleNormalized != nil {
 		edges = append(edges, article.EdgeTitleNormalized)
 	}
 	return edges
@@ -590,7 +590,7 @@ func (m *ArticleMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case article.EdgeTitleNormalized:
-		if id := m.title_normalized; id != nil {
+		if id := m.titleNormalized; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -626,7 +626,7 @@ func (m *ArticleMutation) ClearedEdges() []string {
 	if m.clearedimages {
 		edges = append(edges, article.EdgeImages)
 	}
-	if m.clearedtitle_normalized {
+	if m.clearedtitleNormalized {
 		edges = append(edges, article.EdgeTitleNormalized)
 	}
 	return edges
@@ -639,7 +639,7 @@ func (m *ArticleMutation) EdgeCleared(name string) bool {
 	case article.EdgeImages:
 		return m.clearedimages
 	case article.EdgeTitleNormalized:
-		return m.clearedtitle_normalized
+		return m.clearedtitleNormalized
 	}
 	return false
 }
@@ -672,16 +672,16 @@ func (m *ArticleMutation) ResetEdge(name string) error {
 // ArticleTitleGuidMutation represents an operation that mutates the ArticleTitleGuid nodes in the graph.
 type ArticleTitleGuidMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	title_normalized *string
-	clearedFields    map[string]struct{}
-	article          *uuid.UUID
-	clearedarticle   bool
-	done             bool
-	oldValue         func(context.Context) (*ArticleTitleGuid, error)
-	predicates       []predicate.ArticleTitleGuid
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	titleNormalized *string
+	clearedFields   map[string]struct{}
+	article         *uuid.UUID
+	clearedarticle  bool
+	done            bool
+	oldValue        func(context.Context) (*ArticleTitleGuid, error)
+	predicates      []predicate.ArticleTitleGuid
 }
 
 var _ ent.Mutation = (*ArticleTitleGuidMutation)(nil)
@@ -788,21 +788,21 @@ func (m *ArticleTitleGuidMutation) IDs(ctx context.Context) ([]uuid.UUID, error)
 	}
 }
 
-// SetTitleNormalized sets the "title_normalized" field.
+// SetTitleNormalized sets the "titleNormalized" field.
 func (m *ArticleTitleGuidMutation) SetTitleNormalized(s string) {
-	m.title_normalized = &s
+	m.titleNormalized = &s
 }
 
-// TitleNormalized returns the value of the "title_normalized" field in the mutation.
+// TitleNormalized returns the value of the "titleNormalized" field in the mutation.
 func (m *ArticleTitleGuidMutation) TitleNormalized() (r string, exists bool) {
-	v := m.title_normalized
+	v := m.titleNormalized
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTitleNormalized returns the old "title_normalized" field's value of the ArticleTitleGuid entity.
+// OldTitleNormalized returns the old "titleNormalized" field's value of the ArticleTitleGuid entity.
 // If the ArticleTitleGuid object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *ArticleTitleGuidMutation) OldTitleNormalized(ctx context.Context) (v string, err error) {
@@ -819,9 +819,9 @@ func (m *ArticleTitleGuidMutation) OldTitleNormalized(ctx context.Context) (v st
 	return oldValue.TitleNormalized, nil
 }
 
-// ResetTitleNormalized resets all changes to the "title_normalized" field.
+// ResetTitleNormalized resets all changes to the "titleNormalized" field.
 func (m *ArticleTitleGuidMutation) ResetTitleNormalized() {
-	m.title_normalized = nil
+	m.titleNormalized = nil
 }
 
 // SetArticleID sets the "article" edge to the Article entity by id.
@@ -883,7 +883,7 @@ func (m *ArticleTitleGuidMutation) Type() string {
 // AddedFields().
 func (m *ArticleTitleGuidMutation) Fields() []string {
 	fields := make([]string, 0, 1)
-	if m.title_normalized != nil {
+	if m.titleNormalized != nil {
 		fields = append(fields, articletitleguid.FieldTitleNormalized)
 	}
 	return fields
@@ -1060,7 +1060,7 @@ type BlobMutation struct {
 	typ           string
 	id            *uuid.UUID
 	blob          *[]byte
-	content_type  *string
+	contentType   *string
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Blob, error)
@@ -1207,21 +1207,21 @@ func (m *BlobMutation) ResetBlob() {
 	m.blob = nil
 }
 
-// SetContentType sets the "content_type" field.
+// SetContentType sets the "contentType" field.
 func (m *BlobMutation) SetContentType(s string) {
-	m.content_type = &s
+	m.contentType = &s
 }
 
-// ContentType returns the value of the "content_type" field in the mutation.
+// ContentType returns the value of the "contentType" field in the mutation.
 func (m *BlobMutation) ContentType() (r string, exists bool) {
-	v := m.content_type
+	v := m.contentType
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldContentType returns the old "content_type" field's value of the Blob entity.
+// OldContentType returns the old "contentType" field's value of the Blob entity.
 // If the Blob object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *BlobMutation) OldContentType(ctx context.Context) (v string, err error) {
@@ -1238,9 +1238,9 @@ func (m *BlobMutation) OldContentType(ctx context.Context) (v string, err error)
 	return oldValue.ContentType, nil
 }
 
-// ResetContentType resets all changes to the "content_type" field.
+// ResetContentType resets all changes to the "contentType" field.
 func (m *BlobMutation) ResetContentType() {
-	m.content_type = nil
+	m.contentType = nil
 }
 
 // Where appends a list predicates to the BlobMutation builder.
@@ -1266,7 +1266,7 @@ func (m *BlobMutation) Fields() []string {
 	if m.blob != nil {
 		fields = append(fields, blob.FieldBlob)
 	}
-	if m.content_type != nil {
+	if m.contentType != nil {
 		fields = append(fields, blob.FieldContentType)
 	}
 	return fields
@@ -1433,7 +1433,7 @@ type ImageMutation struct {
 	title          *string
 	alt            *string
 	url            *string
-	upload_date    *time.Time
+	uploadDate     *time.Time
 	clearedFields  map[string]struct{}
 	article        *uuid.UUID
 	clearedarticle bool
@@ -1654,21 +1654,21 @@ func (m *ImageMutation) ResetURL() {
 	m.url = nil
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (m *ImageMutation) SetUploadDate(t time.Time) {
-	m.upload_date = &t
+	m.uploadDate = &t
 }
 
-// UploadDate returns the value of the "upload_date" field in the mutation.
+// UploadDate returns the value of the "uploadDate" field in the mutation.
 func (m *ImageMutation) UploadDate() (r time.Time, exists bool) {
-	v := m.upload_date
+	v := m.uploadDate
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldUploadDate returns the old "upload_date" field's value of the Image entity.
+// OldUploadDate returns the old "uploadDate" field's value of the Image entity.
 // If the Image object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *ImageMutation) OldUploadDate(ctx context.Context) (v time.Time, err error) {
@@ -1685,9 +1685,9 @@ func (m *ImageMutation) OldUploadDate(ctx context.Context) (v time.Time, err err
 	return oldValue.UploadDate, nil
 }
 
-// ResetUploadDate resets all changes to the "upload_date" field.
+// ResetUploadDate resets all changes to the "uploadDate" field.
 func (m *ImageMutation) ResetUploadDate() {
-	m.upload_date = nil
+	m.uploadDate = nil
 }
 
 // SetArticleID sets the "article" edge to the Article entity by id.
@@ -1758,7 +1758,7 @@ func (m *ImageMutation) Fields() []string {
 	if m.url != nil {
 		fields = append(fields, image.FieldURL)
 	}
-	if m.upload_date != nil {
+	if m.uploadDate != nil {
 		fields = append(fields, image.FieldUploadDate)
 	}
 	return fields

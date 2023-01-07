@@ -291,7 +291,7 @@ func (atgq *ArticleTitleGuidQuery) WithArticle(opts ...func(*ArticleQuery)) *Art
 // Example:
 //
 //	var v []struct {
-//		TitleNormalized string `json:"title_normalized,omitempty"`
+//		TitleNormalized string `json:"titleNormalized,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
@@ -319,7 +319,7 @@ func (atgq *ArticleTitleGuidQuery) GroupBy(field string, fields ...string) *Arti
 // Example:
 //
 //	var v []struct {
-//		TitleNormalized string `json:"title_normalized,omitempty"`
+//		TitleNormalized string `json:"titleNormalized,omitempty"`
 //	}
 //
 //	client.ArticleTitleGuid.Query().

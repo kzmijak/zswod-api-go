@@ -40,7 +40,7 @@ func (ic *ImageCreate) SetURL(s string) *ImageCreate {
 	return ic
 }
 
-// SetUploadDate sets the "upload_date" field.
+// SetUploadDate sets the "uploadDate" field.
 func (ic *ImageCreate) SetUploadDate(t time.Time) *ImageCreate {
 	ic.mutation.SetUploadDate(t)
 	return ic
@@ -157,7 +157,7 @@ func (ic *ImageCreate) check() error {
 		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Image.url"`)}
 	}
 	if _, ok := ic.mutation.UploadDate(); !ok {
-		return &ValidationError{Name: "upload_date", err: errors.New(`ent: missing required field "Image.upload_date"`)}
+		return &ValidationError{Name: "uploadDate", err: errors.New(`ent: missing required field "Image.uploadDate"`)}
 	}
 	return nil
 }
