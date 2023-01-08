@@ -20,6 +20,7 @@ func (Image) Fields() []ent.Field {
 		field.String("alt"),
 		field.String("url"),
 		field.Time("uploadDate"),
+		field.Int("order"),
 	}
 }
 

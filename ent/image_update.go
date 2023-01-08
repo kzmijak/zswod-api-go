@@ -54,6 +54,19 @@ func (iu *ImageUpdate) SetUploadDate(t time.Time) *ImageUpdate {
 	return iu
 }
 
+// SetOrder sets the "order" field.
+func (iu *ImageUpdate) SetOrder(i int) *ImageUpdate {
+	iu.mutation.ResetOrder()
+	iu.mutation.SetOrder(i)
+	return iu
+}
+
+// AddOrder adds i to the "order" field.
+func (iu *ImageUpdate) AddOrder(i int) *ImageUpdate {
+	iu.mutation.AddOrder(i)
+	return iu
+}
+
 // SetArticleID sets the "article" edge to the Article entity by ID.
 func (iu *ImageUpdate) SetArticleID(id uuid.UUID) *ImageUpdate {
 	iu.mutation.SetArticleID(id)
@@ -168,6 +181,12 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
 	}
+	if value, ok := iu.mutation.Order(); ok {
+		_spec.SetField(image.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := iu.mutation.AddedOrder(); ok {
+		_spec.AddField(image.FieldOrder, field.TypeInt, value)
+	}
 	if iu.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -243,6 +262,19 @@ func (iuo *ImageUpdateOne) SetURL(s string) *ImageUpdateOne {
 // SetUploadDate sets the "uploadDate" field.
 func (iuo *ImageUpdateOne) SetUploadDate(t time.Time) *ImageUpdateOne {
 	iuo.mutation.SetUploadDate(t)
+	return iuo
+}
+
+// SetOrder sets the "order" field.
+func (iuo *ImageUpdateOne) SetOrder(i int) *ImageUpdateOne {
+	iuo.mutation.ResetOrder()
+	iuo.mutation.SetOrder(i)
+	return iuo
+}
+
+// AddOrder adds i to the "order" field.
+func (iuo *ImageUpdateOne) AddOrder(i int) *ImageUpdateOne {
+	iuo.mutation.AddOrder(i)
 	return iuo
 }
 
@@ -389,6 +421,12 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	}
 	if value, ok := iuo.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
+	}
+	if value, ok := iuo.mutation.Order(); ok {
+		_spec.SetField(image.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := iuo.mutation.AddedOrder(); ok {
+		_spec.AddField(image.FieldOrder, field.TypeInt, value)
 	}
 	if iuo.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{

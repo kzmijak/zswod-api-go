@@ -1,4 +1,4 @@
-package controller
+package utils
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func handleError(err *error, ctx *gin.Context, status ...*int) {
+func HandleError(err *error, ctx *gin.Context, status ...*int) {
 	if len(status) > 1 {
 		ctx.JSON(http.StatusInternalServerError, nil)
 		return

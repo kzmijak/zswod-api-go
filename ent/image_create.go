@@ -46,6 +46,12 @@ func (ic *ImageCreate) SetUploadDate(t time.Time) *ImageCreate {
 	return ic
 }
 
+// SetOrder sets the "order" field.
+func (ic *ImageCreate) SetOrder(i int) *ImageCreate {
+	ic.mutation.SetOrder(i)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
 	ic.mutation.SetID(u)
@@ -159,6 +165,9 @@ func (ic *ImageCreate) check() error {
 	if _, ok := ic.mutation.UploadDate(); !ok {
 		return &ValidationError{Name: "uploadDate", err: errors.New(`ent: missing required field "Image.uploadDate"`)}
 	}
+	if _, ok := ic.mutation.Order(); !ok {
+		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "Image.order"`)}
+	}
 	return nil
 }
 
@@ -210,6 +219,10 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.UploadDate(); ok {
 		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
 		_node.UploadDate = value
+	}
+	if value, ok := ic.mutation.Order(); ok {
+		_spec.SetField(image.FieldOrder, field.TypeInt, value)
+		_node.Order = value
 	}
 	if nodes := ic.mutation.ArticleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

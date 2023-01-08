@@ -1434,6 +1434,8 @@ type ImageMutation struct {
 	alt            *string
 	url            *string
 	uploadDate     *time.Time
+	_order         *int
+	add_order      *int
 	clearedFields  map[string]struct{}
 	article        *uuid.UUID
 	clearedarticle bool
@@ -1690,6 +1692,62 @@ func (m *ImageMutation) ResetUploadDate() {
 	m.uploadDate = nil
 }
 
+// SetOrder sets the "order" field.
+func (m *ImageMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *ImageMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *ImageMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *ImageMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *ImageMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
+}
+
 // SetArticleID sets the "article" edge to the Article entity by id.
 func (m *ImageMutation) SetArticleID(id uuid.UUID) {
 	m.article = &id
@@ -1748,7 +1806,7 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.title != nil {
 		fields = append(fields, image.FieldTitle)
 	}
@@ -1760,6 +1818,9 @@ func (m *ImageMutation) Fields() []string {
 	}
 	if m.uploadDate != nil {
 		fields = append(fields, image.FieldUploadDate)
+	}
+	if m._order != nil {
+		fields = append(fields, image.FieldOrder)
 	}
 	return fields
 }
@@ -1777,6 +1838,8 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 		return m.URL()
 	case image.FieldUploadDate:
 		return m.UploadDate()
+	case image.FieldOrder:
+		return m.Order()
 	}
 	return nil, false
 }
@@ -1794,6 +1857,8 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldURL(ctx)
 	case image.FieldUploadDate:
 		return m.OldUploadDate(ctx)
+	case image.FieldOrder:
+		return m.OldOrder(ctx)
 	}
 	return nil, fmt.Errorf("unknown Image field %s", name)
 }
@@ -1831,6 +1896,13 @@ func (m *ImageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUploadDate(v)
 		return nil
+	case image.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Image field %s", name)
 }
@@ -1838,13 +1910,21 @@ func (m *ImageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ImageMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.add_order != nil {
+		fields = append(fields, image.FieldOrder)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case image.FieldOrder:
+		return m.AddedOrder()
+	}
 	return nil, false
 }
 
@@ -1853,6 +1933,13 @@ func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ImageMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case image.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Image numeric field %s", name)
 }
@@ -1891,6 +1978,9 @@ func (m *ImageMutation) ResetField(name string) error {
 		return nil
 	case image.FieldUploadDate:
 		m.ResetUploadDate()
+		return nil
+	case image.FieldOrder:
+		m.ResetOrder()
 		return nil
 	}
 	return fmt.Errorf("unknown Image field %s", name)

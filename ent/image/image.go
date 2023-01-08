@@ -15,6 +15,8 @@ const (
 	FieldURL = "url"
 	// FieldUploadDate holds the string denoting the uploaddate field in the database.
 	FieldUploadDate = "upload_date"
+	// FieldOrder holds the string denoting the order field in the database.
+	FieldOrder = "order"
 	// EdgeArticle holds the string denoting the article edge name in mutations.
 	EdgeArticle = "article"
 	// Table holds the table name of the image in the database.
@@ -35,6 +37,7 @@ var Columns = []string{
 	FieldAlt,
 	FieldURL,
 	FieldUploadDate,
+	FieldOrder,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "images"

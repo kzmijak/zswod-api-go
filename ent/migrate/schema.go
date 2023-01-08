@@ -61,6 +61,7 @@ var (
 		{Name: "alt", Type: field.TypeString},
 		{Name: "url", Type: field.TypeString},
 		{Name: "upload_date", Type: field.TypeTime},
+		{Name: "order", Type: field.TypeInt},
 		{Name: "article_images", Type: field.TypeUUID, Nullable: true},
 	}
 	// ImagesTable holds the schema information for the "images" table.
@@ -71,7 +72,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "images_articles_images",
-				Columns:    []*schema.Column{ImagesColumns[5]},
+				Columns:    []*schema.Column{ImagesColumns[6]},
 				RefColumns: []*schema.Column{ArticlesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

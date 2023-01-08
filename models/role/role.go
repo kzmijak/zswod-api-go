@@ -1,7 +1,7 @@
 package role
 
 import (
-	bimap "github.com/kzmijak/zswod_api_go/utils/bimah"
+	bimap "github.com/kzmijak/zswod_api_go/utils/bimap"
 	"golang.org/x/exp/slices"
 )
 

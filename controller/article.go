@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
@@ -18,17 +19,18 @@ type ImageBody struct {
 	Title string `json:"title"`
 	Alt string `json:"alt"`		
 	Url string `json:"url"`
+	Order string `json:"order"`
 }
 type CreateArticleBody struct {
 	Article article.CreateArticleRequest `json:"article"`
-	Images []ImageBody `json:"images"`
+	Images []ImageBody `json:"images" binding:"min=1"`
 }
 
 func (c *Controller) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleBody
 	var err error
 	var status = http.StatusBadRequest
-	defer handleError(&err, ctx, &status)
+	defer utils.HandleError(&err, ctx, &status)
 
 	tx, err := database.Client.Tx(c.ctx)
 	defer tx.Rollback()
@@ -38,7 +40,7 @@ func (c *Controller) CreateArticle(ctx *gin.Context) {
 		return
 	}
 
-	if err := ctx.BindJSON(&requestBody); err != nil {
+	if err = ctx.BindJSON(&requestBody); err != nil {
 		return 
 	}
 
@@ -71,21 +73,18 @@ func (c *Controller) GetArticleByTitle(ctx *gin.Context) {
 	response, err := c.articleService.GetArticleByTitle(titleString)
 
 	if err != nil {
-		handleError(&err, ctx)
+		utils.HandleError(&err, ctx)
 		return
 	}
 
 	ctx.IndentedJSON(http.StatusOK, response)
 }
 
-type GetArticleHeadersRequest struct {
-	Offset int `form:"offset"`
-	Amount int `form:"amount"`
-}
+
 func (c *Controller) GetArticleHeadersList(ctx *gin.Context) {
-	var query GetArticleHeadersRequest
+	var query utils.PaginationQuery
 	var err error
-	defer handleError(&err, ctx)
+	defer utils.HandleError(&err, ctx)
 	
 	if err = ctx.ShouldBindQuery(&query); err != nil {
 		return
@@ -97,4 +96,21 @@ func (c *Controller) GetArticleHeadersList(ctx *gin.Context) {
 	}
 
 	ctx.IndentedJSON(http.StatusOK, headers)
+}
+
+func (c *Controller) GetArticleGalleriesList(ctx *gin.Context) {
+	var query utils.PaginationQuery
+	var err error
+	defer utils.HandleError(&err, ctx)
+
+	if err = ctx.ShouldBindQuery(&query); err != nil {
+		return
+	}
+
+	galleries, err := c.articleService.GetArticleGalleries(query.Amount, query.Offset)
+	if err != nil {
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, galleries)
 }

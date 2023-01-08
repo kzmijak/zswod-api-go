@@ -26,6 +26,8 @@ type Image struct {
 	URL string `json:"url,omitempty"`
 	// UploadDate holds the value of the "uploadDate" field.
 	UploadDate time.Time `json:"uploadDate,omitempty"`
+	// Order holds the value of the "order" field.
+	Order int `json:"order,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges          ImageEdges `json:"edges"`
@@ -59,6 +61,8 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case image.FieldOrder:
+			values[i] = new(sql.NullInt64)
 		case image.FieldTitle, image.FieldAlt, image.FieldURL:
 			values[i] = new(sql.NullString)
 		case image.FieldUploadDate:
@@ -112,6 +116,12 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				i.UploadDate = value.Time
 			}
+		case image.FieldOrder:
+			if value, ok := values[j].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field order", values[j])
+			} else if value.Valid {
+				i.Order = int(value.Int64)
+			}
 		case image.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field article_images", values[j])
@@ -163,6 +173,9 @@ func (i *Image) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("uploadDate=")
 	builder.WriteString(i.UploadDate.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("order=")
+	builder.WriteString(fmt.Sprintf("%v", i.Order))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -18,6 +18,7 @@ type CreateImageRequest struct {
 	Alt string `json:"alt"`
 	Url string `json:"url"`
 	ArticleId uuid.UUID `json:"articleId"`
+	Order int `json:"order"`
 }
 
 func (s ImageService) CreateImage(req CreateImageRequest) (*ent.Image, error) {
@@ -28,6 +29,7 @@ func (s ImageService) CreateImage(req CreateImageRequest) (*ent.Image, error) {
 		SetAlt(req.Alt).
 		SetURL(req.Url).
 		SetArticleID(req.ArticleId).
+		SetOrder(req.Order).
 		Save(s.ctx)
 
 	if err != nil {

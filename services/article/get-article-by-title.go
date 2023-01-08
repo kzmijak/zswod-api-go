@@ -1,28 +1,30 @@
 package article
 
 import (
-	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
-	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/models/article"
+	imageMdl "github.com/kzmijak/zswod_api_go/models/image"
 )
 
 const (
-	ErrArticleNotFound = "ErrArticleNotFound: Article with given name not found"
 	ErrArticleNotMapped = "ErrArticleNotMapped: Name lacks connection with article"
 )
 
-func (s ArticleService) GetArticleByTitle(title string) (*ent.Article, error) {
-	articleTitleGuid, err := database.Client.ArticleTitleGuid.Query().Where(articletitleguid.TitleNormalized(title)).Only(s.ctx)
-	
+type GetArticleByTitleResponse struct {
+	Article article.Article `json:"article"`
+	Images []imageMdl.Image `json:"images"`
+}
+func (s ArticleService) GetArticleByTitle(titleNormalized string) (*GetArticleByTitleResponse, error) {
+	articleEntity, err := s.getArticleEntityByTitle(titleNormalized)
+
 	if err != nil {
-		return nil, errors.Error(ErrArticleNotFound)
+		return nil, err
 	}
 
-	article, err := articleTitleGuid.QueryArticle().Only(s.ctx)
-	if err != nil {
-		return nil, errors.Error(ErrArticleNotMapped)
-	}
+	imageModels := imageMdl.ArrayFromEntities(articleEntity.Edges.Images)
 
-	return article, nil
+
+	return &GetArticleByTitleResponse{
+		Article: article.FromEntity(*articleEntity),
+		Images: imageModels,
+	}, nil
 }
