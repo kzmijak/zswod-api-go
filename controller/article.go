@@ -97,20 +97,3 @@ func (c *Controller) GetArticleHeadersList(ctx *gin.Context) {
 
 	ctx.IndentedJSON(http.StatusOK, headers)
 }
-
-func (c *Controller) GetArticleGalleriesList(ctx *gin.Context) {
-	var query utils.PaginationQuery
-	var err error
-	defer utils.HandleError(&err, ctx)
-
-	if err = ctx.ShouldBindQuery(&query); err != nil {
-		return
-	}
-
-	galleries, err := c.articleService.GetArticleGalleries(query.Amount, query.Offset)
-	if err != nil {
-		return
-	}
-
-	ctx.IndentedJSON(http.StatusOK, galleries)
-}
