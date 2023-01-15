@@ -14,5 +14,11 @@
   "auth": {
     "lifespanHours": "24",
     "secret": "dfsksljvckxljvkl304522394tjierfgjfklcbv"
+  },
+  "mailer": {
+    "host": "sporlowd.pl",
+    "port": 25,
+    "username": "kzmijak@gmail.com",
+    "password": "lsOoW4mNx7sAdlZ7WkJI"
   }
 }

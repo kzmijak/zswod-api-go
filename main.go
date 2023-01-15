@@ -9,6 +9,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/config"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/logger"
+	"github.com/kzmijak/zswod_api_go/modules/mailer"
 )
 
 func main() {
@@ -31,13 +32,16 @@ func main() {
 		lgr.Fatal("Failed to initialize database", err)
 		os.Exit(0)
 	}
-	fmt.Print(database.Client)
 
+	mailer := mailer.Initialize(ctx, cfg.Mailer)
+
+	fmt.Print(database.Client)
 
 	controller.New().
 		WithContext(ctx).
 		WithLogger(lgr).
 		WithConfig(cfg).
+		WithMailer(mailer).
 		Run();
 }
 

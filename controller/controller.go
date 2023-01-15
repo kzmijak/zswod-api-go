@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/modules/config"
 	"github.com/kzmijak/zswod_api_go/modules/logger"
+	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/blob"
 	"github.com/kzmijak/zswod_api_go/services/image"
@@ -19,6 +20,7 @@ type Controller struct {
 	log *logger.Logger
 	ctx context.Context
 	cfg *config.Config
+	mailer *mailer.Mailer
 
 	jwtService *jwt.JwtService
 	userService *user.UserService
@@ -43,6 +45,11 @@ func (c *Controller) WithContext(ctx context.Context) *Controller  {
 
 func (c *Controller) WithConfig(cfg *config.Config) *Controller {
 	c.cfg = cfg
+	return c
+}
+
+func (c *Controller) WithMailer(mailer *mailer.Mailer) *Controller {
+	c.mailer = mailer
 	return c
 }
 
@@ -91,17 +98,4 @@ func (c *Controller) Run() {
 	}
 
 	router.RunTLS(c.cfg.Server.Domain + ":" + c.cfg.Server.Host, "cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
-
-
-	// tlsConfig := &tls.Config{
-	// 	ClientAuth: tls.RequireAnyClientCert,
-	// }
-
-	// s := http.Server{
-	// 	Addr: c.cfg.Server.Domain + ":" + c.cfg.Server.Host,
-	// 	Handler: router,
-	// 	TLSConfig: tlsConfig,
-	// }
-
-	// s.ListenAndServeTLS("cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
 }

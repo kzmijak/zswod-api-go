@@ -14,5 +14,11 @@
   "auth": {
     "lifespanHours": "",
     "secret": ""
+  },
+  "mailer": {
+    "host": "",
+    "port": 0,
+    "username": "",
+    "password": ""
   }
 }
