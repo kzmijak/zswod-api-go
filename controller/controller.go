@@ -50,7 +50,7 @@ func (c *Controller) Run() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://sporlowd.pl:3000"},
+        AllowOrigins:     []string{"https://sporlowd.pl:3000"},
         AllowMethods:     []string{"*"},
         AllowHeaders: []string{"*"},
         ExposeHeaders:    []string{"Content-Length"},
@@ -90,5 +90,18 @@ func (c *Controller) Run() {
 		}
 	}
 
-	router.Run(c.cfg.Server.Domain + ":" + c.cfg.Server.Host)
+	router.RunTLS(c.cfg.Server.Domain + ":" + c.cfg.Server.Host, "cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
+
+
+	// tlsConfig := &tls.Config{
+	// 	ClientAuth: tls.RequireAnyClientCert,
+	// }
+
+	// s := http.Server{
+	// 	Addr: c.cfg.Server.Domain + ":" + c.cfg.Server.Host,
+	// 	Handler: router,
+	// 	TLSConfig: tlsConfig,
+	// }
+
+	// s.ListenAndServeTLS("cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
 }
