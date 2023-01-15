@@ -61,6 +61,19 @@ func (f ImageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return f(ctx, mv)
 }
 
+// The ResetPasswordTokenFunc type is an adapter to allow the use of ordinary
+// function as ResetPasswordToken mutator.
+type ResetPasswordTokenFunc func(context.Context, *ent.ResetPasswordTokenMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ResetPasswordTokenFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.ResetPasswordTokenMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ResetPasswordTokenMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The RoleFunc type is an adapter to allow the use of ordinary
 // function as Role mutator.
 type RoleFunc func(context.Context, *ent.RoleMutation) (ent.Value, error)

@@ -25,5 +25,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("roles", Role.Type).Ref("users").Unique(),
+		edge.To("resetPasswordTokens", ResetPasswordToken.Type),
 	}
 }

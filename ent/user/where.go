@@ -320,6 +320,34 @@ func HasRolesWith(preds ...predicate.Role) predicate.User {
 	})
 }
 
+// HasResetPasswordTokens applies the HasEdge predicate on the "resetPasswordTokens" edge.
+func HasResetPasswordTokens() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ResetPasswordTokensTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTokensTable, ResetPasswordTokensColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResetPasswordTokensWith applies the HasEdge predicate on the "resetPasswordTokens" edge with a given conditions (other predicates).
+func HasResetPasswordTokensWith(preds ...predicate.ResetPasswordToken) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ResetPasswordTokensInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTokensTable, ResetPasswordTokensColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.User) predicate.User {
 	return predicate.User(func(s *sql.Selector) {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
+	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
@@ -19,14 +21,15 @@ import (
 // UserQuery is the builder for querying User entities.
 type UserQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.User
-	withRoles  *RoleQuery
-	withFKs    bool
+	limit                   *int
+	offset                  *int
+	unique                  *bool
+	order                   []OrderFunc
+	fields                  []string
+	predicates              []predicate.User
+	withRoles               *RoleQuery
+	withResetPasswordTokens *ResetPasswordTokenQuery
+	withFKs                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -78,6 +81,28 @@ func (uq *UserQuery) QueryRoles() *RoleQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, user.RolesTable, user.RolesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryResetPasswordTokens chains the current query on the "resetPasswordTokens" edge.
+func (uq *UserQuery) QueryResetPasswordTokens() *ResetPasswordTokenQuery {
+	query := &ResetPasswordTokenQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(resetpasswordtoken.Table, resetpasswordtoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ResetPasswordTokensTable, user.ResetPasswordTokensColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -261,12 +286,13 @@ func (uq *UserQuery) Clone() *UserQuery {
 		return nil
 	}
 	return &UserQuery{
-		config:     uq.config,
-		limit:      uq.limit,
-		offset:     uq.offset,
-		order:      append([]OrderFunc{}, uq.order...),
-		predicates: append([]predicate.User{}, uq.predicates...),
-		withRoles:  uq.withRoles.Clone(),
+		config:                  uq.config,
+		limit:                   uq.limit,
+		offset:                  uq.offset,
+		order:                   append([]OrderFunc{}, uq.order...),
+		predicates:              append([]predicate.User{}, uq.predicates...),
+		withRoles:               uq.withRoles.Clone(),
+		withResetPasswordTokens: uq.withResetPasswordTokens.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
@@ -282,6 +308,17 @@ func (uq *UserQuery) WithRoles(opts ...func(*RoleQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withRoles = query
+	return uq
+}
+
+// WithResetPasswordTokens tells the query-builder to eager-load the nodes that are connected to
+// the "resetPasswordTokens" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithResetPasswordTokens(opts ...func(*ResetPasswordTokenQuery)) *UserQuery {
+	query := &ResetPasswordTokenQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withResetPasswordTokens = query
 	return uq
 }
 
@@ -359,8 +396,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		nodes       = []*User{}
 		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			uq.withRoles != nil,
+			uq.withResetPasswordTokens != nil,
 		}
 	)
 	if uq.withRoles != nil {
@@ -393,6 +431,15 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
+	if query := uq.withResetPasswordTokens; query != nil {
+		if err := uq.loadResetPasswordTokens(ctx, query, nodes,
+			func(n *User) { n.Edges.ResetPasswordTokens = []*ResetPasswordToken{} },
+			func(n *User, e *ResetPasswordToken) {
+				n.Edges.ResetPasswordTokens = append(n.Edges.ResetPasswordTokens, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
@@ -422,6 +469,37 @@ func (uq *UserQuery) loadRoles(ctx context.Context, query *RoleQuery, nodes []*U
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadResetPasswordTokens(ctx context.Context, query *ResetPasswordTokenQuery, nodes []*User, init func(*User), assign func(*User, *ResetPasswordToken)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.InValues(user.ResetPasswordTokensColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_reset_password_tokens
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_reset_password_tokens" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_reset_password_tokens" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

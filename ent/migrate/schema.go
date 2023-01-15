@@ -78,6 +78,26 @@ var (
 			},
 		},
 	}
+	// ResetPasswordTokensColumns holds the columns for the "reset_password_tokens" table.
+	ResetPasswordTokensColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "user_reset_password_tokens", Type: field.TypeUUID},
+	}
+	// ResetPasswordTokensTable holds the schema information for the "reset_password_tokens" table.
+	ResetPasswordTokensTable = &schema.Table{
+		Name:       "reset_password_tokens",
+		Columns:    ResetPasswordTokensColumns,
+		PrimaryKey: []*schema.Column{ResetPasswordTokensColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "reset_password_tokens_users_resetPasswordTokens",
+				Columns:    []*schema.Column{ResetPasswordTokensColumns[2]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// RolesColumns holds the columns for the "roles" table.
 	RolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString, Unique: true},
@@ -115,6 +135,7 @@ var (
 		ArticleTitleGuidsTable,
 		BlobsTable,
 		ImagesTable,
+		ResetPasswordTokensTable,
 		RolesTable,
 		UsersTable,
 	}
@@ -123,5 +144,6 @@ var (
 func init() {
 	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
+	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = RolesTable
 }

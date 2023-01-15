@@ -13,6 +13,8 @@ const (
 	FieldEmail = "email"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgeResetPasswordTokens holds the string denoting the resetpasswordtokens edge name in mutations.
+	EdgeResetPasswordTokens = "resetPasswordTokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// RolesTable is the table that holds the roles relation/edge.
@@ -22,6 +24,13 @@ const (
 	RolesInverseTable = "roles"
 	// RolesColumn is the table column denoting the roles relation/edge.
 	RolesColumn = "role_users"
+	// ResetPasswordTokensTable is the table that holds the resetPasswordTokens relation/edge.
+	ResetPasswordTokensTable = "reset_password_tokens"
+	// ResetPasswordTokensInverseTable is the table name for the ResetPasswordToken entity.
+	// It exists in this package in order to avoid circular dependency with the "resetpasswordtoken" package.
+	ResetPasswordTokensInverseTable = "reset_password_tokens"
+	// ResetPasswordTokensColumn is the table column denoting the resetPasswordTokens relation/edge.
+	ResetPasswordTokensColumn = "user_reset_password_tokens"
 )
 
 // Columns holds all SQL columns for user fields.

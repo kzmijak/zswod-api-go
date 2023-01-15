@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
@@ -56,6 +57,21 @@ func (uc *UserCreate) SetNillableRolesID(id *string) *UserCreate {
 // SetRoles sets the "roles" edge to the Role entity.
 func (uc *UserCreate) SetRoles(r *Role) *UserCreate {
 	return uc.SetRolesID(r.ID)
+}
+
+// AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
+func (uc *UserCreate) AddResetPasswordTokenIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddResetPasswordTokenIDs(ids...)
+	return uc
+}
+
+// AddResetPasswordTokens adds the "resetPasswordTokens" edges to the ResetPasswordToken entity.
+func (uc *UserCreate) AddResetPasswordTokens(r ...*ResetPasswordToken) *UserCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return uc.AddResetPasswordTokenIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -202,6 +218,25 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.role_users = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ResetPasswordTokensTable,
+			Columns: []string{user.ResetPasswordTokensColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: resetpasswordtoken.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

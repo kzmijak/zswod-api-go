@@ -20,6 +20,8 @@ type Tx struct {
 	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// ResetPasswordToken is the client for interacting with the ResetPasswordToken builders.
+	ResetPasswordToken *ResetPasswordTokenClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// User is the client for interacting with the User builders.
@@ -159,6 +161,7 @@ func (tx *Tx) init() {
 	tx.ArticleTitleGuid = NewArticleTitleGuidClient(tx.config)
 	tx.Blob = NewBlobClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
+	tx.ResetPasswordToken = NewResetPasswordTokenClient(tx.config)
 	tx.Role = NewRoleClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

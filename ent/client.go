@@ -15,6 +15,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 
@@ -36,6 +37,8 @@ type Client struct {
 	Blob *BlobClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
+	// ResetPasswordToken is the client for interacting with the ResetPasswordToken builders.
+	ResetPasswordToken *ResetPasswordTokenClient
 	// Role is the client for interacting with the Role builders.
 	Role *RoleClient
 	// User is the client for interacting with the User builders.
@@ -57,6 +60,7 @@ func (c *Client) init() {
 	c.ArticleTitleGuid = NewArticleTitleGuidClient(c.config)
 	c.Blob = NewBlobClient(c.config)
 	c.Image = NewImageClient(c.config)
+	c.ResetPasswordToken = NewResetPasswordTokenClient(c.config)
 	c.Role = NewRoleClient(c.config)
 	c.User = NewUserClient(c.config)
 }
@@ -90,14 +94,15 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Article:          NewArticleClient(cfg),
-		ArticleTitleGuid: NewArticleTitleGuidClient(cfg),
-		Blob:             NewBlobClient(cfg),
-		Image:            NewImageClient(cfg),
-		Role:             NewRoleClient(cfg),
-		User:             NewUserClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		Article:            NewArticleClient(cfg),
+		ArticleTitleGuid:   NewArticleTitleGuidClient(cfg),
+		Blob:               NewBlobClient(cfg),
+		Image:              NewImageClient(cfg),
+		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
+		Role:               NewRoleClient(cfg),
+		User:               NewUserClient(cfg),
 	}, nil
 }
 
@@ -115,14 +120,15 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:              ctx,
-		config:           cfg,
-		Article:          NewArticleClient(cfg),
-		ArticleTitleGuid: NewArticleTitleGuidClient(cfg),
-		Blob:             NewBlobClient(cfg),
-		Image:            NewImageClient(cfg),
-		Role:             NewRoleClient(cfg),
-		User:             NewUserClient(cfg),
+		ctx:                ctx,
+		config:             cfg,
+		Article:            NewArticleClient(cfg),
+		ArticleTitleGuid:   NewArticleTitleGuidClient(cfg),
+		Blob:               NewBlobClient(cfg),
+		Image:              NewImageClient(cfg),
+		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
+		Role:               NewRoleClient(cfg),
+		User:               NewUserClient(cfg),
 	}, nil
 }
 
@@ -155,6 +161,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.ArticleTitleGuid.Use(hooks...)
 	c.Blob.Use(hooks...)
 	c.Image.Use(hooks...)
+	c.ResetPasswordToken.Use(hooks...)
 	c.Role.Use(hooks...)
 	c.User.Use(hooks...)
 }
@@ -583,6 +590,112 @@ func (c *ImageClient) Hooks() []Hook {
 	return c.hooks.Image
 }
 
+// ResetPasswordTokenClient is a client for the ResetPasswordToken schema.
+type ResetPasswordTokenClient struct {
+	config
+}
+
+// NewResetPasswordTokenClient returns a client for the ResetPasswordToken from the given config.
+func NewResetPasswordTokenClient(c config) *ResetPasswordTokenClient {
+	return &ResetPasswordTokenClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `resetpasswordtoken.Hooks(f(g(h())))`.
+func (c *ResetPasswordTokenClient) Use(hooks ...Hook) {
+	c.hooks.ResetPasswordToken = append(c.hooks.ResetPasswordToken, hooks...)
+}
+
+// Create returns a builder for creating a ResetPasswordToken entity.
+func (c *ResetPasswordTokenClient) Create() *ResetPasswordTokenCreate {
+	mutation := newResetPasswordTokenMutation(c.config, OpCreate)
+	return &ResetPasswordTokenCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ResetPasswordToken entities.
+func (c *ResetPasswordTokenClient) CreateBulk(builders ...*ResetPasswordTokenCreate) *ResetPasswordTokenCreateBulk {
+	return &ResetPasswordTokenCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ResetPasswordToken.
+func (c *ResetPasswordTokenClient) Update() *ResetPasswordTokenUpdate {
+	mutation := newResetPasswordTokenMutation(c.config, OpUpdate)
+	return &ResetPasswordTokenUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ResetPasswordTokenClient) UpdateOne(rpt *ResetPasswordToken) *ResetPasswordTokenUpdateOne {
+	mutation := newResetPasswordTokenMutation(c.config, OpUpdateOne, withResetPasswordToken(rpt))
+	return &ResetPasswordTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ResetPasswordTokenClient) UpdateOneID(id uuid.UUID) *ResetPasswordTokenUpdateOne {
+	mutation := newResetPasswordTokenMutation(c.config, OpUpdateOne, withResetPasswordTokenID(id))
+	return &ResetPasswordTokenUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ResetPasswordToken.
+func (c *ResetPasswordTokenClient) Delete() *ResetPasswordTokenDelete {
+	mutation := newResetPasswordTokenMutation(c.config, OpDelete)
+	return &ResetPasswordTokenDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ResetPasswordTokenClient) DeleteOne(rpt *ResetPasswordToken) *ResetPasswordTokenDeleteOne {
+	return c.DeleteOneID(rpt.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ResetPasswordTokenClient) DeleteOneID(id uuid.UUID) *ResetPasswordTokenDeleteOne {
+	builder := c.Delete().Where(resetpasswordtoken.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ResetPasswordTokenDeleteOne{builder}
+}
+
+// Query returns a query builder for ResetPasswordToken.
+func (c *ResetPasswordTokenClient) Query() *ResetPasswordTokenQuery {
+	return &ResetPasswordTokenQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a ResetPasswordToken entity by its id.
+func (c *ResetPasswordTokenClient) Get(ctx context.Context, id uuid.UUID) (*ResetPasswordToken, error) {
+	return c.Query().Where(resetpasswordtoken.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ResetPasswordTokenClient) GetX(ctx context.Context, id uuid.UUID) *ResetPasswordToken {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOwner queries the owner edge of a ResetPasswordToken.
+func (c *ResetPasswordTokenClient) QueryOwner(rpt *ResetPasswordToken) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rpt.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(resetpasswordtoken.Table, resetpasswordtoken.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, resetpasswordtoken.OwnerTable, resetpasswordtoken.OwnerColumn),
+		)
+		fromV = sqlgraph.Neighbors(rpt.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ResetPasswordTokenClient) Hooks() []Hook {
+	return c.hooks.ResetPasswordToken
+}
+
 // RoleClient is a client for the Role schema.
 type RoleClient struct {
 	config
@@ -783,6 +896,22 @@ func (c *UserClient) QueryRoles(u *User) *RoleQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(role.Table, role.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, user.RolesTable, user.RolesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResetPasswordTokens queries the resetPasswordTokens edge of a User.
+func (c *UserClient) QueryResetPasswordTokens(u *User) *ResetPasswordTokenQuery {
+	query := &ResetPasswordTokenQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(resetpasswordtoken.Table, resetpasswordtoken.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ResetPasswordTokensTable, user.ResetPasswordTokensColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

@@ -31,9 +31,11 @@ type User struct {
 type UserEdges struct {
 	// Roles holds the value of the roles edge.
 	Roles *Role `json:"roles,omitempty"`
+	// ResetPasswordTokens holds the value of the resetPasswordTokens edge.
+	ResetPasswordTokens []*ResetPasswordToken `json:"resetPasswordTokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // RolesOrErr returns the Roles value or an error if the edge
@@ -47,6 +49,15 @@ func (e UserEdges) RolesOrErr() (*Role, error) {
 		return e.Roles, nil
 	}
 	return nil, &NotLoadedError{edge: "roles"}
+}
+
+// ResetPasswordTokensOrErr returns the ResetPasswordTokens value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ResetPasswordTokensOrErr() ([]*ResetPasswordToken, error) {
+	if e.loadedTypes[1] {
+		return e.ResetPasswordTokens, nil
+	}
+	return nil, &NotLoadedError{edge: "resetPasswordTokens"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -108,6 +119,11 @@ func (u *User) assignValues(columns []string, values []any) error {
 // QueryRoles queries the "roles" edge of the User entity.
 func (u *User) QueryRoles() *RoleQuery {
 	return (&UserClient{config: u.config}).QueryRoles(u)
+}
+
+// QueryResetPasswordTokens queries the "resetPasswordTokens" edge of the User entity.
+func (u *User) QueryResetPasswordTokens() *ResetPasswordTokenQuery {
+	return (&UserClient{config: u.config}).QueryResetPasswordTokens(u)
 }
 
 // Update returns a builder for updating this User.
