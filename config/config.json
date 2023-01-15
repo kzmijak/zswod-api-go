@@ -9,7 +9,8 @@
   },
   "server": {
     "domain": "sporlowd.pl",
-    "host": "8080"
+    "host": "8080",
+    "clientbaseUrl": "https://sporlowd.pl:3000"
   },
   "auth": {
     "lifespanHours": "24",

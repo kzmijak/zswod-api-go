@@ -23,6 +23,10 @@ func Initialize(ctx context.Context, cfg MailerConfig) *Mailer {
 	}
 }
 
+func (Mailer) GetNoReplySender() string {
+	return "noreply"
+}
+
 type MailerMessage struct {
 	Sender string `json:"sender"`
 	Receiver string `json:"receiver"`
@@ -30,7 +34,7 @@ type MailerMessage struct {
 	Subject string `json:"subject"`
 	Content string `json:"content"`
 }
-func (m Mailer) Send(r MailerMessage) (ok bool, err error) {
+func (m Mailer) Send(r MailerMessage) error {
 	msg := gomail.NewMessage()
 	msg.SetHeader("From", r.Sender)
 	msg.SetHeader("To", r.Receiver)
@@ -39,8 +43,8 @@ func (m Mailer) Send(r MailerMessage) (ok bool, err error) {
 	msg.SetHeader("text/html", r.Content)
 
 	if err := m.dialer.DialAndSend(msg); err != nil {
-		return false, errors.Error(ErrFailedToSendMessage)
+		return errors.Error(ErrFailedToSendMessage)
 	}
 
-	return true, nil
+	return nil
 }

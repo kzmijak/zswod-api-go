@@ -9,7 +9,8 @@
   },
   "server": {
     "domain": "",
-    "host": ""
+    "host": "",
+    "clientbaseUrl": ""
   },
   "auth": {
     "lifespanHours": "",
@@ -20,5 +21,8 @@
     "port": 0,
     "username": "",
     "password": ""
+  },
+  "client": {
+    "baseUrl": ""
   }
 }
