@@ -144,7 +144,7 @@ func (c *Controller) ResetPassword(ctx *gin.Context) {
 
 
 func (c *Controller) VerifyResetPasswordToken(ctx *gin.Context) {
-	tokenString := ctx.Param("token")
+	tokenString := ctx.Query("token")
 	var err error
 	defer utils.HandleError(&err, ctx)
 	

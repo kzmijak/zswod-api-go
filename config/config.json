@@ -17,9 +17,9 @@
     "secret": "dfsksljvckxljvkl304522394tjierfgjfklcbv"
   },
   "mailer": {
-    "host": "sporlowd.pl",
+    "host": "localhost",
     "port": 25,
-    "username": "kzmijak@gmail.com",
+    "username": "mailer",
     "password": "lsOoW4mNx7sAdlZ7WkJI"
   }
 }

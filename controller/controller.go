@@ -79,11 +79,11 @@ func (c *Controller) Run() {
 		}
 		auth := v1.Group("/auth") 
 		{
-			auth.POST("sign-up", c.CreateUser)
-			auth.POST("sign-in", c.SignIn)	
-			auth.POST("reset-passwrd", c.ResetPassword)
-			auth.GET("check-reset-password-token", c.VerifyResetPasswordToken)
-			auth.POST("set-new-password", c.SetNewPassword)
+			auth.POST("/sign-up", c.CreateUser)
+			auth.POST("/sign-in", c.SignIn)	
+			auth.POST("/reset-password", c.ResetPassword)
+			auth.GET("/check-reset-password-token", c.VerifyResetPasswordToken)
+			auth.POST("/set-new-password", c.SetNewPassword)
 		}
 
 		blob := v1.Group("/blob")

@@ -28,7 +28,11 @@ func (c *Controller) UploadBlob(ctx *gin.Context) {
 		return
 	}
 
-	blobUrl := fmt.Sprint(ctx.Request.Host, ctx.Request.URL.String(), "/", response.ID.String()) 
+	scheme := "http://"
+	if ctx.Request.TLS != nil {
+			scheme = "https://"
+	}
+	blobUrl := fmt.Sprint(scheme, ctx.Request.Host, ctx.Request.URL.String(), "/", response.ID.String()) 
 
 	ctx.IndentedJSON(http.StatusOK, blobUrl)
 }
