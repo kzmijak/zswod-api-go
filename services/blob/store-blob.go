@@ -3,6 +3,7 @@ package blob
 import (
 	"io/ioutil"
 	"mime/multipart"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
@@ -24,6 +25,7 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader) (*ent.Blob, error) {
 	}
 	
 	content, err := file.Open()
+	
 	contentType := file.Header.Get("Content-Type")
 	if err != nil {
 		return nil, errors.Error(ErrFileOpenFailed)
@@ -39,6 +41,8 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader) (*ent.Blob, error) {
 		SetID(uuid.New()).
 		SetBlob(byteContainer).
 		SetContentType(contentType).
+		SetName(file.Filename).
+		SetCreatedAt(time.Now()).
 		Save(s.ctx)
 
 	if err != nil {

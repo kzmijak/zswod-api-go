@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -18,8 +19,12 @@ type Blob struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
+	// Name holds the value of the "name" field.
+	Name string `json:"name,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
+	// CreatedAt holds the value of the "createdAt" field.
+	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -29,8 +34,10 @@ func (*Blob) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case blob.FieldBlob:
 			values[i] = new([]byte)
-		case blob.FieldContentType:
+		case blob.FieldName, blob.FieldContentType:
 			values[i] = new(sql.NullString)
+		case blob.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case blob.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -60,11 +67,23 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				b.Blob = *value
 			}
+		case blob.FieldName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field name", values[i])
+			} else if value.Valid {
+				b.Name = value.String
+			}
 		case blob.FieldContentType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field contentType", values[i])
 			} else if value.Valid {
 				b.ContentType = value.String
+			}
+		case blob.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field createdAt", values[i])
+			} else if value.Valid {
+				b.CreatedAt = value.Time
 			}
 		}
 	}
@@ -97,8 +116,14 @@ func (b *Blob) String() string {
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", b.Blob))
 	builder.WriteString(", ")
+	builder.WriteString("name=")
+	builder.WriteString(b.Name)
+	builder.WriteString(", ")
 	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)
+	builder.WriteString(", ")
+	builder.WriteString("createdAt=")
+	builder.WriteString(b.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

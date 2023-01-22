@@ -9,8 +9,12 @@ const (
 	FieldID = "id"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
+	// FieldName holds the string denoting the name field in the database.
+	FieldName = "name"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
+	// FieldCreatedAt holds the string denoting the createdat field in the database.
+	FieldCreatedAt = "created_at"
 	// Table holds the table name of the blob in the database.
 	Table = "blobs"
 )
@@ -19,7 +23,9 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldBlob,
+	FieldName,
 	FieldContentType,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

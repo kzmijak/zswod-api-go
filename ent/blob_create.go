@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -26,9 +27,21 @@ func (bc *BlobCreate) SetBlob(b []byte) *BlobCreate {
 	return bc
 }
 
+// SetName sets the "name" field.
+func (bc *BlobCreate) SetName(s string) *BlobCreate {
+	bc.mutation.SetName(s)
+	return bc
+}
+
 // SetContentType sets the "contentType" field.
 func (bc *BlobCreate) SetContentType(s string) *BlobCreate {
 	bc.mutation.SetContentType(s)
+	return bc
+}
+
+// SetCreatedAt sets the "createdAt" field.
+func (bc *BlobCreate) SetCreatedAt(t time.Time) *BlobCreate {
+	bc.mutation.SetCreatedAt(t)
 	return bc
 }
 
@@ -117,8 +130,14 @@ func (bc *BlobCreate) check() error {
 	if _, ok := bc.mutation.Blob(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Blob.blob"`)}
 	}
+	if _, ok := bc.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Blob.name"`)}
+	}
 	if _, ok := bc.mutation.ContentType(); !ok {
 		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
+	}
+	if _, ok := bc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "Blob.createdAt"`)}
 	}
 	return nil
 }
@@ -160,9 +179,17 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 		_node.Blob = value
 	}
+	if value, ok := bc.mutation.Name(); ok {
+		_spec.SetField(blob.FieldName, field.TypeString, value)
+		_node.Name = value
+	}
 	if value, ok := bc.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 		_node.ContentType = value
+	}
+	if value, ok := bc.mutation.CreatedAt(); ok {
+		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	return _node, _spec
 }

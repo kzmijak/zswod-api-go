@@ -89,7 +89,9 @@ func (c *Controller) Run() {
 		blob := v1.Group("/blob")
 		{
 			blob.GET("/:uuid", c.GetBlobByUuid)
+			blob.GET("", c.GetBlobsList)
 			blob.POST("", c.UploadBlob).Use(c.RequireTeacher)
+			// blob.GET("", c.GetBlobsList).Use(c.RequireTeacher)
 		}
 
 		article := v1.Group("/article")

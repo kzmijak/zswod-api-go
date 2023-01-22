@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -18,7 +19,10 @@ func (Article) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("title").MinLen(6).MaxLen(32),
 		field.String("short").MinLen(12).MaxLen(128),
-		field.String("content"),
+		field.String("content").
+			SchemaType(map[string]string{
+			dialect.MySQL: "mediumtext",
+		}),
 		field.Time("uploadDate"),
 	}
 }

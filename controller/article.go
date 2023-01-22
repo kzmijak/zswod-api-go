@@ -19,7 +19,7 @@ type ImageBody struct {
 	Title string `json:"title"`
 	Alt string `json:"alt"`		
 	Url string `json:"url"`
-	Order string `json:"order"`
+	Order int `json:"order"`
 }
 type CreateArticleBody struct {
 	Article article.CreateArticleRequest `json:"article"`

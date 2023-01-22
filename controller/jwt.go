@@ -32,7 +32,7 @@ func (c Controller) extractClaim(claimKey string, ctx *gin.Context) (string, err
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		claim := claims[claimKey].(string)
+		claim := claims[claimKey].(string) // TODO: FIX FOR ROLES!!!
 		
 		return claim, nil
 	}

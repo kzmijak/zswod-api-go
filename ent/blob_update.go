@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -33,9 +34,21 @@ func (bu *BlobUpdate) SetBlob(b []byte) *BlobUpdate {
 	return bu
 }
 
+// SetName sets the "name" field.
+func (bu *BlobUpdate) SetName(s string) *BlobUpdate {
+	bu.mutation.SetName(s)
+	return bu
+}
+
 // SetContentType sets the "contentType" field.
 func (bu *BlobUpdate) SetContentType(s string) *BlobUpdate {
 	bu.mutation.SetContentType(s)
+	return bu
+}
+
+// SetCreatedAt sets the "createdAt" field.
+func (bu *BlobUpdate) SetCreatedAt(t time.Time) *BlobUpdate {
+	bu.mutation.SetCreatedAt(t)
 	return bu
 }
 
@@ -119,8 +132,14 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 	}
+	if value, ok := bu.mutation.Name(); ok {
+		_spec.SetField(blob.FieldName, field.TypeString, value)
+	}
 	if value, ok := bu.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.CreatedAt(); ok {
+		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -147,9 +166,21 @@ func (buo *BlobUpdateOne) SetBlob(b []byte) *BlobUpdateOne {
 	return buo
 }
 
+// SetName sets the "name" field.
+func (buo *BlobUpdateOne) SetName(s string) *BlobUpdateOne {
+	buo.mutation.SetName(s)
+	return buo
+}
+
 // SetContentType sets the "contentType" field.
 func (buo *BlobUpdateOne) SetContentType(s string) *BlobUpdateOne {
 	buo.mutation.SetContentType(s)
+	return buo
+}
+
+// SetCreatedAt sets the "createdAt" field.
+func (buo *BlobUpdateOne) SetCreatedAt(t time.Time) *BlobUpdateOne {
+	buo.mutation.SetCreatedAt(t)
 	return buo
 }
 
@@ -263,8 +294,14 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 	if value, ok := buo.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 	}
+	if value, ok := buo.mutation.Name(); ok {
+		_spec.SetField(blob.FieldName, field.TypeString, value)
+	}
 	if value, ok := buo.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.CreatedAt(); ok {
+		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
 	}
 	_node = &Blob{config: buo.config}
 	_spec.Assign = _node.assignValues
