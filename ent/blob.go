@@ -19,12 +19,35 @@ type Blob struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
+	// Alt holds the value of the "alt" field.
+	Alt string `json:"alt,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
 	// CreatedAt holds the value of the "createdAt" field.
 	CreatedAt time.Time `json:"createdAt,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the BlobQuery when eager-loading is set.
+	Edges BlobEdges `json:"edges"`
+}
+
+// BlobEdges holds the relations/edges for other nodes in the graph.
+type BlobEdges struct {
+	// ArticleImages holds the value of the articleImages edge.
+	ArticleImages []*Image `json:"articleImages,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// ArticleImagesOrErr returns the ArticleImages value or an error if the edge
+// was not loaded in eager-loading.
+func (e BlobEdges) ArticleImagesOrErr() ([]*Image, error) {
+	if e.loadedTypes[0] {
+		return e.ArticleImages, nil
+	}
+	return nil, &NotLoadedError{edge: "articleImages"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,7 +57,7 @@ func (*Blob) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case blob.FieldBlob:
 			values[i] = new([]byte)
-		case blob.FieldName, blob.FieldContentType:
+		case blob.FieldTitle, blob.FieldAlt, blob.FieldContentType:
 			values[i] = new(sql.NullString)
 		case blob.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -67,11 +90,17 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				b.Blob = *value
 			}
-		case blob.FieldName:
+		case blob.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				b.Name = value.String
+				b.Title = value.String
+			}
+		case blob.FieldAlt:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field alt", values[i])
+			} else if value.Valid {
+				b.Alt = value.String
 			}
 		case blob.FieldContentType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -88,6 +117,11 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
+}
+
+// QueryArticleImages queries the "articleImages" edge of the Blob entity.
+func (b *Blob) QueryArticleImages() *ImageQuery {
+	return (&BlobClient{config: b.config}).QueryArticleImages(b)
 }
 
 // Update returns a builder for updating this Blob.
@@ -116,8 +150,11 @@ func (b *Blob) String() string {
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", b.Blob))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(b.Name)
+	builder.WriteString("title=")
+	builder.WriteString(b.Title)
+	builder.WriteString(", ")
+	builder.WriteString("alt=")
+	builder.WriteString(b.Alt)
 	builder.WriteString(", ")
 	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)

@@ -18,9 +18,7 @@ func (Image) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("title"),
 		field.String("alt"),
-		field.String("url"),
-		field.Time("uploadDate"),
-		field.Int("order"),
+		field.Bool("isPreview"),
 	}
 }
 
@@ -29,5 +27,6 @@ func (Image) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("article", Article.Type).
 			Ref("images").Unique(),
+		edge.From("blob", Blob.Type).Ref("articleImages").Unique().Required(),
 	}
 }

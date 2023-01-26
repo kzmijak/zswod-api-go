@@ -6,13 +6,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -42,28 +42,9 @@ func (iu *ImageUpdate) SetAlt(s string) *ImageUpdate {
 	return iu
 }
 
-// SetURL sets the "url" field.
-func (iu *ImageUpdate) SetURL(s string) *ImageUpdate {
-	iu.mutation.SetURL(s)
-	return iu
-}
-
-// SetUploadDate sets the "uploadDate" field.
-func (iu *ImageUpdate) SetUploadDate(t time.Time) *ImageUpdate {
-	iu.mutation.SetUploadDate(t)
-	return iu
-}
-
-// SetOrder sets the "order" field.
-func (iu *ImageUpdate) SetOrder(i int) *ImageUpdate {
-	iu.mutation.ResetOrder()
-	iu.mutation.SetOrder(i)
-	return iu
-}
-
-// AddOrder adds i to the "order" field.
-func (iu *ImageUpdate) AddOrder(i int) *ImageUpdate {
-	iu.mutation.AddOrder(i)
+// SetIsPreview sets the "isPreview" field.
+func (iu *ImageUpdate) SetIsPreview(b bool) *ImageUpdate {
+	iu.mutation.SetIsPreview(b)
 	return iu
 }
 
@@ -86,6 +67,17 @@ func (iu *ImageUpdate) SetArticle(a *Article) *ImageUpdate {
 	return iu.SetArticleID(a.ID)
 }
 
+// SetBlobID sets the "blob" edge to the Blob entity by ID.
+func (iu *ImageUpdate) SetBlobID(id uuid.UUID) *ImageUpdate {
+	iu.mutation.SetBlobID(id)
+	return iu
+}
+
+// SetBlob sets the "blob" edge to the Blob entity.
+func (iu *ImageUpdate) SetBlob(b *Blob) *ImageUpdate {
+	return iu.SetBlobID(b.ID)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (iu *ImageUpdate) Mutation() *ImageMutation {
 	return iu.mutation
@@ -97,6 +89,12 @@ func (iu *ImageUpdate) ClearArticle() *ImageUpdate {
 	return iu
 }
 
+// ClearBlob clears the "blob" edge to the Blob entity.
+func (iu *ImageUpdate) ClearBlob() *ImageUpdate {
+	iu.mutation.ClearBlob()
+	return iu
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (iu *ImageUpdate) Save(ctx context.Context) (int, error) {
 	var (
@@ -104,12 +102,18 @@ func (iu *ImageUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(iu.hooks) == 0 {
+		if err = iu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = iu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*ImageMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = iu.check(); err != nil {
+				return 0, err
 			}
 			iu.mutation = mutation
 			affected, err = iu.sqlSave(ctx)
@@ -151,6 +155,14 @@ func (iu *ImageUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iu *ImageUpdate) check() error {
+	if _, ok := iu.mutation.BlobID(); iu.mutation.BlobCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Image.blob"`)
+	}
+	return nil
+}
+
 func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -175,17 +187,8 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.Alt(); ok {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 	}
-	if value, ok := iu.mutation.URL(); ok {
-		_spec.SetField(image.FieldURL, field.TypeString, value)
-	}
-	if value, ok := iu.mutation.UploadDate(); ok {
-		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
-	}
-	if value, ok := iu.mutation.Order(); ok {
-		_spec.SetField(image.FieldOrder, field.TypeInt, value)
-	}
-	if value, ok := iu.mutation.AddedOrder(); ok {
-		_spec.AddField(image.FieldOrder, field.TypeInt, value)
+	if value, ok := iu.mutation.IsPreview(); ok {
+		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
 	}
 	if iu.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -214,6 +217,41 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: article.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.BlobCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
 				},
 			},
 		}
@@ -253,28 +291,9 @@ func (iuo *ImageUpdateOne) SetAlt(s string) *ImageUpdateOne {
 	return iuo
 }
 
-// SetURL sets the "url" field.
-func (iuo *ImageUpdateOne) SetURL(s string) *ImageUpdateOne {
-	iuo.mutation.SetURL(s)
-	return iuo
-}
-
-// SetUploadDate sets the "uploadDate" field.
-func (iuo *ImageUpdateOne) SetUploadDate(t time.Time) *ImageUpdateOne {
-	iuo.mutation.SetUploadDate(t)
-	return iuo
-}
-
-// SetOrder sets the "order" field.
-func (iuo *ImageUpdateOne) SetOrder(i int) *ImageUpdateOne {
-	iuo.mutation.ResetOrder()
-	iuo.mutation.SetOrder(i)
-	return iuo
-}
-
-// AddOrder adds i to the "order" field.
-func (iuo *ImageUpdateOne) AddOrder(i int) *ImageUpdateOne {
-	iuo.mutation.AddOrder(i)
+// SetIsPreview sets the "isPreview" field.
+func (iuo *ImageUpdateOne) SetIsPreview(b bool) *ImageUpdateOne {
+	iuo.mutation.SetIsPreview(b)
 	return iuo
 }
 
@@ -297,6 +316,17 @@ func (iuo *ImageUpdateOne) SetArticle(a *Article) *ImageUpdateOne {
 	return iuo.SetArticleID(a.ID)
 }
 
+// SetBlobID sets the "blob" edge to the Blob entity by ID.
+func (iuo *ImageUpdateOne) SetBlobID(id uuid.UUID) *ImageUpdateOne {
+	iuo.mutation.SetBlobID(id)
+	return iuo
+}
+
+// SetBlob sets the "blob" edge to the Blob entity.
+func (iuo *ImageUpdateOne) SetBlob(b *Blob) *ImageUpdateOne {
+	return iuo.SetBlobID(b.ID)
+}
+
 // Mutation returns the ImageMutation object of the builder.
 func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 	return iuo.mutation
@@ -305,6 +335,12 @@ func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 // ClearArticle clears the "article" edge to the Article entity.
 func (iuo *ImageUpdateOne) ClearArticle() *ImageUpdateOne {
 	iuo.mutation.ClearArticle()
+	return iuo
+}
+
+// ClearBlob clears the "blob" edge to the Blob entity.
+func (iuo *ImageUpdateOne) ClearBlob() *ImageUpdateOne {
+	iuo.mutation.ClearBlob()
 	return iuo
 }
 
@@ -322,12 +358,18 @@ func (iuo *ImageUpdateOne) Save(ctx context.Context) (*Image, error) {
 		node *Image
 	)
 	if len(iuo.hooks) == 0 {
+		if err = iuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = iuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*ImageMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = iuo.check(); err != nil {
+				return nil, err
 			}
 			iuo.mutation = mutation
 			node, err = iuo.sqlSave(ctx)
@@ -375,6 +417,14 @@ func (iuo *ImageUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iuo *ImageUpdateOne) check() error {
+	if _, ok := iuo.mutation.BlobID(); iuo.mutation.BlobCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Image.blob"`)
+	}
+	return nil
+}
+
 func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -416,17 +466,8 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	if value, ok := iuo.mutation.Alt(); ok {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 	}
-	if value, ok := iuo.mutation.URL(); ok {
-		_spec.SetField(image.FieldURL, field.TypeString, value)
-	}
-	if value, ok := iuo.mutation.UploadDate(); ok {
-		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
-	}
-	if value, ok := iuo.mutation.Order(); ok {
-		_spec.SetField(image.FieldOrder, field.TypeInt, value)
-	}
-	if value, ok := iuo.mutation.AddedOrder(); ok {
-		_spec.AddField(image.FieldOrder, field.TypeInt, value)
+	if value, ok := iuo.mutation.IsPreview(); ok {
+		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
 	}
 	if iuo.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -455,6 +496,41 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: article.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.BlobCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
 				},
 			},
 		}

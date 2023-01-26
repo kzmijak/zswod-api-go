@@ -3,6 +3,7 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -20,7 +21,8 @@ func (Blob) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumblob",
 		}),
-		field.String("name"),
+		field.String("title"),
+		field.String("alt"),
 		field.String("contentType"),
 		field.Time("createdAt"),
 	}
@@ -28,5 +30,7 @@ func (Blob) Fields() []ent.Field {
 
 // Edges of the Image.
 func (Blob) Edges() []ent.Edge {
-	return []ent.Edge {}
+	return []ent.Edge {
+		edge.To("articleImages", Image.Type),
+	}
 }

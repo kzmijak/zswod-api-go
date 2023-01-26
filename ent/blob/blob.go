@@ -9,21 +9,33 @@ const (
 	FieldID = "id"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
+	// FieldAlt holds the string denoting the alt field in the database.
+	FieldAlt = "alt"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
 	// FieldCreatedAt holds the string denoting the createdat field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeArticleImages holds the string denoting the articleimages edge name in mutations.
+	EdgeArticleImages = "articleImages"
 	// Table holds the table name of the blob in the database.
 	Table = "blobs"
+	// ArticleImagesTable is the table that holds the articleImages relation/edge.
+	ArticleImagesTable = "images"
+	// ArticleImagesInverseTable is the table name for the Image entity.
+	// It exists in this package in order to avoid circular dependency with the "image" package.
+	ArticleImagesInverseTable = "images"
+	// ArticleImagesColumn is the table column denoting the articleImages relation/edge.
+	ArticleImagesColumn = "blob_article_images"
 )
 
 // Columns holds all SQL columns for blob fields.
 var Columns = []string{
 	FieldID,
 	FieldBlob,
-	FieldName,
+	FieldTitle,
+	FieldAlt,
 	FieldContentType,
 	FieldCreatedAt,
 }

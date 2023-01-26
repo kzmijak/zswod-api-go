@@ -7,7 +7,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/article"
-	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
 const (
@@ -15,52 +14,47 @@ const (
 	ErrInvalidAmount = "ErrInvalidAmount: Amount is invalid"
 )
 
-type ImageBody struct {
-	Title string `json:"title"`
-	Alt string `json:"alt"`		
-	Url string `json:"url"`
-	Order int `json:"order"`
-}
-type CreateArticleBody struct {
-	Article article.CreateArticleRequest `json:"article"`
-	Images []ImageBody `json:"images" binding:"min=1"`
-}
 
 func (c *Controller) CreateArticle(ctx *gin.Context) {
-	var requestBody CreateArticleBody
+	var requestBody article.CreateArticleRequest
 	var err error
 	var status = http.StatusBadRequest
 	defer utils.HandleError(&err, ctx, &status)
 
-	tx, err := database.Client.Tx(c.ctx)
+	tx, _ := database.Client.Tx(c.ctx)
 	defer tx.Rollback()
-
-	if err != nil {
-		status = http.StatusConflict
-		return
-	}
 
 	if err = ctx.BindJSON(&requestBody); err != nil {
 		return 
 	}
 
-	article, err := c.articleService.CreateArticle(requestBody.Article)
+	article, err := c.articleService.CreateArticle(requestBody, tx)
 
 	if err != nil {
 		return
 	}
 
-	for _, img := range requestBody.Images {
-		_, err = c.imageService.CreateImage(image.CreateImageRequest{
-			Title: img.Title,
-			Alt: img.Alt,
-			Url: img.Url,
-			ArticleId: article.ID,
-		})
+	tx.Commit()
+	ctx.IndentedJSON(http.StatusOK, article.ID)
+}
 
-		if err != nil {
-			return
-		}
+func (c *Controller) UpdateArticleByTitle(ctx *gin.Context) {
+	var requestBody article.UpdateArticleRequest
+	var err error
+	var status = http.StatusBadRequest
+	defer utils.HandleError(&err, ctx, &status)
+
+	tx, _ := database.Client.Tx(c.ctx)
+	defer tx.Rollback()
+
+	if err = ctx.BindJSON(&requestBody); err != nil {
+		return
+	}
+
+	article, err := c.articleService.UpdateArticle(requestBody, tx)
+
+	if err != nil {
+		return
 	}
 
 	tx.Commit()
@@ -70,13 +64,17 @@ func (c *Controller) CreateArticle(ctx *gin.Context) {
 func (c *Controller) GetArticleByTitle(ctx *gin.Context) {
 	titleString := ctx.Param("title")
 
-	response, err := c.articleService.GetArticleByTitle(titleString)
+	tx, _ := database.Client.Tx(c.ctx)
+	defer tx.Rollback()
+
+	response, err := c.articleService.GetArticleByTitle(titleString, tx)
 
 	if err != nil {
 		utils.HandleError(&err, ctx)
 		return
 	}
 
+	tx.Commit()
 	ctx.IndentedJSON(http.StatusOK, response)
 }
 

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
 // BlobCreate is the builder for creating a Blob entity.
@@ -27,9 +28,15 @@ func (bc *BlobCreate) SetBlob(b []byte) *BlobCreate {
 	return bc
 }
 
-// SetName sets the "name" field.
-func (bc *BlobCreate) SetName(s string) *BlobCreate {
-	bc.mutation.SetName(s)
+// SetTitle sets the "title" field.
+func (bc *BlobCreate) SetTitle(s string) *BlobCreate {
+	bc.mutation.SetTitle(s)
+	return bc
+}
+
+// SetAlt sets the "alt" field.
+func (bc *BlobCreate) SetAlt(s string) *BlobCreate {
+	bc.mutation.SetAlt(s)
 	return bc
 }
 
@@ -49,6 +56,21 @@ func (bc *BlobCreate) SetCreatedAt(t time.Time) *BlobCreate {
 func (bc *BlobCreate) SetID(u uuid.UUID) *BlobCreate {
 	bc.mutation.SetID(u)
 	return bc
+}
+
+// AddArticleImageIDs adds the "articleImages" edge to the Image entity by IDs.
+func (bc *BlobCreate) AddArticleImageIDs(ids ...uuid.UUID) *BlobCreate {
+	bc.mutation.AddArticleImageIDs(ids...)
+	return bc
+}
+
+// AddArticleImages adds the "articleImages" edges to the Image entity.
+func (bc *BlobCreate) AddArticleImages(i ...*Image) *BlobCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return bc.AddArticleImageIDs(ids...)
 }
 
 // Mutation returns the BlobMutation object of the builder.
@@ -130,8 +152,11 @@ func (bc *BlobCreate) check() error {
 	if _, ok := bc.mutation.Blob(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Blob.blob"`)}
 	}
-	if _, ok := bc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Blob.name"`)}
+	if _, ok := bc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Blob.title"`)}
+	}
+	if _, ok := bc.mutation.Alt(); !ok {
+		return &ValidationError{Name: "alt", err: errors.New(`ent: missing required field "Blob.alt"`)}
 	}
 	if _, ok := bc.mutation.ContentType(); !ok {
 		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
@@ -179,9 +204,13 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 		_node.Blob = value
 	}
-	if value, ok := bc.mutation.Name(); ok {
-		_spec.SetField(blob.FieldName, field.TypeString, value)
-		_node.Name = value
+	if value, ok := bc.mutation.Title(); ok {
+		_spec.SetField(blob.FieldTitle, field.TypeString, value)
+		_node.Title = value
+	}
+	if value, ok := bc.mutation.Alt(); ok {
+		_spec.SetField(blob.FieldAlt, field.TypeString, value)
+		_node.Alt = value
 	}
 	if value, ok := bc.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
@@ -190,6 +219,25 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.CreatedAt(); ok {
 		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := bc.mutation.ArticleImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.ArticleImagesTable,
+			Columns: []string{blob.ArticleImagesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: image.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

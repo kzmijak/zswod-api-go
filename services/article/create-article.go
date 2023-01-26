@@ -1,38 +1,50 @@
 package article
 
 import (
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
 const (
 	ErrFailedCreatingArticle = "ErrFailedCreatingArticle: Failed to create article"
 	ErrFailedCreatingArticleTitle = "ErrFailedCreatingArticleTitle: Failed to create article title"
+	ErrCouldNotParseUuid = "ErrCouldNotParseUuid: Failed to parse image guid"
 )
 
 type CreateArticleRequest struct {
-	Title string `json:"title"`
-	Short string `json:"short"`
-	Content string `json:"content"`
+	Article BaseArticlePayload `json:"article"`
+	Images []BaseImagePayload `json:"images" binding:"min=1"`
 }
 
-
-func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, error) {
-	const MAX_LENGTH = 64	
-
-	titleSanitized := sanitize(req.Title)
-	if len(titleSanitized) > MAX_LENGTH {
-		titleSanitized = titleSanitized[:MAX_LENGTH - 1]
+func (s ArticleService) CreateArticle(req CreateArticleRequest, tx *ent.Tx) (*ent.Article, error) {
+	
+	article, err := s.createArticle(req.Article, tx)
+	if err != nil {
+		return nil, err
 	}
 	
-	article, err := database.Client.Article.Create().
-		SetID(uuid.New()).
+	if err = s.createArticleTitle(article, tx); err != nil {
+		return nil, err
+	}
+
+	for _, img := range req.Images {
+		if err = s.createImage(img, article.ID, tx); err != nil {
+			return nil, err
+		}
+	}
+
+	return article, nil
+}
+
+func (s ArticleService) createArticle(req BaseArticlePayload, tx *ent.Tx) (article *ent.Article, err error) {
+	articleId := uuid.New()
+
+	article, err = tx.Article.Create().
+		SetID(articleId).
 		SetTitle(req.Title).
 		SetShort(req.Short).
 		SetContent(req.Content).
@@ -40,31 +52,45 @@ func (s ArticleService) CreateArticle(req CreateArticleRequest) (*ent.Article, e
 		Save(s.ctx)
 
 	if err != nil {
-		return nil, errors.Error(ErrFailedCreatingArticle)
-	}
-	
-	_, err = database.Client.ArticleTitleGuid.
-		Create().
-		SetID(uuid.New()).
-		SetTitleNormalized(titleSanitized).
-		SetArticle(article).
-		Save(s.ctx)
-
-	if err != nil {
-		return nil, errors.Error(ErrFailedCreatingArticleTitle)
+		err = errors.Error(ErrFailedCreatingArticle)
+		return
 	}
 
-	return article, nil
+	return
 }
 
-func sanitize(input string) string {
-	reg, err := regexp.Compile("[ąćęłńóśźż]")
-    if err != nil {
-        panic(err)
-    }
-    input = reg.ReplaceAllString(input, "")
+func (s ArticleService) createArticleTitle(article *ent.Article, tx *ent.Tx) (err error) {
+	const MAX_LENGTH = 64	
+	articleTitleId := uuid.New()
 
-    input = strings.Replace(input, " ", "-", -1)
+	titleSanitized := SanitizeTitle(article.Title)
+	if len(titleSanitized) > MAX_LENGTH {
+		titleSanitized = titleSanitized[:MAX_LENGTH - 1]
+	}
 
-    return input
+	err = tx.ArticleTitleGuid.
+		Create().
+		SetID(articleTitleId).
+		SetTitleNormalized(titleSanitized).
+		SetArticleID(article.ID).
+		Exec(s.ctx)
+
+	if err != nil {
+		err = errors.Error(ErrFailedCreatingArticleTitle)
+		return
+	}
+
+	return 
+}
+
+func (s ArticleService) createImage(img BaseImagePayload, articleId uuid.UUID, tx *ent.Tx) (err error) {
+	_, err = s.imageService.CreateImage(image.CreateImageRequest{
+		Title: img.Title,
+		Alt: img.Alt,
+		BlobId: img.BlobId,
+		ArticleId: articleId,
+		IsPreview: img.IsPreview,
+	}, tx)
+
+	return
 }

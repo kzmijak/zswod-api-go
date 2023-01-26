@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -88,10 +89,17 @@ func Blob(v []byte) predicate.Blob {
 	})
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.Blob {
+// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
+func Title(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
+		s.Where(sql.EQ(s.C(FieldTitle), v))
+	})
+}
+
+// Alt applies equality check predicate on the "alt" field. It's identical to AltEQ.
+func Alt(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAlt), v))
 	})
 }
 
@@ -173,102 +181,201 @@ func BlobLTE(v []byte) predicate.Blob {
 	})
 }
 
-// NameEQ applies the EQ predicate on the "name" field.
-func NameEQ(v string) predicate.Blob {
+// TitleEQ applies the EQ predicate on the "title" field.
+func TitleEQ(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
+		s.Where(sql.EQ(s.C(FieldTitle), v))
 	})
 }
 
-// NameNEQ applies the NEQ predicate on the "name" field.
-func NameNEQ(v string) predicate.Blob {
+// TitleNEQ applies the NEQ predicate on the "title" field.
+func TitleNEQ(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldName), v))
+		s.Where(sql.NEQ(s.C(FieldTitle), v))
 	})
 }
 
-// NameIn applies the In predicate on the "name" field.
-func NameIn(vs ...string) predicate.Blob {
+// TitleIn applies the In predicate on the "title" field.
+func TitleIn(vs ...string) predicate.Blob {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldName), v...))
+		s.Where(sql.In(s.C(FieldTitle), v...))
 	})
 }
 
-// NameNotIn applies the NotIn predicate on the "name" field.
-func NameNotIn(vs ...string) predicate.Blob {
+// TitleNotIn applies the NotIn predicate on the "title" field.
+func TitleNotIn(vs ...string) predicate.Blob {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldName), v...))
+		s.Where(sql.NotIn(s.C(FieldTitle), v...))
 	})
 }
 
-// NameGT applies the GT predicate on the "name" field.
-func NameGT(v string) predicate.Blob {
+// TitleGT applies the GT predicate on the "title" field.
+func TitleGT(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldName), v))
+		s.Where(sql.GT(s.C(FieldTitle), v))
 	})
 }
 
-// NameGTE applies the GTE predicate on the "name" field.
-func NameGTE(v string) predicate.Blob {
+// TitleGTE applies the GTE predicate on the "title" field.
+func TitleGTE(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldName), v))
+		s.Where(sql.GTE(s.C(FieldTitle), v))
 	})
 }
 
-// NameLT applies the LT predicate on the "name" field.
-func NameLT(v string) predicate.Blob {
+// TitleLT applies the LT predicate on the "title" field.
+func TitleLT(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldName), v))
+		s.Where(sql.LT(s.C(FieldTitle), v))
 	})
 }
 
-// NameLTE applies the LTE predicate on the "name" field.
-func NameLTE(v string) predicate.Blob {
+// TitleLTE applies the LTE predicate on the "title" field.
+func TitleLTE(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldName), v))
+		s.Where(sql.LTE(s.C(FieldTitle), v))
 	})
 }
 
-// NameContains applies the Contains predicate on the "name" field.
-func NameContains(v string) predicate.Blob {
+// TitleContains applies the Contains predicate on the "title" field.
+func TitleContains(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldName), v))
+		s.Where(sql.Contains(s.C(FieldTitle), v))
 	})
 }
 
-// NameHasPrefix applies the HasPrefix predicate on the "name" field.
-func NameHasPrefix(v string) predicate.Blob {
+// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
+func TitleHasPrefix(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldName), v))
+		s.Where(sql.HasPrefix(s.C(FieldTitle), v))
 	})
 }
 
-// NameHasSuffix applies the HasSuffix predicate on the "name" field.
-func NameHasSuffix(v string) predicate.Blob {
+// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
+func TitleHasSuffix(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldName), v))
+		s.Where(sql.HasSuffix(s.C(FieldTitle), v))
 	})
 }
 
-// NameEqualFold applies the EqualFold predicate on the "name" field.
-func NameEqualFold(v string) predicate.Blob {
+// TitleEqualFold applies the EqualFold predicate on the "title" field.
+func TitleEqualFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldName), v))
+		s.Where(sql.EqualFold(s.C(FieldTitle), v))
 	})
 }
 
-// NameContainsFold applies the ContainsFold predicate on the "name" field.
-func NameContainsFold(v string) predicate.Blob {
+// TitleContainsFold applies the ContainsFold predicate on the "title" field.
+func TitleContainsFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldName), v))
+		s.Where(sql.ContainsFold(s.C(FieldTitle), v))
+	})
+}
+
+// AltEQ applies the EQ predicate on the "alt" field.
+func AltEQ(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldAlt), v))
+	})
+}
+
+// AltNEQ applies the NEQ predicate on the "alt" field.
+func AltNEQ(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldAlt), v))
+	})
+}
+
+// AltIn applies the In predicate on the "alt" field.
+func AltIn(vs ...string) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldAlt), v...))
+	})
+}
+
+// AltNotIn applies the NotIn predicate on the "alt" field.
+func AltNotIn(vs ...string) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldAlt), v...))
+	})
+}
+
+// AltGT applies the GT predicate on the "alt" field.
+func AltGT(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldAlt), v))
+	})
+}
+
+// AltGTE applies the GTE predicate on the "alt" field.
+func AltGTE(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldAlt), v))
+	})
+}
+
+// AltLT applies the LT predicate on the "alt" field.
+func AltLT(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldAlt), v))
+	})
+}
+
+// AltLTE applies the LTE predicate on the "alt" field.
+func AltLTE(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldAlt), v))
+	})
+}
+
+// AltContains applies the Contains predicate on the "alt" field.
+func AltContains(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldAlt), v))
+	})
+}
+
+// AltHasPrefix applies the HasPrefix predicate on the "alt" field.
+func AltHasPrefix(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldAlt), v))
+	})
+}
+
+// AltHasSuffix applies the HasSuffix predicate on the "alt" field.
+func AltHasSuffix(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldAlt), v))
+	})
+}
+
+// AltEqualFold applies the EqualFold predicate on the "alt" field.
+func AltEqualFold(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldAlt), v))
+	})
+}
+
+// AltContainsFold applies the ContainsFold predicate on the "alt" field.
+func AltContainsFold(v string) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldAlt), v))
 	})
 }
 
@@ -432,6 +539,34 @@ func CreatedAtLT(v time.Time) predicate.Blob {
 func CreatedAtLTE(v time.Time) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
+	})
+}
+
+// HasArticleImages applies the HasEdge predicate on the "articleImages" edge.
+func HasArticleImages() predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ArticleImagesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArticleImagesTable, ArticleImagesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasArticleImagesWith applies the HasEdge predicate on the "articleImages" edge with a given conditions (other predicates).
+func HasArticleImagesWith(preds ...predicate.Image) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ArticleImagesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArticleImagesTable, ArticleImagesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

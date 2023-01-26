@@ -479,6 +479,22 @@ func (c *BlobClient) GetX(ctx context.Context, id uuid.UUID) *Blob {
 	return obj
 }
 
+// QueryArticleImages queries the articleImages edge of a Blob.
+func (c *BlobClient) QueryArticleImages(b *Blob) *ImageQuery {
+	query := &ImageQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(blob.Table, blob.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, blob.ArticleImagesTable, blob.ArticleImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BlobClient) Hooks() []Hook {
 	return c.hooks.Blob
@@ -578,6 +594,22 @@ func (c *ImageClient) QueryArticle(i *Image) *ArticleQuery {
 			sqlgraph.From(image.Table, image.FieldID, id),
 			sqlgraph.To(article.Table, article.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, image.ArticleTable, image.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryBlob queries the blob edge of a Image.
+func (c *ImageClient) QueryBlob(i *Image) *BlobQuery {
+	query := &BlobQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(image.Table, image.FieldID, id),
+			sqlgraph.To(blob.Table, blob.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, image.BlobTable, image.BlobColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

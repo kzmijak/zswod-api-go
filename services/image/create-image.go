@@ -1,11 +1,8 @@
 package image
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -16,20 +13,30 @@ const (
 type CreateImageRequest struct {
 	Title string `json:"title"`
 	Alt string `json:"alt"`
-	Url string `json:"url"`
+	BlobId uuid.UUID `json:"blobId"`
 	ArticleId uuid.UUID `json:"articleId"`
-	Order int `json:"order"`
+	IsPreview bool `json:"isPreview"`
 }
 
-func (s ImageService) CreateImage(req CreateImageRequest) (*ent.Image, error) {
-	image, err := database.Client.Image.Create().
+func (s ImageService) CreateImage(req CreateImageRequest, tx *ent.Tx) (image *ent.Image, err error) {
+
+	blob, err :=s.blobService.GetBlob(req.BlobId)
+	if err != nil {
+		return
+	}
+
+	if (blob.Alt != "") {
+		blob.Alt = req.Alt
+		s.blobService.UpdateBlob(blob)
+	}
+
+	image, err = tx.Image.Create().
 		SetID(uuid.New()).
 		SetTitle(req.Title).
-		SetUploadDate(time.Now()).
 		SetAlt(req.Alt).
-		SetURL(req.Url).
 		SetArticleID(req.ArticleId).
-		SetOrder(req.Order).
+		SetBlobID(req.BlobId).
+		SetIsPreview(req.IsPreview).
 		Save(s.ctx)
 
 	if err != nil {

@@ -17,8 +17,8 @@ type Article struct {
 func (Article) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
-		field.String("title").MinLen(6).MaxLen(32),
-		field.String("short").MinLen(12).MaxLen(128),
+		field.String("title").MinLen(6).MaxLen(200),
+		field.String("short").MinLen(12).MaxLen(300),
 		field.String("content").
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumtext",

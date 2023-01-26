@@ -3,8 +3,6 @@
 package image
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -96,24 +94,10 @@ func Alt(v string) predicate.Image {
 	})
 }
 
-// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
-func URL(v string) predicate.Image {
+// IsPreview applies equality check predicate on the "isPreview" field. It's identical to IsPreviewEQ.
+func IsPreview(v bool) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldURL), v))
-	})
-}
-
-// UploadDate applies equality check predicate on the "uploadDate" field. It's identical to UploadDateEQ.
-func UploadDate(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
-func Order(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldOrder), v))
+		s.Where(sql.EQ(s.C(FieldIsPreview), v))
 	})
 }
 
@@ -315,230 +299,17 @@ func AltContainsFold(v string) predicate.Image {
 	})
 }
 
-// URLEQ applies the EQ predicate on the "url" field.
-func URLEQ(v string) predicate.Image {
+// IsPreviewEQ applies the EQ predicate on the "isPreview" field.
+func IsPreviewEQ(v bool) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldURL), v))
+		s.Where(sql.EQ(s.C(FieldIsPreview), v))
 	})
 }
 
-// URLNEQ applies the NEQ predicate on the "url" field.
-func URLNEQ(v string) predicate.Image {
+// IsPreviewNEQ applies the NEQ predicate on the "isPreview" field.
+func IsPreviewNEQ(v bool) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldURL), v))
-	})
-}
-
-// URLIn applies the In predicate on the "url" field.
-func URLIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldURL), v...))
-	})
-}
-
-// URLNotIn applies the NotIn predicate on the "url" field.
-func URLNotIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldURL), v...))
-	})
-}
-
-// URLGT applies the GT predicate on the "url" field.
-func URLGT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldURL), v))
-	})
-}
-
-// URLGTE applies the GTE predicate on the "url" field.
-func URLGTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldURL), v))
-	})
-}
-
-// URLLT applies the LT predicate on the "url" field.
-func URLLT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldURL), v))
-	})
-}
-
-// URLLTE applies the LTE predicate on the "url" field.
-func URLLTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldURL), v))
-	})
-}
-
-// URLContains applies the Contains predicate on the "url" field.
-func URLContains(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldURL), v))
-	})
-}
-
-// URLHasPrefix applies the HasPrefix predicate on the "url" field.
-func URLHasPrefix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldURL), v))
-	})
-}
-
-// URLHasSuffix applies the HasSuffix predicate on the "url" field.
-func URLHasSuffix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldURL), v))
-	})
-}
-
-// URLEqualFold applies the EqualFold predicate on the "url" field.
-func URLEqualFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldURL), v))
-	})
-}
-
-// URLContainsFold applies the ContainsFold predicate on the "url" field.
-func URLContainsFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldURL), v))
-	})
-}
-
-// UploadDateEQ applies the EQ predicate on the "uploadDate" field.
-func UploadDateEQ(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateNEQ applies the NEQ predicate on the "uploadDate" field.
-func UploadDateNEQ(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateIn applies the In predicate on the "uploadDate" field.
-func UploadDateIn(vs ...time.Time) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldUploadDate), v...))
-	})
-}
-
-// UploadDateNotIn applies the NotIn predicate on the "uploadDate" field.
-func UploadDateNotIn(vs ...time.Time) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldUploadDate), v...))
-	})
-}
-
-// UploadDateGT applies the GT predicate on the "uploadDate" field.
-func UploadDateGT(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateGTE applies the GTE predicate on the "uploadDate" field.
-func UploadDateGTE(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateLT applies the LT predicate on the "uploadDate" field.
-func UploadDateLT(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateLTE applies the LTE predicate on the "uploadDate" field.
-func UploadDateLTE(v time.Time) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldUploadDate), v))
-	})
-}
-
-// OrderEQ applies the EQ predicate on the "order" field.
-func OrderEQ(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldOrder), v))
-	})
-}
-
-// OrderNEQ applies the NEQ predicate on the "order" field.
-func OrderNEQ(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldOrder), v))
-	})
-}
-
-// OrderIn applies the In predicate on the "order" field.
-func OrderIn(vs ...int) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldOrder), v...))
-	})
-}
-
-// OrderNotIn applies the NotIn predicate on the "order" field.
-func OrderNotIn(vs ...int) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldOrder), v...))
-	})
-}
-
-// OrderGT applies the GT predicate on the "order" field.
-func OrderGT(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldOrder), v))
-	})
-}
-
-// OrderGTE applies the GTE predicate on the "order" field.
-func OrderGTE(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldOrder), v))
-	})
-}
-
-// OrderLT applies the LT predicate on the "order" field.
-func OrderLT(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldOrder), v))
-	})
-}
-
-// OrderLTE applies the LTE predicate on the "order" field.
-func OrderLTE(v int) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldOrder), v))
+		s.Where(sql.NEQ(s.C(FieldIsPreview), v))
 	})
 }
 
@@ -561,6 +332,34 @@ func HasArticleWith(preds ...predicate.Article) predicate.Image {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ArticleInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasBlob applies the HasEdge predicate on the "blob" edge.
+func HasBlob() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BlobTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasBlobWith applies the HasEdge predicate on the "blob" edge with a given conditions (other predicates).
+func HasBlobWith(preds ...predicate.Blob) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(BlobInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

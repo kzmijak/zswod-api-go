@@ -4,7 +4,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/image"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -12,12 +11,12 @@ const (
 	ErrArticleNotFound = "ErrArticleNotFound: Article with given name not found"
 )
 
-func (s ArticleService) getArticleEntityByTitle(titleNormalized string) (*ent.Article, error) {
-	articleTitleEntity, err := database.Client.ArticleTitleGuid.Query().
+func (s ArticleService) getArticleEntityByTitle(titleNormalized string, tx *ent.Tx) (*ent.Article, error) {
+	articleTitleEntity, err := tx.ArticleTitleGuid.Query().
 		Where(articletitleguid.TitleNormalized(titleNormalized)).
 		WithArticle(func(aq *ent.ArticleQuery) {
 			aq.WithImages(func(iq *ent.ImageQuery) {
-				iq.Order(ent.Asc(image.FieldOrder)).All(s.ctx)
+				iq.Order(ent.Desc(image.FieldIsPreview)).WithBlob().All(s.ctx)
 			}).Only(s.ctx)
 		}).
 		Only(s.ctx)

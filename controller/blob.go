@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,34 +16,42 @@ const (
 	ErrInvalidUuidFormat = "ErrInvalidUuidFormat: Could not parse UUID. Invalid format."
 )
 
-type BlobUrlResponse struct {
-	Name string `json:"name"`
-	Url string `json:"url"`
+type BlobResponse struct {
+	Title string `json:"title"`
+	Alt string `json:"alt"`
 	Id string `json:"id"`
+	CreatedAt time.Time `json:"createdAt"` 
 }
 
 func (c *Controller) UploadBlob(ctx *gin.Context) {
 	c.log.Trace("Uploading blob")
 
-	file, err := ctx.FormFile("file")
+	form, err := ctx.MultipartForm()
+
+	files := form.File["files[]"]
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, ErrInvalidFile)
 		return
 	}
 
-	response, err := c.blobService.StoreBlob(file)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-		return
+	var blobs []BlobResponse
+
+	for _, file := range files {
+		response, err := c.blobService.StoreBlob(file)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, err)
+			return
+		}
+
+		blobs = append(blobs, BlobResponse{
+			Title: response.Title,
+			Id: response.ID.String(),
+			Alt: response.Alt,
+			CreatedAt: response.CreatedAt,
+		})
 	}
 
-	url := createBlobUrl(response, ctx)
-
-	ctx.IndentedJSON(http.StatusOK, BlobUrlResponse{ 
-		Name: response.Name,
-		Url: url,
-		Id: response.ID.String(),
-	})
+	ctx.IndentedJSON(http.StatusOK, blobs)
 }
 
 func (c *Controller) GetBlobByUuid(ctx *gin.Context) {
@@ -65,7 +73,7 @@ func (c *Controller) GetBlobByUuid(ctx *gin.Context) {
 }
 
 type GetBlobsListResponse struct {
-	Blobs []BlobUrlResponse `json:"blobs"`
+	Blobs []BlobResponse `json:"blobs"`
 	Eof bool `json:"eof"`
 }
 func (c *Controller) GetBlobsList(ctx *gin.Context) {
@@ -82,23 +90,18 @@ func (c *Controller) GetBlobsList(ctx *gin.Context) {
 		return
 	}
 
-	blobUrls := lo.Map(response.Blobs, func(item *ent.Blob, index int) BlobUrlResponse {
-		return BlobUrlResponse{
-			Name: item.Name,
-			Url: createBlobUrl(item, ctx),
+	blobUrls := lo.Map(response.Blobs, func(item *ent.Blob, index int) BlobResponse {
+		return BlobResponse{
+			Title: item.Title,
 			Id: item.ID.String(),
+			Alt: item.Alt,
+			CreatedAt: item.CreatedAt,
 		}
 	})
 
-	ctx.IndentedJSON(http.StatusOK, blobUrls)
+	ctx.IndentedJSON(http.StatusOK, GetBlobsListResponse {
+		Blobs: blobUrls,
+		Eof: response.Eof,
+	})
 }
 
-func createBlobUrl(blob *ent.Blob, ctx *gin.Context) string {
-	scheme := "http://"
-	if ctx.Request.TLS != nil {
-			scheme = "https://"
-	}
-	blobUrl := fmt.Sprint(scheme, ctx.Request.Host, ctx.Request.URL.Path, "/", blob.ID.String()) 
-
-	return blobUrl
-}

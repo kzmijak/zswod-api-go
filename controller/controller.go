@@ -24,9 +24,9 @@ type Controller struct {
 
 	jwtService *jwt.JwtService
 	userService *user.UserService
-	blobService blob.BlobService
-	articleService article.ArticleService
-	imageService image.ImageService
+	blobService *blob.BlobService
+	articleService *article.ArticleService
+	imageService *image.ImageService
 } 
 
 func New() *Controller {
@@ -59,7 +59,7 @@ func (c *Controller) Run() {
 	router.Use(cors.New(cors.Config{
         AllowOrigins:     []string{"https://sporlowd.pl:3000"},
         AllowMethods:     []string{"*"},
-        AllowHeaders: []string{"*"},
+        AllowHeaders: 		[]string{"*"},
         ExposeHeaders:    []string{"Content-Length"},
         AllowCredentials: true,
     }))
@@ -67,8 +67,8 @@ func (c *Controller) Run() {
 	c.jwtService = jwt.New().WithConfig(c.cfg.Auth)
 	c.userService = user.New().WithJwtService(c.jwtService).WithContext(c.ctx)
 	c.blobService = blob.New().WithContext(c.ctx)
-	c.articleService = article.New().WithContext(c.ctx)
-	c.imageService = image.New().WithContext(c.ctx)
+	c.imageService = image.New().WithContext(c.ctx).WithBlobService(c.blobService)
+	c.articleService = article.New().WithContext(c.ctx).WithImageService(c.imageService)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -99,6 +99,7 @@ func (c *Controller) Run() {
 			article.GET("/:title", c.GetArticleByTitle)
 			article.GET("", c.GetArticleHeadersList)
 			article.POST("/create", c.CreateArticle).Use(c.RequireTeacher)
+			article.PATCH("/update", c.UpdateArticleByTitle).Use(c.RequireTeacher)
 		}
 	}
 

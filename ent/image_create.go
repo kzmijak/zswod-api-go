@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
@@ -34,21 +34,9 @@ func (ic *ImageCreate) SetAlt(s string) *ImageCreate {
 	return ic
 }
 
-// SetURL sets the "url" field.
-func (ic *ImageCreate) SetURL(s string) *ImageCreate {
-	ic.mutation.SetURL(s)
-	return ic
-}
-
-// SetUploadDate sets the "uploadDate" field.
-func (ic *ImageCreate) SetUploadDate(t time.Time) *ImageCreate {
-	ic.mutation.SetUploadDate(t)
-	return ic
-}
-
-// SetOrder sets the "order" field.
-func (ic *ImageCreate) SetOrder(i int) *ImageCreate {
-	ic.mutation.SetOrder(i)
+// SetIsPreview sets the "isPreview" field.
+func (ic *ImageCreate) SetIsPreview(b bool) *ImageCreate {
+	ic.mutation.SetIsPreview(b)
 	return ic
 }
 
@@ -75,6 +63,17 @@ func (ic *ImageCreate) SetNillableArticleID(id *uuid.UUID) *ImageCreate {
 // SetArticle sets the "article" edge to the Article entity.
 func (ic *ImageCreate) SetArticle(a *Article) *ImageCreate {
 	return ic.SetArticleID(a.ID)
+}
+
+// SetBlobID sets the "blob" edge to the Blob entity by ID.
+func (ic *ImageCreate) SetBlobID(id uuid.UUID) *ImageCreate {
+	ic.mutation.SetBlobID(id)
+	return ic
+}
+
+// SetBlob sets the "blob" edge to the Blob entity.
+func (ic *ImageCreate) SetBlob(b *Blob) *ImageCreate {
+	return ic.SetBlobID(b.ID)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -159,14 +158,11 @@ func (ic *ImageCreate) check() error {
 	if _, ok := ic.mutation.Alt(); !ok {
 		return &ValidationError{Name: "alt", err: errors.New(`ent: missing required field "Image.alt"`)}
 	}
-	if _, ok := ic.mutation.URL(); !ok {
-		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "Image.url"`)}
+	if _, ok := ic.mutation.IsPreview(); !ok {
+		return &ValidationError{Name: "isPreview", err: errors.New(`ent: missing required field "Image.isPreview"`)}
 	}
-	if _, ok := ic.mutation.UploadDate(); !ok {
-		return &ValidationError{Name: "uploadDate", err: errors.New(`ent: missing required field "Image.uploadDate"`)}
-	}
-	if _, ok := ic.mutation.Order(); !ok {
-		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "Image.order"`)}
+	if _, ok := ic.mutation.BlobID(); !ok {
+		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required edge "Image.blob"`)}
 	}
 	return nil
 }
@@ -212,17 +208,9 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 		_node.Alt = value
 	}
-	if value, ok := ic.mutation.URL(); ok {
-		_spec.SetField(image.FieldURL, field.TypeString, value)
-		_node.URL = value
-	}
-	if value, ok := ic.mutation.UploadDate(); ok {
-		_spec.SetField(image.FieldUploadDate, field.TypeTime, value)
-		_node.UploadDate = value
-	}
-	if value, ok := ic.mutation.Order(); ok {
-		_spec.SetField(image.FieldOrder, field.TypeInt, value)
-		_node.Order = value
+	if value, ok := ic.mutation.IsPreview(); ok {
+		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
+		_node.IsPreview = value
 	}
 	if nodes := ic.mutation.ArticleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -242,6 +230,26 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.article_images = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   image.BlobTable,
+			Columns: []string{image.BlobColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: blob.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.blob_article_images = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
