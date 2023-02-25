@@ -34,6 +34,12 @@ func FromString(role string) (Role, bool) {
 	return roleStringMap.GetByValue(role)
 }
 
+func FromId(id int) (role Role, exists bool) {
+	role = authority[id]
+	exists = len(authority) > id
+	return
+}
+
 func (r Role) OrHigher() []Role{
-	return authority[:slices.Index(authority, r)]
+	return authority[:slices.Index(authority, r) + 1]
 }

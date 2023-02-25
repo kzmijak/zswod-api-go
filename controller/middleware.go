@@ -22,6 +22,7 @@ func (c Controller) RequireAuthenticated(ctx *gin.Context)  {
 func (c Controller) challengeRole(userRole role.Role, ctx *gin.Context) bool {
 	tokenRole, err := c.ExtractTokenRole(ctx)
 
+
 	if err != nil || !slices.Contains(userRole.OrHigher(), *tokenRole) {
 		return false
 	}

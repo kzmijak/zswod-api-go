@@ -68,7 +68,7 @@ func (c *Controller) Run() {
 	c.userService = user.New().WithJwtService(c.jwtService).WithContext(c.ctx)
 	c.blobService = blob.New().WithContext(c.ctx)
 	c.imageService = image.New().WithContext(c.ctx).WithBlobService(c.blobService)
-	c.articleService = article.New().WithContext(c.ctx).WithImageService(c.imageService)
+	c.articleService = article.New(c.ctx).WithImageService(c.imageService)
 
 	v1 := router.Group("/api/v1")
 	{
@@ -89,9 +89,8 @@ func (c *Controller) Run() {
 		blob := v1.Group("/blob")
 		{
 			blob.GET("/:uuid", c.GetBlobByUuid)
-			blob.GET("", c.GetBlobsList)
 			blob.POST("", c.UploadBlob).Use(c.RequireTeacher)
-			// blob.GET("", c.GetBlobsList).Use(c.RequireTeacher)
+			blob.GET("", c.GetBlobsList).Use(c.RequireTeacher)
 		}
 
 		article := v1.Group("/article")

@@ -33,7 +33,7 @@ func (s ArticleService) GetArticleHeaders(amount int, offset int) ([]ArticleHead
 		Offset(offset).
 		WithTitleNormalized().
 		WithImages(func(iq *ent.ImageQuery) {
-			iq.Order(ent.Desc(image.FieldIsPreview)).Limit(6).All(s.ctx)
+			iq.Order(ent.Desc(image.FieldIsPreview)).WithBlob(func(bq *ent.BlobQuery) { bq.IDs(s.ctx) }).Limit(6).All(s.ctx)
 		}).
 		All(s.ctx)
 

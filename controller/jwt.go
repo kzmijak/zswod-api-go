@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
@@ -32,9 +34,16 @@ func (c Controller) extractClaim(claimKey string, ctx *gin.Context) (string, err
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
-		claim := claims[claimKey].(string) // TODO: FIX FOR ROLES!!!
+		if value, ok := claims[claimKey].(string); ok {
+			return value, nil
+		} 
+		if value, ok := claims[claimKey].(float64); ok {
+			str := fmt.Sprintf("%.0f", value)
+    	return strings.TrimRight(str, ".0"), nil
+
+		}
 		
-		return claim, nil
+		return "", nil
 	}
 
 	return "", nil
@@ -63,11 +72,15 @@ func (c Controller) ExtractTokenRole(ctx *gin.Context) (*role.Role, error) {
 		return nil, err
 	}
 
-	role, exists := role.FromString(roleString)
-
-	if !exists {
+	roleId, err := strconv.Atoi(roleString)
+	if err != nil {
 		return nil, errors.Error(ErrNoRole)
 	}
+
+	role, exists := role.FromId(roleId)
+	if exists {
+		return &role, nil
+	}
 	
-	return &role, nil
+	return nil, errors.Error(ErrNoRole)
 }

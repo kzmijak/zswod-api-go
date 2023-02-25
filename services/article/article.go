@@ -11,16 +11,13 @@ type ArticleService struct {
 	imageService *image.ImageService
 }
 
-func New() *ArticleService {
-	return &ArticleService{}
+func New(ctx context.Context) *ArticleService {
+	return &ArticleService{
+		ctx: ctx,
+	}
 }
 
 func (s *ArticleService) WithImageService(imageService *image.ImageService) (*ArticleService) {
 	s.imageService = imageService
 	return s
 } 
-
-func (s *ArticleService) WithContext(ctx context.Context) (*ArticleService) {
-	s.ctx = ctx
-	return s
-}

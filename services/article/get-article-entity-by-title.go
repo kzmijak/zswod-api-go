@@ -18,6 +18,7 @@ func (s ArticleService) getArticleEntityByTitle(titleNormalized string, tx *ent.
 			aq.WithImages(func(iq *ent.ImageQuery) {
 				iq.Order(ent.Desc(image.FieldIsPreview)).WithBlob().All(s.ctx)
 			}).Only(s.ctx)
+			aq.WithTitleNormalized().Only(s.ctx)
 		}).
 		Only(s.ctx)
 	
