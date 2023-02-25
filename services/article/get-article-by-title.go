@@ -19,7 +19,7 @@ type GetArticleByTitleResponse struct {
 func (s ArticleService) GetArticleByTitle(titleNormalized string, tx *ent.Tx) (*GetArticleByTitleResponse, error) {
 	articleEntity, err := articleRepo.ArticleTitleTx(tx).
 		QueryArticleEntityByTitle(titleNormalized).
-		JoinAllImagesToArticle(s.ctx).Only(s.ctx)
+		JoinAllImagesToArticle().Only(s.ctx)
 
 	if err != nil {
 		return nil, errors.Error(ErrArticleTitleNotFound)
