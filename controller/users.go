@@ -99,17 +99,6 @@ func (c *Controller) SignIn(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, response)
 }
 
-func (c *Controller) GetCurrentUser(ctx *gin.Context) {
-	token, err := c.ExtractTokenID(ctx)
-
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, token)
-}
-
 type ResetPasswordBody struct {
 	Email string `json:"email"`
 }
@@ -200,4 +189,28 @@ func (c *Controller) SetNewPassword(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, true)
+}
+
+type GetAuthenticatedUserResponse struct {
+	Id string `json:"id"`
+	Role string `json:"role"`
+}
+
+func (c *Controller) GetAuthenticatedUser(ctx *gin.Context) {
+	var err error
+	defer utils.HandleError(&err, ctx)
+
+	roleId, err := c.ExtractTokenRole(ctx)
+	if err != nil {
+		return
+	}
+
+	id, err := c.ExtractTokenID(ctx)
+	if err != nil {
+		return
+	}
+
+	response := GetAuthenticatedUserResponse{ Id: id.String(), Role: roleId.String() }
+
+	ctx.JSON(http.StatusOK, response)
 }

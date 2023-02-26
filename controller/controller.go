@@ -75,7 +75,7 @@ func (c *Controller) Run() {
 		users := v1.Group("/users").Use(c.RequireAuthenticated)
 		{
 			users.GET("", c.GetAllUsers)
-			users.GET("/current", c.GetCurrentUser)
+			users.GET("/current", c.GetAuthenticatedUser)
 		}
 		auth := v1.Group("/auth") 
 		{

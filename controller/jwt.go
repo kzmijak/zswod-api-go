@@ -97,9 +97,7 @@ func (c Controller) CheckValid(ctx *gin.Context) bool {
 		return false
 	}
 
-	if (exp > int(time.Now().Unix())) {
-		return false
-	}
+	now := int(time.Now().Unix())
 
-	return true
+	return exp < now
 }

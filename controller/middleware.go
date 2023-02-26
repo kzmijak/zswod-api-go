@@ -11,7 +11,7 @@ import (
 func (c Controller) RequireAuthenticated(ctx *gin.Context)  {
 	token := c.ExtractToken(ctx)
 	_, err := c.jwtService.ParseToken(token)
-	status := new(int)
+	var status *int
 	defer c.throwOnErr(status, ctx)
 
 	if err != nil {
@@ -38,7 +38,7 @@ func (c Controller) challengeRole(userRole role.Role, ctx *gin.Context) bool {
 }
 
 func (c Controller) RequireAdmin(ctx *gin.Context) {
-	status := new(int)
+	var status *int
 	defer c.throwOnErr(status, ctx)
 
 	if !c.CheckValid(ctx) {
@@ -54,7 +54,7 @@ func (c Controller) RequireAdmin(ctx *gin.Context) {
 }
 
 func (c Controller) RequireTeacher(ctx *gin.Context) {
-	status := new(int)
+	var status *int
 	defer c.throwOnErr(status, ctx)
 
 	if !c.CheckValid(ctx) {
@@ -70,7 +70,7 @@ func (c Controller) RequireTeacher(ctx *gin.Context) {
 }
 
 func (c Controller) throwOnErr(status *int, ctx *gin.Context) {
-		if status != nil {
+	if status != nil {
 		ctx.JSON(*status, *status)
 		ctx.Abort()
 	}
