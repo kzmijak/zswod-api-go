@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,6 @@ func (c Controller) extractClaim(claimKey string, ctx *gin.Context) (string, err
 		if value, ok := claims[claimKey].(float64); ok {
 			str := fmt.Sprintf("%.0f", value)
     	return strings.TrimRight(str, ".0"), nil
-
 		}
 		
 		return "", nil
@@ -83,4 +83,23 @@ func (c Controller) ExtractTokenRole(ctx *gin.Context) (*role.Role, error) {
 	}
 	
 	return nil, errors.Error(ErrNoRole)
+}
+
+func (c Controller) CheckValid(ctx *gin.Context) bool {
+	expString, err := c.extractClaim(jwts.CLAIM_EXPIRED, ctx)
+
+	if err != nil {
+		return false
+	}
+
+	exp, err := strconv.Atoi(expString)
+	if err != nil {
+		return false
+	}
+
+	if (exp > int(time.Now().Unix())) {
+		return false
+	}
+
+	return true
 }

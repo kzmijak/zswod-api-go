@@ -3,6 +3,7 @@ package article
 import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
+	articleRepo "github.com/kzmijak/zswod_api_go/repositories/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
@@ -27,7 +28,9 @@ type UpdateArticleRequest struct {
 }
 
 func (s ArticleService) UpdateArticle(req UpdateArticleRequest, tx *ent.Tx) (a *ent.Article, e error) {
-	affectedArticle, err := s.getArticleEntityByTitle(req.TitleNormalized, tx)
+	affectedArticle, err := articleRepo.ArticleTitleTx(tx).
+		QueryArticleEntityByTitle(req.TitleNormalized).
+		Only(s.ctx)
 
 	if err != nil {
 		e = err

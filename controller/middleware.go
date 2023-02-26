@@ -11,17 +11,24 @@ import (
 func (c Controller) RequireAuthenticated(ctx *gin.Context)  {
 	token := c.ExtractToken(ctx)
 	_, err := c.jwtService.ParseToken(token)
+	status := new(int)
+	defer c.throwOnErr(status, ctx)
+
 	if err != nil {
-		ctx.String(http.StatusUnauthorized, "Unauthorized")
-		ctx.Abort()
+		*status = http.StatusUnauthorized
 		return
 	}
+	
+	if !c.CheckValid(ctx) {
+		*status = http.StatusUnauthorized
+		return
+	}
+	
 	ctx.Next()
 }
 
 func (c Controller) challengeRole(userRole role.Role, ctx *gin.Context) bool {
 	tokenRole, err := c.ExtractTokenRole(ctx)
-
 
 	if err != nil || !slices.Contains(userRole.OrHigher(), *tokenRole) {
 		return false
@@ -31,19 +38,40 @@ func (c Controller) challengeRole(userRole role.Role, ctx *gin.Context) bool {
 }
 
 func (c Controller) RequireAdmin(ctx *gin.Context) {
+	status := new(int)
+	defer c.throwOnErr(status, ctx)
+
+	if !c.CheckValid(ctx) {
+		*status = http.StatusUnauthorized
+		return
+	}
+
 	if satisfied := c.challengeRole(role.Admin, ctx); !satisfied {
-		ctx.JSON(http.StatusForbidden, "Forbidden")
-		ctx.Abort()
+		*status = http.StatusForbidden
 		return
 	}
 	ctx.Next()
 }
 
 func (c Controller) RequireTeacher(ctx *gin.Context) {
+	status := new(int)
+	defer c.throwOnErr(status, ctx)
+
+	if !c.CheckValid(ctx) {
+		*status = http.StatusUnauthorized
+		return
+	}
+
 	if satisfied := c.challengeRole(role.Teacher, ctx); !satisfied {
-		ctx.JSON(http.StatusForbidden, "Forbidden")
-		ctx.Abort()
+		*status = http.StatusForbidden
 		return
 	}
 	ctx.Next()
+}
+
+func (c Controller) throwOnErr(status *int, ctx *gin.Context) {
+		if status != nil {
+		ctx.JSON(*status, *status)
+		ctx.Abort()
+	}
 }

@@ -13,7 +13,7 @@
     "clientbaseUrl": "https://sporlowd.pl:3000"
   },
   "auth": {
-    "lifespanHours": "24",
+    "lifespanHours": "8",
     "secret": "dfsksljvckxljvkl304522394tjierfgjfklcbv"
   },
   "mailer": {
