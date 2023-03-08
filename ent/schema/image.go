@@ -25,7 +25,7 @@ func (Image) Fields() []ent.Field {
 // Edges of the Image.
 func (Image) Edges() []ent.Edge {
 	return []ent.Edge {
-		edge.From("article", Article.Type).
+		edge.From("gallery", Gallery.Type).
 			Ref("images").Unique(),
 		edge.From("blob", Blob.Type).Ref("articleImages").Unique().Required(),
 	}

@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -26,7 +26,7 @@ type ImageQuery struct {
 	order       []OrderFunc
 	fields      []string
 	predicates  []predicate.Image
-	withArticle *ArticleQuery
+	withGallery *GalleryQuery
 	withBlob    *BlobQuery
 	withFKs     bool
 	// intermediate query (i.e. traversal path).
@@ -65,9 +65,9 @@ func (iq *ImageQuery) Order(o ...OrderFunc) *ImageQuery {
 	return iq
 }
 
-// QueryArticle chains the current query on the "article" edge.
-func (iq *ImageQuery) QueryArticle() *ArticleQuery {
-	query := &ArticleQuery{config: iq.config}
+// QueryGallery chains the current query on the "gallery" edge.
+func (iq *ImageQuery) QueryGallery() *GalleryQuery {
+	query := &GalleryQuery{config: iq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -78,8 +78,8 @@ func (iq *ImageQuery) QueryArticle() *ArticleQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(image.Table, image.FieldID, selector),
-			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, image.ArticleTable, image.ArticleColumn),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, image.GalleryTable, image.GalleryColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -290,7 +290,7 @@ func (iq *ImageQuery) Clone() *ImageQuery {
 		offset:      iq.offset,
 		order:       append([]OrderFunc{}, iq.order...),
 		predicates:  append([]predicate.Image{}, iq.predicates...),
-		withArticle: iq.withArticle.Clone(),
+		withGallery: iq.withGallery.Clone(),
 		withBlob:    iq.withBlob.Clone(),
 		// clone intermediate query.
 		sql:    iq.sql.Clone(),
@@ -299,14 +299,14 @@ func (iq *ImageQuery) Clone() *ImageQuery {
 	}
 }
 
-// WithArticle tells the query-builder to eager-load the nodes that are connected to
-// the "article" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *ImageQuery) WithArticle(opts ...func(*ArticleQuery)) *ImageQuery {
-	query := &ArticleQuery{config: iq.config}
+// WithGallery tells the query-builder to eager-load the nodes that are connected to
+// the "gallery" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *ImageQuery) WithGallery(opts ...func(*GalleryQuery)) *ImageQuery {
+	query := &GalleryQuery{config: iq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	iq.withArticle = query
+	iq.withGallery = query
 	return iq
 }
 
@@ -396,11 +396,11 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 		withFKs     = iq.withFKs
 		_spec       = iq.querySpec()
 		loadedTypes = [2]bool{
-			iq.withArticle != nil,
+			iq.withGallery != nil,
 			iq.withBlob != nil,
 		}
 	)
-	if iq.withArticle != nil || iq.withBlob != nil {
+	if iq.withGallery != nil || iq.withBlob != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -424,9 +424,9 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := iq.withArticle; query != nil {
-		if err := iq.loadArticle(ctx, query, nodes, nil,
-			func(n *Image, e *Article) { n.Edges.Article = e }); err != nil {
+	if query := iq.withGallery; query != nil {
+		if err := iq.loadGallery(ctx, query, nodes, nil,
+			func(n *Image, e *Gallery) { n.Edges.Gallery = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -439,20 +439,20 @@ func (iq *ImageQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Image,
 	return nodes, nil
 }
 
-func (iq *ImageQuery) loadArticle(ctx context.Context, query *ArticleQuery, nodes []*Image, init func(*Image), assign func(*Image, *Article)) error {
+func (iq *ImageQuery) loadGallery(ctx context.Context, query *GalleryQuery, nodes []*Image, init func(*Image), assign func(*Image, *Gallery)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Image)
 	for i := range nodes {
-		if nodes[i].article_images == nil {
+		if nodes[i].gallery_images == nil {
 			continue
 		}
-		fk := *nodes[i].article_images
+		fk := *nodes[i].gallery_images
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(article.IDIn(ids...))
+	query.Where(gallery.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -460,7 +460,7 @@ func (iq *ImageQuery) loadArticle(ctx context.Context, query *ArticleQuery, node
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "article_images" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "gallery_images" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

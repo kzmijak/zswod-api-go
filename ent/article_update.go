@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
-	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
 
@@ -55,21 +55,6 @@ func (au *ArticleUpdate) SetUploadDate(t time.Time) *ArticleUpdate {
 	return au
 }
 
-// AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (au *ArticleUpdate) AddImageIDs(ids ...uuid.UUID) *ArticleUpdate {
-	au.mutation.AddImageIDs(ids...)
-	return au
-}
-
-// AddImages adds the "images" edges to the Image entity.
-func (au *ArticleUpdate) AddImages(i ...*Image) *ArticleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return au.AddImageIDs(ids...)
-}
-
 // SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (au *ArticleUpdate) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdate {
 	au.mutation.SetTitleNormalizedID(id)
@@ -89,35 +74,39 @@ func (au *ArticleUpdate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpdate 
 	return au.SetTitleNormalizedID(a.ID)
 }
 
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (au *ArticleUpdate) SetGalleryID(id uuid.UUID) *ArticleUpdate {
+	au.mutation.SetGalleryID(id)
+	return au
+}
+
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (au *ArticleUpdate) SetNillableGalleryID(id *uuid.UUID) *ArticleUpdate {
+	if id != nil {
+		au = au.SetGalleryID(*id)
+	}
+	return au
+}
+
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (au *ArticleUpdate) SetGallery(g *Gallery) *ArticleUpdate {
+	return au.SetGalleryID(g.ID)
+}
+
 // Mutation returns the ArticleMutation object of the builder.
 func (au *ArticleUpdate) Mutation() *ArticleMutation {
 	return au.mutation
 }
 
-// ClearImages clears all "images" edges to the Image entity.
-func (au *ArticleUpdate) ClearImages() *ArticleUpdate {
-	au.mutation.ClearImages()
-	return au
-}
-
-// RemoveImageIDs removes the "images" edge to Image entities by IDs.
-func (au *ArticleUpdate) RemoveImageIDs(ids ...uuid.UUID) *ArticleUpdate {
-	au.mutation.RemoveImageIDs(ids...)
-	return au
-}
-
-// RemoveImages removes "images" edges to Image entities.
-func (au *ArticleUpdate) RemoveImages(i ...*Image) *ArticleUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return au.RemoveImageIDs(ids...)
-}
-
 // ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (au *ArticleUpdate) ClearTitleNormalized() *ArticleUpdate {
 	au.mutation.ClearTitleNormalized()
+	return au
+}
+
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (au *ArticleUpdate) ClearGallery() *ArticleUpdate {
+	au.mutation.ClearGallery()
 	return au
 }
 
@@ -226,60 +215,6 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.UploadDate(); ok {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
 	}
-	if au.mutation.ImagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.RemovedImagesIDs(); len(nodes) > 0 && !au.mutation.ImagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.ImagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if au.mutation.TitleNormalizedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -307,6 +242,41 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: articletitleguid.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.GalleryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   article.GalleryTable,
+			Columns: []string{article.GalleryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.GalleryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   article.GalleryTable,
+			Columns: []string{article.GalleryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
 				},
 			},
 		}
@@ -358,21 +328,6 @@ func (auo *ArticleUpdateOne) SetUploadDate(t time.Time) *ArticleUpdateOne {
 	return auo
 }
 
-// AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (auo *ArticleUpdateOne) AddImageIDs(ids ...uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.AddImageIDs(ids...)
-	return auo
-}
-
-// AddImages adds the "images" edges to the Image entity.
-func (auo *ArticleUpdateOne) AddImages(i ...*Image) *ArticleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return auo.AddImageIDs(ids...)
-}
-
 // SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (auo *ArticleUpdateOne) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.SetTitleNormalizedID(id)
@@ -392,35 +347,39 @@ func (auo *ArticleUpdateOne) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpd
 	return auo.SetTitleNormalizedID(a.ID)
 }
 
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (auo *ArticleUpdateOne) SetGalleryID(id uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.SetGalleryID(id)
+	return auo
+}
+
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (auo *ArticleUpdateOne) SetNillableGalleryID(id *uuid.UUID) *ArticleUpdateOne {
+	if id != nil {
+		auo = auo.SetGalleryID(*id)
+	}
+	return auo
+}
+
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (auo *ArticleUpdateOne) SetGallery(g *Gallery) *ArticleUpdateOne {
+	return auo.SetGalleryID(g.ID)
+}
+
 // Mutation returns the ArticleMutation object of the builder.
 func (auo *ArticleUpdateOne) Mutation() *ArticleMutation {
 	return auo.mutation
 }
 
-// ClearImages clears all "images" edges to the Image entity.
-func (auo *ArticleUpdateOne) ClearImages() *ArticleUpdateOne {
-	auo.mutation.ClearImages()
-	return auo
-}
-
-// RemoveImageIDs removes the "images" edge to Image entities by IDs.
-func (auo *ArticleUpdateOne) RemoveImageIDs(ids ...uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.RemoveImageIDs(ids...)
-	return auo
-}
-
-// RemoveImages removes "images" edges to Image entities.
-func (auo *ArticleUpdateOne) RemoveImages(i ...*Image) *ArticleUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return auo.RemoveImageIDs(ids...)
-}
-
 // ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (auo *ArticleUpdateOne) ClearTitleNormalized() *ArticleUpdateOne {
 	auo.mutation.ClearTitleNormalized()
+	return auo
+}
+
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (auo *ArticleUpdateOne) ClearGallery() *ArticleUpdateOne {
+	auo.mutation.ClearGallery()
 	return auo
 }
 
@@ -559,60 +518,6 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	if value, ok := auo.mutation.UploadDate(); ok {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
 	}
-	if auo.mutation.ImagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.RemovedImagesIDs(); len(nodes) > 0 && !auo.mutation.ImagesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.ImagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if auo.mutation.TitleNormalizedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -640,6 +545,41 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: articletitleguid.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.GalleryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   article.GalleryTable,
+			Columns: []string{article.GalleryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.GalleryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   article.GalleryTable,
+			Columns: []string{article.GalleryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
 				},
 			},
 		}

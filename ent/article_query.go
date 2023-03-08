@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
-	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
 
@@ -27,8 +27,9 @@ type ArticleQuery struct {
 	order               []OrderFunc
 	fields              []string
 	predicates          []predicate.Article
-	withImages          *ImageQuery
 	withTitleNormalized *ArticleTitleGuidQuery
+	withGallery         *GalleryQuery
+	withFKs             bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -65,28 +66,6 @@ func (aq *ArticleQuery) Order(o ...OrderFunc) *ArticleQuery {
 	return aq
 }
 
-// QueryImages chains the current query on the "images" edge.
-func (aq *ArticleQuery) QueryImages() *ImageQuery {
-	query := &ImageQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(article.Table, article.FieldID, selector),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, article.ImagesTable, article.ImagesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryTitleNormalized chains the current query on the "titleNormalized" edge.
 func (aq *ArticleQuery) QueryTitleNormalized() *ArticleTitleGuidQuery {
 	query := &ArticleTitleGuidQuery{config: aq.config}
@@ -102,6 +81,28 @@ func (aq *ArticleQuery) QueryTitleNormalized() *ArticleTitleGuidQuery {
 			sqlgraph.From(article.Table, article.FieldID, selector),
 			sqlgraph.To(articletitleguid.Table, articletitleguid.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, article.TitleNormalizedTable, article.TitleNormalizedColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryGallery chains the current query on the "gallery" edge.
+func (aq *ArticleQuery) QueryGallery() *GalleryQuery {
+	query := &GalleryQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, selector),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, article.GalleryTable, article.GalleryColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -290,24 +291,13 @@ func (aq *ArticleQuery) Clone() *ArticleQuery {
 		offset:              aq.offset,
 		order:               append([]OrderFunc{}, aq.order...),
 		predicates:          append([]predicate.Article{}, aq.predicates...),
-		withImages:          aq.withImages.Clone(),
 		withTitleNormalized: aq.withTitleNormalized.Clone(),
+		withGallery:         aq.withGallery.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
 		unique: aq.unique,
 	}
-}
-
-// WithImages tells the query-builder to eager-load the nodes that are connected to
-// the "images" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *ArticleQuery) WithImages(opts ...func(*ImageQuery)) *ArticleQuery {
-	query := &ImageQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withImages = query
-	return aq
 }
 
 // WithTitleNormalized tells the query-builder to eager-load the nodes that are connected to
@@ -318,6 +308,17 @@ func (aq *ArticleQuery) WithTitleNormalized(opts ...func(*ArticleTitleGuidQuery)
 		opt(query)
 	}
 	aq.withTitleNormalized = query
+	return aq
+}
+
+// WithGallery tells the query-builder to eager-load the nodes that are connected to
+// the "gallery" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ArticleQuery) WithGallery(opts ...func(*GalleryQuery)) *ArticleQuery {
+	query := &GalleryQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withGallery = query
 	return aq
 }
 
@@ -393,12 +394,19 @@ func (aq *ArticleQuery) prepareQuery(ctx context.Context) error {
 func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Article, error) {
 	var (
 		nodes       = []*Article{}
+		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
 		loadedTypes = [2]bool{
-			aq.withImages != nil,
 			aq.withTitleNormalized != nil,
+			aq.withGallery != nil,
 		}
 	)
+	if aq.withGallery != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, article.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Article).scanValues(nil, columns)
 	}
@@ -417,53 +425,21 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aq.withImages; query != nil {
-		if err := aq.loadImages(ctx, query, nodes,
-			func(n *Article) { n.Edges.Images = []*Image{} },
-			func(n *Article, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := aq.withTitleNormalized; query != nil {
 		if err := aq.loadTitleNormalized(ctx, query, nodes, nil,
 			func(n *Article, e *ArticleTitleGuid) { n.Edges.TitleNormalized = e }); err != nil {
 			return nil, err
 		}
 	}
+	if query := aq.withGallery; query != nil {
+		if err := aq.loadGallery(ctx, query, nodes, nil,
+			func(n *Article, e *Gallery) { n.Edges.Gallery = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (aq *ArticleQuery) loadImages(ctx context.Context, query *ImageQuery, nodes []*Article, init func(*Article), assign func(*Article, *Image)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Article)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.InValues(article.ImagesColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.article_images
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "article_images" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "article_images" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (aq *ArticleQuery) loadTitleNormalized(ctx context.Context, query *ArticleTitleGuidQuery, nodes []*Article, init func(*Article), assign func(*Article, *ArticleTitleGuid)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Article)
@@ -489,6 +465,35 @@ func (aq *ArticleQuery) loadTitleNormalized(ctx context.Context, query *ArticleT
 			return fmt.Errorf(`unexpected foreign-key "article_title_normalized" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (aq *ArticleQuery) loadGallery(ctx context.Context, query *GalleryQuery, nodes []*Article, init func(*Article), assign func(*Article, *Gallery)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Article)
+	for i := range nodes {
+		if nodes[i].gallery_article == nil {
+			continue
+		}
+		fk := *nodes[i].gallery_article
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(gallery.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "gallery_article" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

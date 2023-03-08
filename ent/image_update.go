@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -48,23 +48,23 @@ func (iu *ImageUpdate) SetIsPreview(b bool) *ImageUpdate {
 	return iu
 }
 
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (iu *ImageUpdate) SetArticleID(id uuid.UUID) *ImageUpdate {
-	iu.mutation.SetArticleID(id)
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (iu *ImageUpdate) SetGalleryID(id uuid.UUID) *ImageUpdate {
+	iu.mutation.SetGalleryID(id)
 	return iu
 }
 
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (iu *ImageUpdate) SetNillableArticleID(id *uuid.UUID) *ImageUpdate {
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (iu *ImageUpdate) SetNillableGalleryID(id *uuid.UUID) *ImageUpdate {
 	if id != nil {
-		iu = iu.SetArticleID(*id)
+		iu = iu.SetGalleryID(*id)
 	}
 	return iu
 }
 
-// SetArticle sets the "article" edge to the Article entity.
-func (iu *ImageUpdate) SetArticle(a *Article) *ImageUpdate {
-	return iu.SetArticleID(a.ID)
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (iu *ImageUpdate) SetGallery(g *Gallery) *ImageUpdate {
+	return iu.SetGalleryID(g.ID)
 }
 
 // SetBlobID sets the "blob" edge to the Blob entity by ID.
@@ -83,9 +83,9 @@ func (iu *ImageUpdate) Mutation() *ImageMutation {
 	return iu.mutation
 }
 
-// ClearArticle clears the "article" edge to the Article entity.
-func (iu *ImageUpdate) ClearArticle() *ImageUpdate {
-	iu.mutation.ClearArticle()
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (iu *ImageUpdate) ClearGallery() *ImageUpdate {
+	iu.mutation.ClearGallery()
 	return iu
 }
 
@@ -190,33 +190,33 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.IsPreview(); ok {
 		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
 	}
-	if iu.mutation.ArticleCleared() {
+	if iu.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   image.ArticleTable,
-			Columns: []string{image.ArticleColumn},
+			Table:   image.GalleryTable,
+			Columns: []string{image.GalleryColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: gallery.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iu.mutation.ArticleIDs(); len(nodes) > 0 {
+	if nodes := iu.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   image.ArticleTable,
-			Columns: []string{image.ArticleColumn},
+			Table:   image.GalleryTable,
+			Columns: []string{image.GalleryColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: gallery.FieldID,
 				},
 			},
 		}
@@ -297,23 +297,23 @@ func (iuo *ImageUpdateOne) SetIsPreview(b bool) *ImageUpdateOne {
 	return iuo
 }
 
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (iuo *ImageUpdateOne) SetArticleID(id uuid.UUID) *ImageUpdateOne {
-	iuo.mutation.SetArticleID(id)
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (iuo *ImageUpdateOne) SetGalleryID(id uuid.UUID) *ImageUpdateOne {
+	iuo.mutation.SetGalleryID(id)
 	return iuo
 }
 
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (iuo *ImageUpdateOne) SetNillableArticleID(id *uuid.UUID) *ImageUpdateOne {
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (iuo *ImageUpdateOne) SetNillableGalleryID(id *uuid.UUID) *ImageUpdateOne {
 	if id != nil {
-		iuo = iuo.SetArticleID(*id)
+		iuo = iuo.SetGalleryID(*id)
 	}
 	return iuo
 }
 
-// SetArticle sets the "article" edge to the Article entity.
-func (iuo *ImageUpdateOne) SetArticle(a *Article) *ImageUpdateOne {
-	return iuo.SetArticleID(a.ID)
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (iuo *ImageUpdateOne) SetGallery(g *Gallery) *ImageUpdateOne {
+	return iuo.SetGalleryID(g.ID)
 }
 
 // SetBlobID sets the "blob" edge to the Blob entity by ID.
@@ -332,9 +332,9 @@ func (iuo *ImageUpdateOne) Mutation() *ImageMutation {
 	return iuo.mutation
 }
 
-// ClearArticle clears the "article" edge to the Article entity.
-func (iuo *ImageUpdateOne) ClearArticle() *ImageUpdateOne {
-	iuo.mutation.ClearArticle()
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (iuo *ImageUpdateOne) ClearGallery() *ImageUpdateOne {
+	iuo.mutation.ClearGallery()
 	return iuo
 }
 
@@ -469,33 +469,33 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	if value, ok := iuo.mutation.IsPreview(); ok {
 		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
 	}
-	if iuo.mutation.ArticleCleared() {
+	if iuo.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   image.ArticleTable,
-			Columns: []string{image.ArticleColumn},
+			Table:   image.GalleryTable,
+			Columns: []string{image.GalleryColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: gallery.FieldID,
 				},
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iuo.mutation.ArticleIDs(); len(nodes) > 0 {
+	if nodes := iuo.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   image.ArticleTable,
-			Columns: []string{image.ArticleColumn},
+			Table:   image.GalleryTable,
+			Columns: []string{image.GalleryColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: gallery.FieldID,
 				},
 			},
 		}

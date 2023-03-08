@@ -27,6 +27,7 @@ type hooks struct {
 	Article            []ent.Hook
 	ArticleTitleGuid   []ent.Hook
 	Blob               []ent.Hook
+	Gallery            []ent.Hook
 	Image              []ent.Hook
 	ResetPasswordToken []ent.Hook
 	Role               []ent.Hook

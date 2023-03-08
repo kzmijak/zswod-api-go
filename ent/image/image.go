@@ -13,19 +13,19 @@ const (
 	FieldAlt = "alt"
 	// FieldIsPreview holds the string denoting the ispreview field in the database.
 	FieldIsPreview = "is_preview"
-	// EdgeArticle holds the string denoting the article edge name in mutations.
-	EdgeArticle = "article"
+	// EdgeGallery holds the string denoting the gallery edge name in mutations.
+	EdgeGallery = "gallery"
 	// EdgeBlob holds the string denoting the blob edge name in mutations.
 	EdgeBlob = "blob"
 	// Table holds the table name of the image in the database.
 	Table = "images"
-	// ArticleTable is the table that holds the article relation/edge.
-	ArticleTable = "images"
-	// ArticleInverseTable is the table name for the Article entity.
-	// It exists in this package in order to avoid circular dependency with the "article" package.
-	ArticleInverseTable = "articles"
-	// ArticleColumn is the table column denoting the article relation/edge.
-	ArticleColumn = "article_images"
+	// GalleryTable is the table that holds the gallery relation/edge.
+	GalleryTable = "images"
+	// GalleryInverseTable is the table name for the Gallery entity.
+	// It exists in this package in order to avoid circular dependency with the "gallery" package.
+	GalleryInverseTable = "galleries"
+	// GalleryColumn is the table column denoting the gallery relation/edge.
+	GalleryColumn = "gallery_images"
 	// BlobTable is the table that holds the blob relation/edge.
 	BlobTable = "images"
 	// BlobInverseTable is the table name for the Blob entity.
@@ -46,8 +46,8 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "images"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"article_images",
 	"blob_article_images",
+	"gallery_images",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

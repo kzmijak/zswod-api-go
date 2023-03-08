@@ -15,12 +15,21 @@ var (
 		{Name: "short", Type: field.TypeString, Size: 300},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
 		{Name: "upload_date", Type: field.TypeTime},
+		{Name: "gallery_article", Type: field.TypeUUID, Nullable: true},
 	}
 	// ArticlesTable holds the schema information for the "articles" table.
 	ArticlesTable = &schema.Table{
 		Name:       "articles",
 		Columns:    ArticlesColumns,
 		PrimaryKey: []*schema.Column{ArticlesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "articles_galleries_article",
+				Columns:    []*schema.Column{ArticlesColumns[5]},
+				RefColumns: []*schema.Column{GalleriesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// ArticleTitleGuidsColumns holds the columns for the "article_title_guids" table.
 	ArticleTitleGuidsColumns = []*schema.Column{
@@ -57,14 +66,26 @@ var (
 		Columns:    BlobsColumns,
 		PrimaryKey: []*schema.Column{BlobsColumns[0]},
 	}
+	// GalleriesColumns holds the columns for the "galleries" table.
+	GalleriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "title", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// GalleriesTable holds the schema information for the "galleries" table.
+	GalleriesTable = &schema.Table{
+		Name:       "galleries",
+		Columns:    GalleriesColumns,
+		PrimaryKey: []*schema.Column{GalleriesColumns[0]},
+	}
 	// ImagesColumns holds the columns for the "images" table.
 	ImagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "title", Type: field.TypeString},
 		{Name: "alt", Type: field.TypeString},
 		{Name: "is_preview", Type: field.TypeBool},
-		{Name: "article_images", Type: field.TypeUUID, Nullable: true},
 		{Name: "blob_article_images", Type: field.TypeUUID},
+		{Name: "gallery_images", Type: field.TypeUUID, Nullable: true},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -73,16 +94,16 @@ var (
 		PrimaryKey: []*schema.Column{ImagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "images_articles_images",
-				Columns:    []*schema.Column{ImagesColumns[4]},
-				RefColumns: []*schema.Column{ArticlesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "images_blobs_articleImages",
-				Columns:    []*schema.Column{ImagesColumns[5]},
+				Columns:    []*schema.Column{ImagesColumns[4]},
 				RefColumns: []*schema.Column{BlobsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "images_galleries_images",
+				Columns:    []*schema.Column{ImagesColumns[5]},
+				RefColumns: []*schema.Column{GalleriesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -142,6 +163,7 @@ var (
 		ArticlesTable,
 		ArticleTitleGuidsTable,
 		BlobsTable,
+		GalleriesTable,
 		ImagesTable,
 		ResetPasswordTokensTable,
 		RolesTable,
@@ -150,9 +172,10 @@ var (
 )
 
 func init() {
+	ArticlesTable.ForeignKeys[0].RefTable = GalleriesTable
 	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
-	ImagesTable.ForeignKeys[0].RefTable = ArticlesTable
-	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
+	ImagesTable.ForeignKeys[0].RefTable = BlobsTable
+	ImagesTable.ForeignKeys[1].RefTable = GalleriesTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = RolesTable
 }

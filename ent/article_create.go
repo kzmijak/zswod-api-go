@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
-	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 )
 
 // ArticleCreate is the builder for creating a Article entity.
@@ -53,21 +53,6 @@ func (ac *ArticleCreate) SetID(u uuid.UUID) *ArticleCreate {
 	return ac
 }
 
-// AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (ac *ArticleCreate) AddImageIDs(ids ...uuid.UUID) *ArticleCreate {
-	ac.mutation.AddImageIDs(ids...)
-	return ac
-}
-
-// AddImages adds the "images" edges to the Image entity.
-func (ac *ArticleCreate) AddImages(i ...*Image) *ArticleCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ac.AddImageIDs(ids...)
-}
-
 // SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
 func (ac *ArticleCreate) SetTitleNormalizedID(id uuid.UUID) *ArticleCreate {
 	ac.mutation.SetTitleNormalizedID(id)
@@ -85,6 +70,25 @@ func (ac *ArticleCreate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleCre
 // SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
 func (ac *ArticleCreate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleCreate {
 	return ac.SetTitleNormalizedID(a.ID)
+}
+
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (ac *ArticleCreate) SetGalleryID(id uuid.UUID) *ArticleCreate {
+	ac.mutation.SetGalleryID(id)
+	return ac
+}
+
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (ac *ArticleCreate) SetNillableGalleryID(id *uuid.UUID) *ArticleCreate {
+	if id != nil {
+		ac = ac.SetGalleryID(*id)
+	}
+	return ac
+}
+
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (ac *ArticleCreate) SetGallery(g *Gallery) *ArticleCreate {
+	return ac.SetGalleryID(g.ID)
 }
 
 // Mutation returns the ArticleMutation object of the builder.
@@ -237,25 +241,6 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
 		_node.UploadDate = value
 	}
-	if nodes := ac.mutation.ImagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   article.ImagesTable,
-			Columns: []string{article.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ac.mutation.TitleNormalizedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -273,6 +258,26 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.GalleryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   article.GalleryTable,
+			Columns: []string{article.GalleryColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.gallery_article = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

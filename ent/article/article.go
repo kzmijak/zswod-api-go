@@ -15,19 +15,12 @@ const (
 	FieldContent = "content"
 	// FieldUploadDate holds the string denoting the uploaddate field in the database.
 	FieldUploadDate = "upload_date"
-	// EdgeImages holds the string denoting the images edge name in mutations.
-	EdgeImages = "images"
 	// EdgeTitleNormalized holds the string denoting the titlenormalized edge name in mutations.
 	EdgeTitleNormalized = "titleNormalized"
+	// EdgeGallery holds the string denoting the gallery edge name in mutations.
+	EdgeGallery = "gallery"
 	// Table holds the table name of the article in the database.
 	Table = "articles"
-	// ImagesTable is the table that holds the images relation/edge.
-	ImagesTable = "images"
-	// ImagesInverseTable is the table name for the Image entity.
-	// It exists in this package in order to avoid circular dependency with the "image" package.
-	ImagesInverseTable = "images"
-	// ImagesColumn is the table column denoting the images relation/edge.
-	ImagesColumn = "article_images"
 	// TitleNormalizedTable is the table that holds the titleNormalized relation/edge.
 	TitleNormalizedTable = "article_title_guids"
 	// TitleNormalizedInverseTable is the table name for the ArticleTitleGuid entity.
@@ -35,6 +28,13 @@ const (
 	TitleNormalizedInverseTable = "article_title_guids"
 	// TitleNormalizedColumn is the table column denoting the titleNormalized relation/edge.
 	TitleNormalizedColumn = "article_title_normalized"
+	// GalleryTable is the table that holds the gallery relation/edge.
+	GalleryTable = "articles"
+	// GalleryInverseTable is the table name for the Gallery entity.
+	// It exists in this package in order to avoid circular dependency with the "gallery" package.
+	GalleryInverseTable = "galleries"
+	// GalleryColumn is the table column denoting the gallery relation/edge.
+	GalleryColumn = "gallery_article"
 )
 
 // Columns holds all SQL columns for article fields.
@@ -46,10 +46,21 @@ var Columns = []string{
 	FieldUploadDate,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "articles"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"gallery_article",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

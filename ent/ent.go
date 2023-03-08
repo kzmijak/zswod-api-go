@@ -13,6 +13,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/role"
@@ -40,6 +41,7 @@ func columnChecker(table string) func(string) error {
 		article.Table:            article.ValidColumn,
 		articletitleguid.Table:   articletitleguid.ValidColumn,
 		blob.Table:               blob.ValidColumn,
+		gallery.Table:            gallery.ValidColumn,
 		image.Table:              image.ValidColumn,
 		resetpasswordtoken.Table: resetpasswordtoken.ValidColumn,
 		role.Table:               role.ValidColumn,

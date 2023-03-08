@@ -471,34 +471,6 @@ func UploadDateLTE(v time.Time) predicate.Article {
 	})
 }
 
-// HasImages applies the HasEdge predicate on the "images" edge.
-func HasImages() predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ImagesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasImagesWith applies the HasEdge predicate on the "images" edge with a given conditions (other predicates).
-func HasImagesWith(preds ...predicate.Image) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ImagesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasTitleNormalized applies the HasEdge predicate on the "titleNormalized" edge.
 func HasTitleNormalized() predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
@@ -518,6 +490,34 @@ func HasTitleNormalizedWith(preds ...predicate.ArticleTitleGuid) predicate.Artic
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TitleNormalizedInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, TitleNormalizedTable, TitleNormalizedColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasGallery applies the HasEdge predicate on the "gallery" edge.
+func HasGallery() predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GalleryTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasGalleryWith applies the HasEdge predicate on the "gallery" edge with a given conditions (other predicates).
+func HasGalleryWith(preds ...predicate.Gallery) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(GalleryInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

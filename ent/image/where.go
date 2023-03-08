@@ -313,25 +313,25 @@ func IsPreviewNEQ(v bool) predicate.Image {
 	})
 }
 
-// HasArticle applies the HasEdge predicate on the "article" edge.
-func HasArticle() predicate.Image {
+// HasGallery applies the HasEdge predicate on the "gallery" edge.
+func HasGallery() predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
+			sqlgraph.To(GalleryTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasArticleWith applies the HasEdge predicate on the "article" edge with a given conditions (other predicates).
-func HasArticleWith(preds ...predicate.Article) predicate.Image {
+// HasGalleryWith applies the HasEdge predicate on the "gallery" edge with a given conditions (other predicates).
+func HasGalleryWith(preds ...predicate.Gallery) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
+			sqlgraph.To(GalleryInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

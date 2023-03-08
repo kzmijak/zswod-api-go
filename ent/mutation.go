@@ -13,6 +13,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
@@ -34,6 +35,7 @@ const (
 	TypeArticle            = "Article"
 	TypeArticleTitleGuid   = "ArticleTitleGuid"
 	TypeBlob               = "Blob"
+	TypeGallery            = "Gallery"
 	TypeImage              = "Image"
 	TypeResetPasswordToken = "ResetPasswordToken"
 	TypeRole               = "Role"
@@ -51,11 +53,10 @@ type ArticleMutation struct {
 	content                *string
 	uploadDate             *time.Time
 	clearedFields          map[string]struct{}
-	images                 map[uuid.UUID]struct{}
-	removedimages          map[uuid.UUID]struct{}
-	clearedimages          bool
 	titleNormalized        *uuid.UUID
 	clearedtitleNormalized bool
+	gallery                *uuid.UUID
+	clearedgallery         bool
 	done                   bool
 	oldValue               func(context.Context) (*Article, error)
 	predicates             []predicate.Article
@@ -309,60 +310,6 @@ func (m *ArticleMutation) ResetUploadDate() {
 	m.uploadDate = nil
 }
 
-// AddImageIDs adds the "images" edge to the Image entity by ids.
-func (m *ArticleMutation) AddImageIDs(ids ...uuid.UUID) {
-	if m.images == nil {
-		m.images = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearImages clears the "images" edge to the Image entity.
-func (m *ArticleMutation) ClearImages() {
-	m.clearedimages = true
-}
-
-// ImagesCleared reports if the "images" edge to the Image entity was cleared.
-func (m *ArticleMutation) ImagesCleared() bool {
-	return m.clearedimages
-}
-
-// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
-func (m *ArticleMutation) RemoveImageIDs(ids ...uuid.UUID) {
-	if m.removedimages == nil {
-		m.removedimages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.images, ids[i])
-		m.removedimages[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
-func (m *ArticleMutation) RemovedImagesIDs() (ids []uuid.UUID) {
-	for id := range m.removedimages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ImagesIDs returns the "images" edge IDs in the mutation.
-func (m *ArticleMutation) ImagesIDs() (ids []uuid.UUID) {
-	for id := range m.images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetImages resets all changes to the "images" edge.
-func (m *ArticleMutation) ResetImages() {
-	m.images = nil
-	m.clearedimages = false
-	m.removedimages = nil
-}
-
 // SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by id.
 func (m *ArticleMutation) SetTitleNormalizedID(id uuid.UUID) {
 	m.titleNormalized = &id
@@ -400,6 +347,45 @@ func (m *ArticleMutation) TitleNormalizedIDs() (ids []uuid.UUID) {
 func (m *ArticleMutation) ResetTitleNormalized() {
 	m.titleNormalized = nil
 	m.clearedtitleNormalized = false
+}
+
+// SetGalleryID sets the "gallery" edge to the Gallery entity by id.
+func (m *ArticleMutation) SetGalleryID(id uuid.UUID) {
+	m.gallery = &id
+}
+
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (m *ArticleMutation) ClearGallery() {
+	m.clearedgallery = true
+}
+
+// GalleryCleared reports if the "gallery" edge to the Gallery entity was cleared.
+func (m *ArticleMutation) GalleryCleared() bool {
+	return m.clearedgallery
+}
+
+// GalleryID returns the "gallery" edge ID in the mutation.
+func (m *ArticleMutation) GalleryID() (id uuid.UUID, exists bool) {
+	if m.gallery != nil {
+		return *m.gallery, true
+	}
+	return
+}
+
+// GalleryIDs returns the "gallery" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GalleryID instead. It exists only for internal usage by the builders.
+func (m *ArticleMutation) GalleryIDs() (ids []uuid.UUID) {
+	if id := m.gallery; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGallery resets all changes to the "gallery" edge.
+func (m *ArticleMutation) ResetGallery() {
+	m.gallery = nil
+	m.clearedgallery = false
 }
 
 // Where appends a list predicates to the ArticleMutation builder.
@@ -572,11 +558,11 @@ func (m *ArticleMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ArticleMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.images != nil {
-		edges = append(edges, article.EdgeImages)
-	}
 	if m.titleNormalized != nil {
 		edges = append(edges, article.EdgeTitleNormalized)
+	}
+	if m.gallery != nil {
+		edges = append(edges, article.EdgeGallery)
 	}
 	return edges
 }
@@ -585,14 +571,12 @@ func (m *ArticleMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ArticleMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case article.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.images))
-		for id := range m.images {
-			ids = append(ids, id)
-		}
-		return ids
 	case article.EdgeTitleNormalized:
 		if id := m.titleNormalized; id != nil {
+			return []ent.Value{*id}
+		}
+	case article.EdgeGallery:
+		if id := m.gallery; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -602,34 +586,23 @@ func (m *ArticleMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ArticleMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedimages != nil {
-		edges = append(edges, article.EdgeImages)
-	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ArticleMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case article.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.removedimages))
-		for id := range m.removedimages {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ArticleMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedimages {
-		edges = append(edges, article.EdgeImages)
-	}
 	if m.clearedtitleNormalized {
 		edges = append(edges, article.EdgeTitleNormalized)
+	}
+	if m.clearedgallery {
+		edges = append(edges, article.EdgeGallery)
 	}
 	return edges
 }
@@ -638,10 +611,10 @@ func (m *ArticleMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ArticleMutation) EdgeCleared(name string) bool {
 	switch name {
-	case article.EdgeImages:
-		return m.clearedimages
 	case article.EdgeTitleNormalized:
 		return m.clearedtitleNormalized
+	case article.EdgeGallery:
+		return m.clearedgallery
 	}
 	return false
 }
@@ -653,6 +626,9 @@ func (m *ArticleMutation) ClearEdge(name string) error {
 	case article.EdgeTitleNormalized:
 		m.ClearTitleNormalized()
 		return nil
+	case article.EdgeGallery:
+		m.ClearGallery()
+		return nil
 	}
 	return fmt.Errorf("unknown Article unique edge %s", name)
 }
@@ -661,11 +637,11 @@ func (m *ArticleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ArticleMutation) ResetEdge(name string) error {
 	switch name {
-	case article.EdgeImages:
-		m.ResetImages()
-		return nil
 	case article.EdgeTitleNormalized:
 		m.ResetTitleNormalized()
+		return nil
+	case article.EdgeGallery:
+		m.ResetGallery()
 		return nil
 	}
 	return fmt.Errorf("unknown Article edge %s", name)
@@ -1681,6 +1657,553 @@ func (m *BlobMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Blob edge %s", name)
 }
 
+// GalleryMutation represents an operation that mutates the Gallery nodes in the graph.
+type GalleryMutation struct {
+	config
+	op             Op
+	typ            string
+	id             *uuid.UUID
+	title          *string
+	createdAt      *time.Time
+	clearedFields  map[string]struct{}
+	images         map[uuid.UUID]struct{}
+	removedimages  map[uuid.UUID]struct{}
+	clearedimages  bool
+	article        map[uuid.UUID]struct{}
+	removedarticle map[uuid.UUID]struct{}
+	clearedarticle bool
+	done           bool
+	oldValue       func(context.Context) (*Gallery, error)
+	predicates     []predicate.Gallery
+}
+
+var _ ent.Mutation = (*GalleryMutation)(nil)
+
+// galleryOption allows management of the mutation configuration using functional options.
+type galleryOption func(*GalleryMutation)
+
+// newGalleryMutation creates new mutation for the Gallery entity.
+func newGalleryMutation(c config, op Op, opts ...galleryOption) *GalleryMutation {
+	m := &GalleryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeGallery,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withGalleryID sets the ID field of the mutation.
+func withGalleryID(id uuid.UUID) galleryOption {
+	return func(m *GalleryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Gallery
+		)
+		m.oldValue = func(ctx context.Context) (*Gallery, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Gallery.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withGallery sets the old Gallery of the mutation.
+func withGallery(node *Gallery) galleryOption {
+	return func(m *GalleryMutation) {
+		m.oldValue = func(context.Context) (*Gallery, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m GalleryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m GalleryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Gallery entities.
+func (m *GalleryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *GalleryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *GalleryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Gallery.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *GalleryMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *GalleryMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Gallery entity.
+// If the Gallery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GalleryMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *GalleryMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetCreatedAt sets the "createdAt" field.
+func (m *GalleryMutation) SetCreatedAt(t time.Time) {
+	m.createdAt = &t
+}
+
+// CreatedAt returns the value of the "createdAt" field in the mutation.
+func (m *GalleryMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.createdAt
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "createdAt" field's value of the Gallery entity.
+// If the Gallery object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GalleryMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "createdAt" field.
+func (m *GalleryMutation) ResetCreatedAt() {
+	m.createdAt = nil
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by ids.
+func (m *GalleryMutation) AddImageIDs(ids ...uuid.UUID) {
+	if m.images == nil {
+		m.images = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.images[ids[i]] = struct{}{}
+	}
+}
+
+// ClearImages clears the "images" edge to the Image entity.
+func (m *GalleryMutation) ClearImages() {
+	m.clearedimages = true
+}
+
+// ImagesCleared reports if the "images" edge to the Image entity was cleared.
+func (m *GalleryMutation) ImagesCleared() bool {
+	return m.clearedimages
+}
+
+// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
+func (m *GalleryMutation) RemoveImageIDs(ids ...uuid.UUID) {
+	if m.removedimages == nil {
+		m.removedimages = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.images, ids[i])
+		m.removedimages[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
+func (m *GalleryMutation) RemovedImagesIDs() (ids []uuid.UUID) {
+	for id := range m.removedimages {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ImagesIDs returns the "images" edge IDs in the mutation.
+func (m *GalleryMutation) ImagesIDs() (ids []uuid.UUID) {
+	for id := range m.images {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetImages resets all changes to the "images" edge.
+func (m *GalleryMutation) ResetImages() {
+	m.images = nil
+	m.clearedimages = false
+	m.removedimages = nil
+}
+
+// AddArticleIDs adds the "article" edge to the Article entity by ids.
+func (m *GalleryMutation) AddArticleIDs(ids ...uuid.UUID) {
+	if m.article == nil {
+		m.article = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.article[ids[i]] = struct{}{}
+	}
+}
+
+// ClearArticle clears the "article" edge to the Article entity.
+func (m *GalleryMutation) ClearArticle() {
+	m.clearedarticle = true
+}
+
+// ArticleCleared reports if the "article" edge to the Article entity was cleared.
+func (m *GalleryMutation) ArticleCleared() bool {
+	return m.clearedarticle
+}
+
+// RemoveArticleIDs removes the "article" edge to the Article entity by IDs.
+func (m *GalleryMutation) RemoveArticleIDs(ids ...uuid.UUID) {
+	if m.removedarticle == nil {
+		m.removedarticle = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.article, ids[i])
+		m.removedarticle[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedArticle returns the removed IDs of the "article" edge to the Article entity.
+func (m *GalleryMutation) RemovedArticleIDs() (ids []uuid.UUID) {
+	for id := range m.removedarticle {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ArticleIDs returns the "article" edge IDs in the mutation.
+func (m *GalleryMutation) ArticleIDs() (ids []uuid.UUID) {
+	for id := range m.article {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetArticle resets all changes to the "article" edge.
+func (m *GalleryMutation) ResetArticle() {
+	m.article = nil
+	m.clearedarticle = false
+	m.removedarticle = nil
+}
+
+// Where appends a list predicates to the GalleryMutation builder.
+func (m *GalleryMutation) Where(ps ...predicate.Gallery) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *GalleryMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Gallery).
+func (m *GalleryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *GalleryMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.title != nil {
+		fields = append(fields, gallery.FieldTitle)
+	}
+	if m.createdAt != nil {
+		fields = append(fields, gallery.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *GalleryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case gallery.FieldTitle:
+		return m.Title()
+	case gallery.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *GalleryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case gallery.FieldTitle:
+		return m.OldTitle(ctx)
+	case gallery.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown Gallery field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GalleryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case gallery.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case gallery.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Gallery field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *GalleryMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *GalleryMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *GalleryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Gallery numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *GalleryMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *GalleryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *GalleryMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Gallery nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *GalleryMutation) ResetField(name string) error {
+	switch name {
+	case gallery.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case gallery.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown Gallery field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *GalleryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.images != nil {
+		edges = append(edges, gallery.EdgeImages)
+	}
+	if m.article != nil {
+		edges = append(edges, gallery.EdgeArticle)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *GalleryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case gallery.EdgeImages:
+		ids := make([]ent.Value, 0, len(m.images))
+		for id := range m.images {
+			ids = append(ids, id)
+		}
+		return ids
+	case gallery.EdgeArticle:
+		ids := make([]ent.Value, 0, len(m.article))
+		for id := range m.article {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *GalleryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.removedimages != nil {
+		edges = append(edges, gallery.EdgeImages)
+	}
+	if m.removedarticle != nil {
+		edges = append(edges, gallery.EdgeArticle)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *GalleryMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case gallery.EdgeImages:
+		ids := make([]ent.Value, 0, len(m.removedimages))
+		for id := range m.removedimages {
+			ids = append(ids, id)
+		}
+		return ids
+	case gallery.EdgeArticle:
+		ids := make([]ent.Value, 0, len(m.removedarticle))
+		for id := range m.removedarticle {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *GalleryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedimages {
+		edges = append(edges, gallery.EdgeImages)
+	}
+	if m.clearedarticle {
+		edges = append(edges, gallery.EdgeArticle)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *GalleryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case gallery.EdgeImages:
+		return m.clearedimages
+	case gallery.EdgeArticle:
+		return m.clearedarticle
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *GalleryMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Gallery unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *GalleryMutation) ResetEdge(name string) error {
+	switch name {
+	case gallery.EdgeImages:
+		m.ResetImages()
+		return nil
+	case gallery.EdgeArticle:
+		m.ResetArticle()
+		return nil
+	}
+	return fmt.Errorf("unknown Gallery edge %s", name)
+}
+
 // ImageMutation represents an operation that mutates the Image nodes in the graph.
 type ImageMutation struct {
 	config
@@ -1691,8 +2214,8 @@ type ImageMutation struct {
 	alt            *string
 	isPreview      *bool
 	clearedFields  map[string]struct{}
-	article        *uuid.UUID
-	clearedarticle bool
+	gallery        *uuid.UUID
+	clearedgallery bool
 	blob           *uuid.UUID
 	clearedblob    bool
 	done           bool
@@ -1912,43 +2435,43 @@ func (m *ImageMutation) ResetIsPreview() {
 	m.isPreview = nil
 }
 
-// SetArticleID sets the "article" edge to the Article entity by id.
-func (m *ImageMutation) SetArticleID(id uuid.UUID) {
-	m.article = &id
+// SetGalleryID sets the "gallery" edge to the Gallery entity by id.
+func (m *ImageMutation) SetGalleryID(id uuid.UUID) {
+	m.gallery = &id
 }
 
-// ClearArticle clears the "article" edge to the Article entity.
-func (m *ImageMutation) ClearArticle() {
-	m.clearedarticle = true
+// ClearGallery clears the "gallery" edge to the Gallery entity.
+func (m *ImageMutation) ClearGallery() {
+	m.clearedgallery = true
 }
 
-// ArticleCleared reports if the "article" edge to the Article entity was cleared.
-func (m *ImageMutation) ArticleCleared() bool {
-	return m.clearedarticle
+// GalleryCleared reports if the "gallery" edge to the Gallery entity was cleared.
+func (m *ImageMutation) GalleryCleared() bool {
+	return m.clearedgallery
 }
 
-// ArticleID returns the "article" edge ID in the mutation.
-func (m *ImageMutation) ArticleID() (id uuid.UUID, exists bool) {
-	if m.article != nil {
-		return *m.article, true
+// GalleryID returns the "gallery" edge ID in the mutation.
+func (m *ImageMutation) GalleryID() (id uuid.UUID, exists bool) {
+	if m.gallery != nil {
+		return *m.gallery, true
 	}
 	return
 }
 
-// ArticleIDs returns the "article" edge IDs in the mutation.
+// GalleryIDs returns the "gallery" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ArticleID instead. It exists only for internal usage by the builders.
-func (m *ImageMutation) ArticleIDs() (ids []uuid.UUID) {
-	if id := m.article; id != nil {
+// GalleryID instead. It exists only for internal usage by the builders.
+func (m *ImageMutation) GalleryIDs() (ids []uuid.UUID) {
+	if id := m.gallery; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetArticle resets all changes to the "article" edge.
-func (m *ImageMutation) ResetArticle() {
-	m.article = nil
-	m.clearedarticle = false
+// ResetGallery resets all changes to the "gallery" edge.
+func (m *ImageMutation) ResetGallery() {
+	m.gallery = nil
+	m.clearedgallery = false
 }
 
 // SetBlobID sets the "blob" edge to the Blob entity by id.
@@ -2143,8 +2666,8 @@ func (m *ImageMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ImageMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.article != nil {
-		edges = append(edges, image.EdgeArticle)
+	if m.gallery != nil {
+		edges = append(edges, image.EdgeGallery)
 	}
 	if m.blob != nil {
 		edges = append(edges, image.EdgeBlob)
@@ -2156,8 +2679,8 @@ func (m *ImageMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ImageMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case image.EdgeArticle:
-		if id := m.article; id != nil {
+	case image.EdgeGallery:
+		if id := m.gallery; id != nil {
 			return []ent.Value{*id}
 		}
 	case image.EdgeBlob:
@@ -2183,8 +2706,8 @@ func (m *ImageMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ImageMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.clearedarticle {
-		edges = append(edges, image.EdgeArticle)
+	if m.clearedgallery {
+		edges = append(edges, image.EdgeGallery)
 	}
 	if m.clearedblob {
 		edges = append(edges, image.EdgeBlob)
@@ -2196,8 +2719,8 @@ func (m *ImageMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ImageMutation) EdgeCleared(name string) bool {
 	switch name {
-	case image.EdgeArticle:
-		return m.clearedarticle
+	case image.EdgeGallery:
+		return m.clearedgallery
 	case image.EdgeBlob:
 		return m.clearedblob
 	}
@@ -2208,8 +2731,8 @@ func (m *ImageMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ImageMutation) ClearEdge(name string) error {
 	switch name {
-	case image.EdgeArticle:
-		m.ClearArticle()
+	case image.EdgeGallery:
+		m.ClearGallery()
 		return nil
 	case image.EdgeBlob:
 		m.ClearBlob()
@@ -2222,8 +2745,8 @@ func (m *ImageMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ImageMutation) ResetEdge(name string) error {
 	switch name {
-	case image.EdgeArticle:
-		m.ResetArticle()
+	case image.EdgeGallery:
+		m.ResetGallery()
 		return nil
 	case image.EdgeBlob:
 		m.ResetBlob()

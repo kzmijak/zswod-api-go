@@ -14,6 +14,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/role"
@@ -35,6 +36,8 @@ type Client struct {
 	ArticleTitleGuid *ArticleTitleGuidClient
 	// Blob is the client for interacting with the Blob builders.
 	Blob *BlobClient
+	// Gallery is the client for interacting with the Gallery builders.
+	Gallery *GalleryClient
 	// Image is the client for interacting with the Image builders.
 	Image *ImageClient
 	// ResetPasswordToken is the client for interacting with the ResetPasswordToken builders.
@@ -59,6 +62,7 @@ func (c *Client) init() {
 	c.Article = NewArticleClient(c.config)
 	c.ArticleTitleGuid = NewArticleTitleGuidClient(c.config)
 	c.Blob = NewBlobClient(c.config)
+	c.Gallery = NewGalleryClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.ResetPasswordToken = NewResetPasswordTokenClient(c.config)
 	c.Role = NewRoleClient(c.config)
@@ -99,6 +103,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Article:            NewArticleClient(cfg),
 		ArticleTitleGuid:   NewArticleTitleGuidClient(cfg),
 		Blob:               NewBlobClient(cfg),
+		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
 		Role:               NewRoleClient(cfg),
@@ -125,6 +130,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Article:            NewArticleClient(cfg),
 		ArticleTitleGuid:   NewArticleTitleGuidClient(cfg),
 		Blob:               NewBlobClient(cfg),
+		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
 		Role:               NewRoleClient(cfg),
@@ -160,6 +166,7 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Article.Use(hooks...)
 	c.ArticleTitleGuid.Use(hooks...)
 	c.Blob.Use(hooks...)
+	c.Gallery.Use(hooks...)
 	c.Image.Use(hooks...)
 	c.ResetPasswordToken.Use(hooks...)
 	c.Role.Use(hooks...)
@@ -251,22 +258,6 @@ func (c *ArticleClient) GetX(ctx context.Context, id uuid.UUID) *Article {
 	return obj
 }
 
-// QueryImages queries the images edge of a Article.
-func (c *ArticleClient) QueryImages(a *Article) *ImageQuery {
-	query := &ImageQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(article.Table, article.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, article.ImagesTable, article.ImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryTitleNormalized queries the titleNormalized edge of a Article.
 func (c *ArticleClient) QueryTitleNormalized(a *Article) *ArticleTitleGuidQuery {
 	query := &ArticleTitleGuidQuery{config: c.config}
@@ -276,6 +267,22 @@ func (c *ArticleClient) QueryTitleNormalized(a *Article) *ArticleTitleGuidQuery 
 			sqlgraph.From(article.Table, article.FieldID, id),
 			sqlgraph.To(articletitleguid.Table, articletitleguid.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, article.TitleNormalizedTable, article.TitleNormalizedColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryGallery queries the gallery edge of a Article.
+func (c *ArticleClient) QueryGallery(a *Article) *GalleryQuery {
+	query := &GalleryQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, id),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, article.GalleryTable, article.GalleryColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -500,6 +507,128 @@ func (c *BlobClient) Hooks() []Hook {
 	return c.hooks.Blob
 }
 
+// GalleryClient is a client for the Gallery schema.
+type GalleryClient struct {
+	config
+}
+
+// NewGalleryClient returns a client for the Gallery from the given config.
+func NewGalleryClient(c config) *GalleryClient {
+	return &GalleryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `gallery.Hooks(f(g(h())))`.
+func (c *GalleryClient) Use(hooks ...Hook) {
+	c.hooks.Gallery = append(c.hooks.Gallery, hooks...)
+}
+
+// Create returns a builder for creating a Gallery entity.
+func (c *GalleryClient) Create() *GalleryCreate {
+	mutation := newGalleryMutation(c.config, OpCreate)
+	return &GalleryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Gallery entities.
+func (c *GalleryClient) CreateBulk(builders ...*GalleryCreate) *GalleryCreateBulk {
+	return &GalleryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Gallery.
+func (c *GalleryClient) Update() *GalleryUpdate {
+	mutation := newGalleryMutation(c.config, OpUpdate)
+	return &GalleryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GalleryClient) UpdateOne(ga *Gallery) *GalleryUpdateOne {
+	mutation := newGalleryMutation(c.config, OpUpdateOne, withGallery(ga))
+	return &GalleryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GalleryClient) UpdateOneID(id uuid.UUID) *GalleryUpdateOne {
+	mutation := newGalleryMutation(c.config, OpUpdateOne, withGalleryID(id))
+	return &GalleryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Gallery.
+func (c *GalleryClient) Delete() *GalleryDelete {
+	mutation := newGalleryMutation(c.config, OpDelete)
+	return &GalleryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GalleryClient) DeleteOne(ga *Gallery) *GalleryDeleteOne {
+	return c.DeleteOneID(ga.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GalleryClient) DeleteOneID(id uuid.UUID) *GalleryDeleteOne {
+	builder := c.Delete().Where(gallery.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GalleryDeleteOne{builder}
+}
+
+// Query returns a query builder for Gallery.
+func (c *GalleryClient) Query() *GalleryQuery {
+	return &GalleryQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Gallery entity by its id.
+func (c *GalleryClient) Get(ctx context.Context, id uuid.UUID) (*Gallery, error) {
+	return c.Query().Where(gallery.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GalleryClient) GetX(ctx context.Context, id uuid.UUID) *Gallery {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryImages queries the images edge of a Gallery.
+func (c *GalleryClient) QueryImages(ga *Gallery) *ImageQuery {
+	query := &ImageQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gallery.Table, gallery.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, gallery.ImagesTable, gallery.ImagesColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryArticle queries the article edge of a Gallery.
+func (c *GalleryClient) QueryArticle(ga *Gallery) *ArticleQuery {
+	query := &ArticleQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gallery.Table, gallery.FieldID, id),
+			sqlgraph.To(article.Table, article.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, gallery.ArticleTable, gallery.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *GalleryClient) Hooks() []Hook {
+	return c.hooks.Gallery
+}
+
 // ImageClient is a client for the Image schema.
 type ImageClient struct {
 	config
@@ -585,15 +714,15 @@ func (c *ImageClient) GetX(ctx context.Context, id uuid.UUID) *Image {
 	return obj
 }
 
-// QueryArticle queries the article edge of a Image.
-func (c *ImageClient) QueryArticle(i *Image) *ArticleQuery {
-	query := &ArticleQuery{config: c.config}
+// QueryGallery queries the gallery edge of a Image.
+func (c *ImageClient) QueryGallery(i *Image) *GalleryQuery {
+	query := &GalleryQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, image.ArticleTable, image.ArticleColumn),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, image.GalleryTable, image.GalleryColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

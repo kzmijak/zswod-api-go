@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 )
 
 // Article is the model entity for the Article schema.
@@ -28,33 +29,25 @@ type Article struct {
 	UploadDate time.Time `json:"uploadDate,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
-	Edges ArticleEdges `json:"edges"`
+	Edges           ArticleEdges `json:"edges"`
+	gallery_article *uuid.UUID
 }
 
 // ArticleEdges holds the relations/edges for other nodes in the graph.
 type ArticleEdges struct {
-	// Images holds the value of the images edge.
-	Images []*Image `json:"images,omitempty"`
 	// TitleNormalized holds the value of the titleNormalized edge.
 	TitleNormalized *ArticleTitleGuid `json:"titleNormalized,omitempty"`
+	// Gallery holds the value of the gallery edge.
+	Gallery *Gallery `json:"gallery,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 }
 
-// ImagesOrErr returns the Images value or an error if the edge
-// was not loaded in eager-loading.
-func (e ArticleEdges) ImagesOrErr() ([]*Image, error) {
-	if e.loadedTypes[0] {
-		return e.Images, nil
-	}
-	return nil, &NotLoadedError{edge: "images"}
-}
-
 // TitleNormalizedOrErr returns the TitleNormalized value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ArticleEdges) TitleNormalizedOrErr() (*ArticleTitleGuid, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		if e.TitleNormalized == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: articletitleguid.Label}
@@ -62,6 +55,19 @@ func (e ArticleEdges) TitleNormalizedOrErr() (*ArticleTitleGuid, error) {
 		return e.TitleNormalized, nil
 	}
 	return nil, &NotLoadedError{edge: "titleNormalized"}
+}
+
+// GalleryOrErr returns the Gallery value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ArticleEdges) GalleryOrErr() (*Gallery, error) {
+	if e.loadedTypes[1] {
+		if e.Gallery == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: gallery.Label}
+		}
+		return e.Gallery, nil
+	}
+	return nil, &NotLoadedError{edge: "gallery"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -75,6 +81,8 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case article.FieldID:
 			values[i] = new(uuid.UUID)
+		case article.ForeignKeys[0]: // gallery_article
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Article", columns[i])
 		}
@@ -120,19 +128,26 @@ func (a *Article) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.UploadDate = value.Time
 			}
+		case article.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field gallery_article", values[i])
+			} else if value.Valid {
+				a.gallery_article = new(uuid.UUID)
+				*a.gallery_article = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryImages queries the "images" edge of the Article entity.
-func (a *Article) QueryImages() *ImageQuery {
-	return (&ArticleClient{config: a.config}).QueryImages(a)
-}
-
 // QueryTitleNormalized queries the "titleNormalized" edge of the Article entity.
 func (a *Article) QueryTitleNormalized() *ArticleTitleGuidQuery {
 	return (&ArticleClient{config: a.config}).QueryTitleNormalized(a)
+}
+
+// QueryGallery queries the "gallery" edge of the Article entity.
+func (a *Article) QueryGallery() *GalleryQuery {
+	return (&ArticleClient{config: a.config}).QueryGallery(a)
 }
 
 // Update returns a builder for updating this Article.

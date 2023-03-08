@@ -30,7 +30,7 @@ func (Article) Fields() []ent.Field {
 // Edges of the Article.
 func (Article) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("images", Image.Type),
 		edge.To("titleNormalized", ArticleTitleGuid.Type).Unique(),
+		edge.From("gallery", Gallery.Type).Ref("article").Unique(),
 	}
 }

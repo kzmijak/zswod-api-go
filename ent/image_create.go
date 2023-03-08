@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
@@ -46,23 +46,23 @@ func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
 	return ic
 }
 
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (ic *ImageCreate) SetArticleID(id uuid.UUID) *ImageCreate {
-	ic.mutation.SetArticleID(id)
+// SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
+func (ic *ImageCreate) SetGalleryID(id uuid.UUID) *ImageCreate {
+	ic.mutation.SetGalleryID(id)
 	return ic
 }
 
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (ic *ImageCreate) SetNillableArticleID(id *uuid.UUID) *ImageCreate {
+// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
+func (ic *ImageCreate) SetNillableGalleryID(id *uuid.UUID) *ImageCreate {
 	if id != nil {
-		ic = ic.SetArticleID(*id)
+		ic = ic.SetGalleryID(*id)
 	}
 	return ic
 }
 
-// SetArticle sets the "article" edge to the Article entity.
-func (ic *ImageCreate) SetArticle(a *Article) *ImageCreate {
-	return ic.SetArticleID(a.ID)
+// SetGallery sets the "gallery" edge to the Gallery entity.
+func (ic *ImageCreate) SetGallery(g *Gallery) *ImageCreate {
+	return ic.SetGalleryID(g.ID)
 }
 
 // SetBlobID sets the "blob" edge to the Blob entity by ID.
@@ -212,24 +212,24 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
 		_node.IsPreview = value
 	}
-	if nodes := ic.mutation.ArticleIDs(); len(nodes) > 0 {
+	if nodes := ic.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   image.ArticleTable,
-			Columns: []string{image.ArticleColumn},
+			Table:   image.GalleryTable,
+			Columns: []string{image.GalleryColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: gallery.FieldID,
 				},
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.article_images = &nodes[0]
+		_node.gallery_images = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
