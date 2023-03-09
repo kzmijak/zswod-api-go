@@ -10,9 +10,10 @@ type Test struct {
 }
 
 func (query ArticleQuery) JoinAllImagesToArticle() ArticleQuery {
-	query.WithImages(func(iq *ent.ImageQuery) {
+	query.WithGallery(func(gq *ent.GalleryQuery) {
+		gq.WithImages(func(iq *ent.ImageQuery) {
 		imageRepo.QueryImage(iq).QueryOrderedWithBlobId()
-	})
+	})})
 
 	return query
 }

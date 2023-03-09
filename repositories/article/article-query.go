@@ -11,3 +11,7 @@ func QueryArticle (query *ent.ArticleQuery) ArticleQuery {
 		query,
 	}
 }
+
+func ArticleTx(tx *ent.Tx) ArticleQuery {
+	return QueryArticle(tx.Article.Query())
+} 

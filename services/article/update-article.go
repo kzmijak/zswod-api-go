@@ -48,7 +48,6 @@ func (s ArticleService) UpdateArticle(req UpdateArticleRequest, tx *ent.Tx) (a *
 	if err = affectedArticle.Update().SetTitle(req.Article.Title).
 		SetShort(req.Article.Short).
 		SetContent(req.Article.Content).
-		RemoveImages().
 		Exec(s.ctx); 
 		err != nil {
 		e = errors.Error(ErrCouldNotUpdate)

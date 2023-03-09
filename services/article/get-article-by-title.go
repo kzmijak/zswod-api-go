@@ -25,7 +25,7 @@ func (s ArticleService) GetArticleByTitle(titleNormalized string, tx *ent.Tx) (*
 		return nil, errors.Error(ErrArticleTitleNotFound)
 	}
 
-	imageModels := imageMdl.ArrayFromEntities(articleEntity.Edges.Images)
+	imageModels := imageMdl.ArrayFromEntities(articleEntity.Edges.Gallery.Edges.Images)
 
 
 	return &GetArticleByTitleResponse{

@@ -5,6 +5,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	articleController "github.com/kzmijak/zswod_api_go/controller/article"
+	blobController "github.com/kzmijak/zswod_api_go/controller/blob"
+	jwtController "github.com/kzmijak/zswod_api_go/controller/jwt"
+	model "github.com/kzmijak/zswod_api_go/controller/model"
+	userController "github.com/kzmijak/zswod_api_go/controller/user"
 	"github.com/kzmijak/zswod_api_go/modules/config"
 	"github.com/kzmijak/zswod_api_go/modules/logger"
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
@@ -15,18 +20,8 @@ import (
 	"github.com/kzmijak/zswod_api_go/services/user"
 )
 
-
 type Controller struct {
-	log *logger.Logger
-	ctx context.Context
-	cfg *config.Config
-	mailer *mailer.Mailer
-
-	jwtService *jwt.JwtService
-	userService *user.UserService
-	blobService *blob.BlobService
-	articleService *article.ArticleService
-	imageService *image.ImageService
+	*model.Controller
 } 
 
 func New() *Controller {
@@ -34,22 +29,22 @@ func New() *Controller {
 }
 
 func (c *Controller) WithLogger(log *logger.Logger) *Controller  {
-	c.log = log
+	c.Log = log
 	return c;
 }
 
 func (c *Controller) WithContext(ctx context.Context) *Controller  {
-	c.ctx = ctx
+	c.Ctx = ctx
 	return c;
 }
 
 func (c *Controller) WithConfig(cfg *config.Config) *Controller {
-	c.cfg = cfg
+	c.Cfg = cfg
 	return c
 }
 
 func (c *Controller) WithMailer(mailer *mailer.Mailer) *Controller {
-	c.mailer = mailer
+	c.Mailer = mailer
 	return c
 }
 
@@ -64,44 +59,49 @@ func (c *Controller) Run() {
         AllowCredentials: true,
     }))
 
-	c.jwtService = jwt.New().WithConfig(c.cfg.Auth)
-	c.userService = user.New().WithJwtService(c.jwtService).WithContext(c.ctx)
-	c.blobService = blob.New().WithContext(c.ctx)
-	c.imageService = image.New().WithContext(c.ctx).WithBlobService(c.blobService)
-	c.articleService = article.New(c.ctx).WithImageService(c.imageService)
+	c.JwtService = jwt.New().WithConfig(c.Cfg.Auth)
+	c.UserService = user.New().WithJwtService(c.JwtService).WithContext(c.Ctx)
+	c.BlobService = blob.New().WithContext(c.Ctx)
+	c.ImageService = image.New().WithContext(c.Ctx).WithBlobService(c.BlobService)
+	c.ArticleService = article.New(c.Ctx).WithImageService(c.ImageService)
 
+	jc := jwtController.New(c.Controller)
+
+	uc := userController.New(c.Controller)
 	v1 := router.Group("/api/v1")
 	{
-		users := v1.Group("/users").Use(c.RequireAuthenticated)
+		users := v1.Group("/users").Use(jc.RequireAuthenticated)
 		{
-			users.GET("", c.GetAllUsers)
-			users.GET("/current", c.GetAuthenticatedUser)
+			users.GET("", uc.GetAllUsers)
+			users.GET("/current", uc.GetAuthenticatedUser)
 		}
 		auth := v1.Group("/auth") 
 		{
-			auth.POST("/sign-up", c.CreateUser)
-			auth.POST("/sign-in", c.SignIn)	
-			auth.POST("/reset-password", c.ResetPassword)
-			auth.GET("/check-reset-password-token", c.VerifyResetPasswordToken)
-			auth.POST("/set-new-password", c.SetNewPassword)
+			auth.POST("/sign-up", uc.CreateUser)
+			auth.POST("/sign-in", uc.SignIn)	
+			auth.POST("/reset-password", uc.ResetPassword)
+			auth.GET("/check-reset-password-token", uc.VerifyResetPasswordToken)
+			auth.POST("/set-new-password", uc.SetNewPassword)
 		}
 
+		bc := blobController.New(c.Controller)
 		blob := v1.Group("/blob")
 		{
-			blob.GET("/:uuid", c.GetBlobByUuid)
-			blob.Use(c.RequireTeacher)
-			blob.POST("", c.UploadBlob)
-			blob.GET("", c.GetBlobsList)
+			blob.GET("/:uuid", bc.GetBlobByUuid)
+			blob.Use(jc.RequireTeacher)
+			blob.POST("", bc.UploadBlob)
+			blob.GET("", bc.GetBlobsList)
 		}
 
+		ac := articleController.New(c.Controller)
 		article := v1.Group("/article")
 		{
-			article.GET("/:title", c.GetArticleByTitle)
-			article.GET("", c.GetArticleHeadersList)
-			article.POST("/create", c.CreateArticle).Use(c.RequireTeacher)
-			article.PATCH("/update", c.UpdateArticleByTitle).Use(c.RequireTeacher)
+			article.GET("/:title", ac.GetArticleByTitle)
+			article.GET("", ac.GetArticleHeadersList)
+			article.POST("/create", ac.CreateArticle).Use(jc.RequireTeacher)
+			article.PATCH("/update", ac.UpdateArticleByTitle).Use(jc.RequireTeacher)
 		}
 	}
 
-	router.RunTLS(c.cfg.Server.Domain + ":" + c.cfg.Server.Host, "cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
+	router.RunTLS(c.Cfg.Server.Domain + ":" + c.Cfg.Server.Host, "cert/sporlowd.pl.crt","cert/sporlowd.pl.key")
 }

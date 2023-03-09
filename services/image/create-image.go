@@ -14,7 +14,7 @@ type CreateImageRequest struct {
 	Title string `json:"title"`
 	Alt string `json:"alt"`
 	BlobId uuid.UUID `json:"blobId"`
-	ArticleId uuid.UUID `json:"articleId"`
+	GalleryId uuid.UUID `json:"galleryId"`
 	IsPreview bool `json:"isPreview"`
 }
 
@@ -34,7 +34,7 @@ func (s ImageService) CreateImage(req CreateImageRequest, tx *ent.Tx) (image *en
 		SetID(uuid.New()).
 		SetTitle(req.Title).
 		SetAlt(req.Alt).
-		SetArticleID(req.ArticleId).
+		SetGalleryID(req.GalleryId).
 		SetBlobID(req.BlobId).
 		SetIsPreview(req.IsPreview).
 		Save(s.ctx)
