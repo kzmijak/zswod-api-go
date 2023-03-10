@@ -5,9 +5,9 @@ import (
 )
 
 type ArticleController struct {
-	*controller.Controller
+	controller.Controller
 }
 
-func New(controller *controller.Controller) ArticleController {
+func New(controller controller.Controller) ArticleController {
 	return ArticleController{controller}
 }

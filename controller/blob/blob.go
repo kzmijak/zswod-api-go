@@ -5,9 +5,9 @@ import (
 )
 
 type BlobController struct {
-	*controller.Controller
+	controller.Controller
 }
 
-func New(controller *controller.Controller) BlobController {
+func New(controller controller.Controller) BlobController {
 	return BlobController{controller}
 }

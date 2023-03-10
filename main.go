@@ -35,13 +35,11 @@ func main() {
 
 	mailer := mailer.Initialize(ctx, cfg.Mailer)
 
-	fmt.Print(database.Client)
-
 	controller.New().
 		WithContext(ctx).
-		WithLogger(lgr).
-		WithConfig(cfg).
-		WithMailer(mailer).
+		WithLogger(*lgr).
+		WithConfig(*cfg).
+		WithMailer(*mailer).
 		Run();
 }
 

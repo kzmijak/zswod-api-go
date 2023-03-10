@@ -5,9 +5,9 @@ import (
 )
 
 type UserController struct {
-	*controller.Controller
+	controller.Controller
 }
 
-func New(controller *controller.Controller) UserController {
+func New(controller controller.Controller) UserController {
 	return UserController{controller}
 }

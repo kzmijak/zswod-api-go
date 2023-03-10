@@ -22,34 +22,34 @@ import (
 )
 
 type Controller struct {
-	*model.Controller
+	model.Controller
 } 
 
-func New() *Controller {
-	return &Controller{}
+func New() Controller {
+	return Controller{}
 }
 
-func (c *Controller) WithLogger(log *logger.Logger) *Controller  {
+func (c Controller) WithLogger(log logger.Logger) Controller  {
 	c.Log = log
 	return c;
 }
 
-func (c *Controller) WithContext(ctx context.Context) *Controller  {
+func (c Controller) WithContext(ctx context.Context) Controller  {
 	c.Ctx = ctx
 	return c;
 }
 
-func (c *Controller) WithConfig(cfg *config.Config) *Controller {
+func (c Controller) WithConfig(cfg config.Config) Controller {
 	c.Cfg = cfg
 	return c
 }
 
-func (c *Controller) WithMailer(mailer *mailer.Mailer) *Controller {
+func (c Controller) WithMailer(mailer mailer.Mailer) Controller {
 	c.Mailer = mailer
 	return c
 }
 
-func (c *Controller) Run() {
+func (c Controller) Run() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
@@ -61,12 +61,13 @@ func (c *Controller) Run() {
     }))
 
 	c.JwtService = jwt.New().WithConfig(c.Cfg.Auth)
-	c.UserService = user.New().WithJwtService(c.JwtService).WithContext(c.Ctx)
+	c.UserService = user.New().WithContext(c.Ctx)
 	c.BlobService = blob.New().WithContext(c.Ctx)
-	c.ImageService = image.New().WithContext(c.Ctx).WithBlobService(c.BlobService)
-	c.ArticleService = article.New(c.Ctx).WithImageService(c.ImageService)
+	c.ImageService = image.New().WithContext(c.Ctx)
+	c.ArticleService = article.New(c.Ctx)
 	c.GalleryService = gallery.New().WithContext(c.Ctx)
-
+	
+	jwtController.New(c.Controller)
 	jc := jwtController.New(c.Controller)
 
 	uc := userController.New(c.Controller)

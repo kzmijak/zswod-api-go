@@ -15,16 +15,16 @@ import (
 )
 
 type Controller struct {
-	Log    *logger.Logger
+	Log    logger.Logger
 	Ctx    context.Context
-	Cfg    *config.Config
-	Mailer *mailer.Mailer
+	Cfg    config.Config
+	Mailer mailer.Mailer
 
-	JwtService     *jwt.JwtService
-	UserService    *user.UserService
-	BlobService    *blob.BlobService
-	ArticleService *article.ArticleService
-	ImageService   *image.ImageService
-	GalleryService *gallery.GalleryService
+	JwtService     jwt.JwtService
+	UserService    user.UserService
+	BlobService    blob.BlobService
+	ArticleService article.ArticleService
+	ImageService   image.ImageService
+	GalleryService gallery.GalleryService
 
 }

@@ -5,9 +5,9 @@ import (
 )
 
 type JwtController struct {
-	*controller.Controller
+	controller.Controller
 }
 
-func New(controller *controller.Controller) *JwtController {
-	return &JwtController{controller}
+func New(controller controller.Controller) JwtController {
+	return JwtController{controller}
 }

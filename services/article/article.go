@@ -8,16 +8,16 @@ import (
 
 type ArticleService struct {
 	ctx context.Context
-	imageService *image.ImageService
+	imageService image.ImageService
 }
 
-func New(ctx context.Context) *ArticleService {
-	return &ArticleService{
+func New(ctx context.Context) ArticleService {
+	return ArticleService{
 		ctx: ctx,
 	}
 }
 
-func (s *ArticleService) WithImageService(imageService *image.ImageService) (*ArticleService) {
+func (s ArticleService) WithImageService(imageService image.ImageService) (ArticleService) {
 	s.imageService = imageService
 	return s
 } 
