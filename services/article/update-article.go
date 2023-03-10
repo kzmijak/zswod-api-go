@@ -1,69 +1,39 @@
 package article
 
 import (
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
-	articleRepo "github.com/kzmijak/zswod_api_go/repositories/article"
-	"github.com/kzmijak/zswod_api_go/services/image"
 )
-
 
 const (
-	ErrCouldNotUpdate = "ErrCouldNotUpdate: Failed to update the article"
-	ErrCouldNotSanitizeTitle = "ErrCouldNotSanitizeTitle: Failed to sanitize the article title"
+	ErrCouldNotUpdateArticle = "ErrCouldNotUpdateArticle: Failed to update the article"
 )
 
-type ArticleUpdatePayload struct {
-	BaseArticlePayload
+type UpdateArticlePayload struct {
+	Title    string `json:"title"`
+	Short    string `json:"short"`
+	Content  string `json:"content"`
+	GalleryId uuid.UUID `json:"galleryId"`
 }
 
-type ImageUpdatePayload struct {
-	BaseImagePayload
-}
+func (s ArticleService) UpdateArticle(articleId string, payload UpdateArticlePayload, tx *ent.Tx) (*ent.Article, error) {
+	article, err := s.GetArticle(articleId, tx)
+	if err != nil {
+		return nil, err
+	}
 
-type UpdateArticleRequest struct {
-	TitleNormalized string `json:"titleNormalized"`
-	Article BaseArticlePayload `json:"article"`
-	Images []BaseImagePayload `json:"images" binding:"min=1"`
-}
-
-func (s ArticleService) UpdateArticle(req UpdateArticleRequest, tx *ent.Tx) (a *ent.Article, e error) {
-	affectedArticle, err := articleRepo.ArticleTitleTx(tx).
-		QueryArticleEntityByTitle(req.TitleNormalized).
-		Only(s.ctx)
+	articleUpdated, err := article.
+		Update().
+		SetTitle(payload.Title).
+		SetShort(payload.Short).
+		SetContent(payload.Content).
+		SetGalleryID(payload.GalleryId).
+		Save(s.ctx)
 
 	if err != nil {
-		e = err
-		return
+		return nil, errors.Error(ErrCouldNotUpdateArticle)
 	}
 
-	if err = affectedArticle.Edges.TitleNormalized.Update().
-		SetTitleNormalized(SanitizeTitle(req.Article.Title)).
-		Exec(s.ctx);
-		err != nil {
-		e = errors.Error(ErrCouldNotSanitizeTitle)
-		return 
-	}
-
-	if err = affectedArticle.Update().SetTitle(req.Article.Title).
-		SetShort(req.Article.Short).
-		SetContent(req.Article.Content).
-		Exec(s.ctx); 
-		err != nil {
-		e = errors.Error(ErrCouldNotUpdate)
-		return
-	}
-
-	for _, img := range req.Images {
-		s.imageService.CreateImage(image.CreateImageRequest{
-			Title: img.Title,
-			Alt: img.Alt,
-			BlobId: img.BlobId,
-			ArticleId: affectedArticle.ID,
-			IsPreview: img.IsPreview,
-		}, tx)
-	}
-
-	a = affectedArticle
-	return
+	return articleUpdated, nil
 }

@@ -2,34 +2,22 @@ package article
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/models/article"
-	imageMdl "github.com/kzmijak/zswod_api_go/models/image"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	articleRepo "github.com/kzmijak/zswod_api_go/repositories/article"
 )
 
 const (
-	ErrArticleTitleNotFound = "ErrArticleTitleNotFound: Could not find article by title"
+	ErrArticleNotFound = "ErrArticleNotFound: Could not find article"
 )
 
-type GetArticleByTitleResponse struct {
-	Article article.Article `json:"article"`
-	Images []imageMdl.Image `json:"images"`
-}
-func (s ArticleService) GetArticleByTitle(titleNormalized string, tx *ent.Tx) (*GetArticleByTitleResponse, error) {
+func (s ArticleService) GetArticleByTitle(titleNormalized string, tx *ent.Tx) (*ent.Article, error) {
 	articleEntity, err := articleRepo.ArticleTitleTx(tx).
 		QueryArticleEntityByTitle(titleNormalized).
-		JoinAllImagesToArticle().Only(s.ctx)
+		Only(s.ctx)
 
 	if err != nil {
-		return nil, errors.Error(ErrArticleTitleNotFound)
+		return nil, errors.Error(ErrArticleNotFound)
 	}
 
-	imageModels := imageMdl.ArrayFromEntities(articleEntity.Edges.Gallery.Edges.Images)
-
-
-	return &GetArticleByTitleResponse{
-		Article: article.FromEntity(*articleEntity),
-		Images: imageModels,
-	}, nil
+	return articleEntity, nil
 }

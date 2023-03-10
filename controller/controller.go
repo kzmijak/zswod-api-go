@@ -15,6 +15,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/blob"
+	"github.com/kzmijak/zswod_api_go/services/gallery"
 	"github.com/kzmijak/zswod_api_go/services/image"
 	"github.com/kzmijak/zswod_api_go/services/jwt"
 	"github.com/kzmijak/zswod_api_go/services/user"
@@ -64,6 +65,7 @@ func (c *Controller) Run() {
 	c.BlobService = blob.New().WithContext(c.Ctx)
 	c.ImageService = image.New().WithContext(c.Ctx).WithBlobService(c.BlobService)
 	c.ArticleService = article.New(c.Ctx).WithImageService(c.ImageService)
+	c.GalleryService = gallery.New().WithContext(c.Ctx)
 
 	jc := jwtController.New(c.Controller)
 
@@ -99,7 +101,7 @@ func (c *Controller) Run() {
 			article.GET("/:title", ac.GetArticleByTitle)
 			article.GET("", ac.GetArticleHeadersList)
 			article.POST("/create", ac.CreateArticle).Use(jc.RequireTeacher)
-			article.PATCH("/update", ac.UpdateArticleByTitle).Use(jc.RequireTeacher)
+			article.PATCH("/update", ac.UpdateArticle).Use(jc.RequireTeacher)
 		}
 	}
 

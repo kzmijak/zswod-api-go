@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
-	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
 const (
@@ -15,14 +14,14 @@ const (
 	ErrCouldNotParseUuid = "ErrCouldNotParseUuid: Failed to parse image guid"
 )
 
-type CreateArticleRequest struct {
-	Article BaseArticlePayload `json:"article"`
-	Images []BaseImagePayload `json:"images" binding:"min=1"`
+type CreateArticlePayload struct {
+	Title    string `json:"title"`
+	Short    string `json:"short"`
+	Content  string `json:"content"`
 }
 
-func (s ArticleService) CreateArticle(req CreateArticleRequest, tx *ent.Tx) (*ent.Article, error) {
-	
-	article, err := s.createArticle(req.Article, tx)
+func (s ArticleService) CreateArticle(req CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Article, error) {
+	article, err := s.createArticle(req, galleryId, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -31,16 +30,10 @@ func (s ArticleService) CreateArticle(req CreateArticleRequest, tx *ent.Tx) (*en
 		return nil, err
 	}
 
-	for _, img := range req.Images {
-		if err = s.createImage(img, article.ID, tx); err != nil {
-			return nil, err
-		}
-	}
-
 	return article, nil
 }
 
-func (s ArticleService) createArticle(req BaseArticlePayload, tx *ent.Tx) (article *ent.Article, err error) {
+func (s ArticleService) createArticle(req CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (article *ent.Article, err error) {
 	articleId := uuid.New()
 
 	article, err = tx.Article.Create().
@@ -49,6 +42,7 @@ func (s ArticleService) createArticle(req BaseArticlePayload, tx *ent.Tx) (artic
 		SetShort(req.Short).
 		SetContent(req.Content).
 		SetUploadDate(time.Now()).
+		SetGalleryID(galleryId).
 		Save(s.ctx)
 
 	if err != nil {
@@ -81,16 +75,4 @@ func (s ArticleService) createArticleTitle(article *ent.Article, tx *ent.Tx) (er
 	}
 
 	return 
-}
-
-func (s ArticleService) createImage(img BaseImagePayload, articleId uuid.UUID, tx *ent.Tx) (err error) {
-	_, err = s.imageService.CreateImage(image.CreateImageRequest{
-		Title: img.Title,
-		Alt: img.Alt,
-		BlobId: img.BlobId,
-		ArticleId: articleId,
-		IsPreview: img.IsPreview,
-	}, tx)
-
-	return
 }
