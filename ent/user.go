@@ -8,7 +8,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -21,40 +20,26 @@ type User struct {
 	Password string `json:"password,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// Role holds the value of the "role" field.
+	Role user.Role `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges      UserEdges `json:"edges"`
-	role_users *string
+	Edges UserEdges `json:"edges"`
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
-	// Roles holds the value of the roles edge.
-	Roles *Role `json:"roles,omitempty"`
 	// ResetPasswordTokens holds the value of the resetPasswordTokens edge.
 	ResetPasswordTokens []*ResetPasswordToken `json:"resetPasswordTokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// RolesOrErr returns the Roles value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) RolesOrErr() (*Role, error) {
-	if e.loadedTypes[0] {
-		if e.Roles == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: role.Label}
-		}
-		return e.Roles, nil
-	}
-	return nil, &NotLoadedError{edge: "roles"}
+	loadedTypes [1]bool
 }
 
 // ResetPasswordTokensOrErr returns the ResetPasswordTokens value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ResetPasswordTokensOrErr() ([]*ResetPasswordToken, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		return e.ResetPasswordTokens, nil
 	}
 	return nil, &NotLoadedError{edge: "resetPasswordTokens"}
@@ -65,12 +50,10 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldPassword, user.FieldEmail:
+		case user.FieldPassword, user.FieldEmail, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
-		case user.ForeignKeys[0]: // role_users
-			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -104,21 +87,15 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Email = value.String
 			}
-		case user.ForeignKeys[0]:
+		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field role_users", values[i])
+				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
-				u.role_users = new(string)
-				*u.role_users = value.String
+				u.Role = user.Role(value.String)
 			}
 		}
 	}
 	return nil
-}
-
-// QueryRoles queries the "roles" edge of the User entity.
-func (u *User) QueryRoles() *RoleQuery {
-	return (&UserClient{config: u.config}).QueryRoles(u)
 }
 
 // QueryResetPasswordTokens queries the "resetPasswordTokens" edge of the User entity.
@@ -154,6 +131,9 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", u.Role))
 	builder.WriteByte(')')
 	return builder.String()
 }

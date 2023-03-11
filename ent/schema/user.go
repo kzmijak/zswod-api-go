@@ -18,13 +18,13 @@ func (User) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("password"),
 		field.String("email"),
+		field.Enum("role").Values("Admin", "Teacher", "LegalGuardian", "Student", "Unknown"),
 	}
 }
 
 // Edges of the Users.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge {
-		edge.From("roles", Role.Type).Ref("users").Unique(),
 		edge.To("resetPasswordTokens", ResetPasswordToken.Type),
 	}
 }

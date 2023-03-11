@@ -17,7 +17,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
-	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 
 	"entgo.io/ent/dialect"
@@ -42,8 +41,6 @@ type Client struct {
 	Image *ImageClient
 	// ResetPasswordToken is the client for interacting with the ResetPasswordToken builders.
 	ResetPasswordToken *ResetPasswordTokenClient
-	// Role is the client for interacting with the Role builders.
-	Role *RoleClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -65,7 +62,6 @@ func (c *Client) init() {
 	c.Gallery = NewGalleryClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.ResetPasswordToken = NewResetPasswordTokenClient(c.config)
-	c.Role = NewRoleClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -106,7 +102,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
-		Role:               NewRoleClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -133,7 +128,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
-		Role:               NewRoleClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -169,7 +163,6 @@ func (c *Client) Use(hooks ...Hook) {
 	c.Gallery.Use(hooks...)
 	c.Image.Use(hooks...)
 	c.ResetPasswordToken.Use(hooks...)
-	c.Role.Use(hooks...)
 	c.User.Use(hooks...)
 }
 
@@ -857,112 +850,6 @@ func (c *ResetPasswordTokenClient) Hooks() []Hook {
 	return c.hooks.ResetPasswordToken
 }
 
-// RoleClient is a client for the Role schema.
-type RoleClient struct {
-	config
-}
-
-// NewRoleClient returns a client for the Role from the given config.
-func NewRoleClient(c config) *RoleClient {
-	return &RoleClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `role.Hooks(f(g(h())))`.
-func (c *RoleClient) Use(hooks ...Hook) {
-	c.hooks.Role = append(c.hooks.Role, hooks...)
-}
-
-// Create returns a builder for creating a Role entity.
-func (c *RoleClient) Create() *RoleCreate {
-	mutation := newRoleMutation(c.config, OpCreate)
-	return &RoleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Role entities.
-func (c *RoleClient) CreateBulk(builders ...*RoleCreate) *RoleCreateBulk {
-	return &RoleCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Role.
-func (c *RoleClient) Update() *RoleUpdate {
-	mutation := newRoleMutation(c.config, OpUpdate)
-	return &RoleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RoleClient) UpdateOne(r *Role) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRole(r))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RoleClient) UpdateOneID(id string) *RoleUpdateOne {
-	mutation := newRoleMutation(c.config, OpUpdateOne, withRoleID(id))
-	return &RoleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Role.
-func (c *RoleClient) Delete() *RoleDelete {
-	mutation := newRoleMutation(c.config, OpDelete)
-	return &RoleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RoleClient) DeleteOne(r *Role) *RoleDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *RoleClient) DeleteOneID(id string) *RoleDeleteOne {
-	builder := c.Delete().Where(role.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RoleDeleteOne{builder}
-}
-
-// Query returns a query builder for Role.
-func (c *RoleClient) Query() *RoleQuery {
-	return &RoleQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Role entity by its id.
-func (c *RoleClient) Get(ctx context.Context, id string) (*Role, error) {
-	return c.Query().Where(role.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RoleClient) GetX(ctx context.Context, id string) *Role {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUsers queries the users edge of a Role.
-func (c *RoleClient) QueryUsers(r *Role) *UserQuery {
-	query := &UserQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := r.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(role.Table, role.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, role.UsersTable, role.UsersColumn),
-		)
-		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *RoleClient) Hooks() []Hook {
-	return c.hooks.Role
-}
-
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1046,22 +933,6 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryRoles queries the roles edge of a User.
-func (c *UserClient) QueryRoles(u *User) *RoleQuery {
-	query := &RoleQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(role.Table, role.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, user.RolesTable, user.RolesColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QueryResetPasswordTokens queries the resetPasswordTokens edge of a User.

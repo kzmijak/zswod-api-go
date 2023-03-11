@@ -16,7 +16,7 @@ const (
 )
 
 type CreateUserRequest struct {
-	user.CreateUserRequest
+	user.CreateUserPayload
 	PasswordConfirm string `json:"passwordConfirm"`
 }
 
@@ -52,7 +52,7 @@ func (c UserController) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	_, err := c.UserService.CreateUser(requestBody.CreateUserRequest)
+	_, err := c.UserService.CreateUser(requestBody.CreateUserPayload)
 
 	if err != nil {
 		c.Log.Error(err)

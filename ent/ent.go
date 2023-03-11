@@ -16,7 +16,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
-	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -44,7 +43,6 @@ func columnChecker(table string) func(string) error {
 		gallery.Table:            gallery.ValidColumn,
 		image.Table:              image.ValidColumn,
 		resetpasswordtoken.Table: resetpasswordtoken.ValidColumn,
-		role.Table:               role.ValidColumn,
 		user.Table:               user.ValidColumn,
 	}
 	check, ok := checks[table]

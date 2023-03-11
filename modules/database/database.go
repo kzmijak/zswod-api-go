@@ -40,34 +40,6 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 	return nil;
 }
 
-func seedRoles(ctx context.Context) error {
-	rolesCount, err := Client.Role.Query().Count(ctx)
-	if err != nil {
-		return ErrCouldNotQuery
-	}
-
-	if rolesCount > 0 {
-		return nil
-	}
-
-	roles := []string{ 
-		role.Admin.String(), 
-		role.LegalGuardian.String(), 
-		role.Student.String(), 
-		role.Teacher.String(), 
-		role.Unknown.String(),
-	 }
-
-	bulk := make([]*ent.RoleCreate, len(roles))
-
-	for i, id := range roles {
-		bulk[i] = Client.Role.Create().SetID(id)
-	}
-
-	_, err = Client.Role.CreateBulk(bulk...).Save(ctx)
-
-	return err
-}
 
 func seedAdmin(ctx context.Context) error {
 	adminsCount, err := Client.Role.Query().Where(entRole.ID(role.Admin.String())).QueryUsers().Count(ctx)

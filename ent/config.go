@@ -30,7 +30,6 @@ type hooks struct {
 	Gallery            []ent.Hook
 	Image              []ent.Hook
 	ResetPasswordToken []ent.Hook
-	Role               []ent.Hook
 	User               []ent.Hook
 }
 

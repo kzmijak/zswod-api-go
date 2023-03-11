@@ -127,36 +127,18 @@ var (
 			},
 		},
 	}
-	// RolesColumns holds the columns for the "roles" table.
-	RolesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString, Unique: true},
-	}
-	// RolesTable holds the schema information for the "roles" table.
-	RolesTable = &schema.Table{
-		Name:       "roles",
-		Columns:    RolesColumns,
-		PrimaryKey: []*schema.Column{RolesColumns[0]},
-	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "password", Type: field.TypeString},
 		{Name: "email", Type: field.TypeString},
-		{Name: "role_users", Type: field.TypeString, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"Admin", "Teacher", "LegalGuardian", "Student", "Unknown"}},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "users_roles_users",
-				Columns:    []*schema.Column{UsersColumns[3]},
-				RefColumns: []*schema.Column{RolesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
@@ -166,7 +148,6 @@ var (
 		GalleriesTable,
 		ImagesTable,
 		ResetPasswordTokensTable,
-		RolesTable,
 		UsersTable,
 	}
 )
@@ -177,5 +158,4 @@ func init() {
 	ImagesTable.ForeignKeys[0].RefTable = BlobsTable
 	ImagesTable.ForeignKeys[1].RefTable = GalleriesTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
-	UsersTable.ForeignKeys[0].RefTable = RolesTable
 }

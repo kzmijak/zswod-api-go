@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
-	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -42,23 +41,10 @@ func (uu *UserUpdate) SetEmail(s string) *UserUpdate {
 	return uu
 }
 
-// SetRolesID sets the "roles" edge to the Role entity by ID.
-func (uu *UserUpdate) SetRolesID(id string) *UserUpdate {
-	uu.mutation.SetRolesID(id)
+// SetRole sets the "role" field.
+func (uu *UserUpdate) SetRole(u user.Role) *UserUpdate {
+	uu.mutation.SetRole(u)
 	return uu
-}
-
-// SetNillableRolesID sets the "roles" edge to the Role entity by ID if the given value is not nil.
-func (uu *UserUpdate) SetNillableRolesID(id *string) *UserUpdate {
-	if id != nil {
-		uu = uu.SetRolesID(*id)
-	}
-	return uu
-}
-
-// SetRoles sets the "roles" edge to the Role entity.
-func (uu *UserUpdate) SetRoles(r *Role) *UserUpdate {
-	return uu.SetRolesID(r.ID)
 }
 
 // AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
@@ -79,12 +65,6 @@ func (uu *UserUpdate) AddResetPasswordTokens(r ...*ResetPasswordToken) *UserUpda
 // Mutation returns the UserMutation object of the builder.
 func (uu *UserUpdate) Mutation() *UserMutation {
 	return uu.mutation
-}
-
-// ClearRoles clears the "roles" edge to the Role entity.
-func (uu *UserUpdate) ClearRoles() *UserUpdate {
-	uu.mutation.ClearRoles()
-	return uu
 }
 
 // ClearResetPasswordTokens clears all "resetPasswordTokens" edges to the ResetPasswordToken entity.
@@ -115,12 +95,18 @@ func (uu *UserUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(uu.hooks) == 0 {
+		if err = uu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = uu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uu.check(); err != nil {
+				return 0, err
 			}
 			uu.mutation = mutation
 			affected, err = uu.sqlSave(ctx)
@@ -162,6 +148,16 @@ func (uu *UserUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uu *UserUpdate) check() error {
+	if v, ok := uu.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -186,40 +182,8 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := uu.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if uu.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.RolesTable,
-			Columns: []string{user.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: role.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.RolesTable,
-			Columns: []string{user.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: role.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := uu.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if uu.mutation.ResetPasswordTokensCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -306,23 +270,10 @@ func (uuo *UserUpdateOne) SetEmail(s string) *UserUpdateOne {
 	return uuo
 }
 
-// SetRolesID sets the "roles" edge to the Role entity by ID.
-func (uuo *UserUpdateOne) SetRolesID(id string) *UserUpdateOne {
-	uuo.mutation.SetRolesID(id)
+// SetRole sets the "role" field.
+func (uuo *UserUpdateOne) SetRole(u user.Role) *UserUpdateOne {
+	uuo.mutation.SetRole(u)
 	return uuo
-}
-
-// SetNillableRolesID sets the "roles" edge to the Role entity by ID if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableRolesID(id *string) *UserUpdateOne {
-	if id != nil {
-		uuo = uuo.SetRolesID(*id)
-	}
-	return uuo
-}
-
-// SetRoles sets the "roles" edge to the Role entity.
-func (uuo *UserUpdateOne) SetRoles(r *Role) *UserUpdateOne {
-	return uuo.SetRolesID(r.ID)
 }
 
 // AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
@@ -343,12 +294,6 @@ func (uuo *UserUpdateOne) AddResetPasswordTokens(r ...*ResetPasswordToken) *User
 // Mutation returns the UserMutation object of the builder.
 func (uuo *UserUpdateOne) Mutation() *UserMutation {
 	return uuo.mutation
-}
-
-// ClearRoles clears the "roles" edge to the Role entity.
-func (uuo *UserUpdateOne) ClearRoles() *UserUpdateOne {
-	uuo.mutation.ClearRoles()
-	return uuo
 }
 
 // ClearResetPasswordTokens clears all "resetPasswordTokens" edges to the ResetPasswordToken entity.
@@ -386,12 +331,18 @@ func (uuo *UserUpdateOne) Save(ctx context.Context) (*User, error) {
 		node *User
 	)
 	if len(uuo.hooks) == 0 {
+		if err = uuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = uuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*UserMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = uuo.check(); err != nil {
+				return nil, err
 			}
 			uuo.mutation = mutation
 			node, err = uuo.sqlSave(ctx)
@@ -439,6 +390,16 @@ func (uuo *UserUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (uuo *UserUpdateOne) check() error {
+	if v, ok := uuo.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -480,40 +441,8 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	if value, ok := uuo.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
-	if uuo.mutation.RolesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.RolesTable,
-			Columns: []string{user.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: role.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.RolesTable,
-			Columns: []string{user.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: role.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := uuo.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 	}
 	if uuo.mutation.ResetPasswordTokensCleared() {
 		edge := &sqlgraph.EdgeSpec{

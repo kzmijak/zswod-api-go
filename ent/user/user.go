@@ -2,6 +2,10 @@
 
 package user
 
+import (
+	"fmt"
+)
+
 const (
 	// Label holds the string label denoting the user type in the database.
 	Label = "user"
@@ -11,19 +15,12 @@ const (
 	FieldPassword = "password"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
-	// EdgeRoles holds the string denoting the roles edge name in mutations.
-	EdgeRoles = "roles"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
 	// EdgeResetPasswordTokens holds the string denoting the resetpasswordtokens edge name in mutations.
 	EdgeResetPasswordTokens = "resetPasswordTokens"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// RolesTable is the table that holds the roles relation/edge.
-	RolesTable = "users"
-	// RolesInverseTable is the table name for the Role entity.
-	// It exists in this package in order to avoid circular dependency with the "role" package.
-	RolesInverseTable = "roles"
-	// RolesColumn is the table column denoting the roles relation/edge.
-	RolesColumn = "role_users"
 	// ResetPasswordTokensTable is the table that holds the resetPasswordTokens relation/edge.
 	ResetPasswordTokensTable = "reset_password_tokens"
 	// ResetPasswordTokensInverseTable is the table name for the ResetPasswordToken entity.
@@ -38,12 +35,7 @@ var Columns = []string{
 	FieldID,
 	FieldPassword,
 	FieldEmail,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "users"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"role_users",
+	FieldRole,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -53,10 +45,31 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
-			return true
-		}
-	}
 	return false
+}
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// Role values.
+const (
+	RoleAdmin         Role = "Admin"
+	RoleTeacher       Role = "Teacher"
+	RoleLegalGuardian Role = "LegalGuardian"
+	RoleStudent       Role = "Student"
+	RoleUnknown       Role = "Unknown"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RoleAdmin, RoleTeacher, RoleLegalGuardian, RoleStudent, RoleUnknown:
+		return nil
+	default:
+		return fmt.Errorf("user: invalid enum value for role field: %q", r)
+	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 const (
-		ErrCouldNotSaltPassword = "ErrCouldNotSaltPassword: Failed to encrypt the given password"
+	ErrCouldNotSaltPassword = "ErrCouldNotSaltPassword: Failed to encrypt the given password"
 )
 
 func HashString(str string) (string, error) {

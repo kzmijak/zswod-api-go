@@ -292,31 +292,39 @@ func EmailContainsFold(v string) predicate.User {
 	})
 }
 
-// HasRoles applies the HasEdge predicate on the "roles" edge.
-func HasRoles() predicate.User {
+// RoleEQ applies the EQ predicate on the "role" field.
+func RoleEQ(v Role) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(RolesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, RolesTable, RolesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
+		s.Where(sql.EQ(s.C(FieldRole), v))
 	})
 }
 
-// HasRolesWith applies the HasEdge predicate on the "roles" edge with a given conditions (other predicates).
-func HasRolesWith(preds ...predicate.Role) predicate.User {
+// RoleNEQ applies the NEQ predicate on the "role" field.
+func RoleNEQ(v Role) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(RolesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, RolesTable, RolesColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
+		s.Where(sql.NEQ(s.C(FieldRole), v))
+	})
+}
+
+// RoleIn applies the In predicate on the "role" field.
+func RoleIn(vs ...Role) predicate.User {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldRole), v...))
+	})
+}
+
+// RoleNotIn applies the NotIn predicate on the "role" field.
+func RoleNotIn(vs ...Role) predicate.User {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.User(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldRole), v...))
 	})
 }
 

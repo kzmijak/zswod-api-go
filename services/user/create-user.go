@@ -5,16 +5,9 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 	"github.com/kzmijak/zswod_api_go/models/role"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"github.com/kzmijak/zswod_api_go/utils/encryption"
 )
-
-type CreateUserRequest struct {
-	Email string `json:"email"`
-	Password string `json:"password"`
-	Role string `json:"role"`
-}
 
 const (
 	ErrUserCreationFailed = "ErrUserCreationFailed: Failed to save the user in the database"
@@ -22,25 +15,32 @@ const (
 	ErrInvalidRole = "ErrInvalidRole: Provided user does not exist"
 )
 
-func (s UserService) CreateUser(request CreateUserRequest) (*ent.User, error) {
-	if _, exists := role.FromString(request.Role); !exists {
+type CreateUserPayload struct {
+	Email string `json:"email"`
+	Password string `json:"password"`
+	Role string `json:"role"`
+}
+
+func (s UserService) CreateUser(payload CreateUserPayload, tx *ent.Tx) (*ent.User, error) {
+	if _, exists := role.FromString(payload.Role); !exists {
 		return nil, errors.Error(ErrInvalidRole)
 	}
-	
-	if alreadyExists, _ := database.Client.User.Query().Where(user.Email(request.Email)).Exist(s.ctx); alreadyExists {
+
+	existingUser, _ := s.GetUserByEmail(payload.Email, tx)
+	if existingUser != nil {
 		return nil, errors.Error(ErrUserAlreadyExists)
 	}
 
-	salt, err := encryption.HashString(request.Password)
+	salt, err := encryption.HashString(payload.Password)
 	if err != nil {
 		return nil, err
 	}
 
-	user, err := database.Client.User.Create().
+	user, err := tx.User.Create().
 		SetID(uuid.New()).
-		SetEmail(request.Email).
+		SetEmail(payload.Email).
 		SetPassword(salt).
-		SetRolesID(request.Role).
+		SetRole(user.Role(payload.Role)).
 		Save(s.ctx)
 		
 	if err != nil {

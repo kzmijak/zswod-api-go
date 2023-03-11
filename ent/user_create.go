@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
-	"github.com/kzmijak/zswod_api_go/ent/role"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -34,29 +33,16 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
+// SetRole sets the "role" field.
+func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
+	uc.mutation.SetRole(u)
+	return uc
+}
+
 // SetID sets the "id" field.
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
 	return uc
-}
-
-// SetRolesID sets the "roles" edge to the Role entity by ID.
-func (uc *UserCreate) SetRolesID(id string) *UserCreate {
-	uc.mutation.SetRolesID(id)
-	return uc
-}
-
-// SetNillableRolesID sets the "roles" edge to the Role entity by ID if the given value is not nil.
-func (uc *UserCreate) SetNillableRolesID(id *string) *UserCreate {
-	if id != nil {
-		uc = uc.SetRolesID(*id)
-	}
-	return uc
-}
-
-// SetRoles sets the "roles" edge to the Role entity.
-func (uc *UserCreate) SetRoles(r *Role) *UserCreate {
-	return uc.SetRolesID(r.ID)
 }
 
 // AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
@@ -156,6 +142,14 @@ func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
+	if _, ok := uc.mutation.Role(); !ok {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "User.role"`)}
+	}
+	if v, ok := uc.mutation.Role(); ok {
+		if err := user.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "User.role": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -200,25 +194,9 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
 	}
-	if nodes := uc.mutation.RolesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   user.RolesTable,
-			Columns: []string{user.RolesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: role.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.role_users = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
+	if value, ok := uc.mutation.Role(); ok {
+		_spec.SetField(user.FieldRole, field.TypeEnum, value)
+		_node.Role = value
 	}
 	if nodes := uc.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

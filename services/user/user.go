@@ -2,8 +2,6 @@ package user
 
 import (
 	"context"
-
-	"github.com/kzmijak/zswod_api_go/services/jwt"
 )
 
 const (
@@ -12,7 +10,6 @@ const (
 )
 
 type UserService struct {
-	jwtService jwt.JwtService
 	ctx context.Context
 }
 
@@ -22,10 +19,5 @@ func New() UserService {
 
 func (s UserService) WithContext(ctx context.Context) (UserService) {
 	s.ctx = ctx
-	return s
-}
-
-func (s UserService) WithJwtService(jwtService jwt.JwtService) (UserService) {
-	s.jwtService = jwtService
 	return s
 }
