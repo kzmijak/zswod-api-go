@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	articleController "github.com/kzmijak/zswod_api_go/controller/article"
+	authController "github.com/kzmijak/zswod_api_go/controller/auth"
 	blobController "github.com/kzmijak/zswod_api_go/controller/blob"
 	jwtController "github.com/kzmijak/zswod_api_go/controller/jwt"
 	model "github.com/kzmijak/zswod_api_go/controller/model"
@@ -72,6 +73,8 @@ func (c Controller) Run() {
 	jwtController.New(c.Controller)
 	jc := jwtController.New(c.Controller)
 
+	ac := authController.New(c.Controller)
+
 	uc := userController.New(c.Controller)
 	v1 := router.Group("/api/v1")
 	{
@@ -83,7 +86,7 @@ func (c Controller) Run() {
 		auth := v1.Group("/auth") 
 		{
 			auth.POST("/sign-up", uc.CreateUser)
-			auth.POST("/sign-in", uc.SignIn)	
+			auth.POST("/sign-in", ac.SignIn)	
 			auth.POST("/reset-password", uc.ResetPassword)
 			auth.GET("/check-reset-password-token", uc.VerifyResetPasswordToken)
 			auth.POST("/set-new-password", uc.SetNewPassword)

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/models/role"
+	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/user"
 	"golang.org/x/exp/slices"
 )
@@ -22,6 +23,17 @@ type CreateUserRequest struct {
 
 func (c UserController) CreateUser(ctx *gin.Context) {
 	var requestBody CreateUserRequest
+	var err error
+	var status = http.StatusBadRequest
+	defer utils.HandleError(&err, ctx, &status)
+
+	tx, _ := database.Client.Tx(c.Ctx)
+	defer tx.Rollback()
+
+	if err = ctx.BindJSON(&requestBody); err != nil {
+		return
+	}
+
 	token := utils.ExtractToken(ctx)
 
 	c.Log.Trace("Creating user")
@@ -52,7 +64,7 @@ func (c UserController) CreateUser(ctx *gin.Context) {
 		return
 	}
 
-	_, err := c.UserService.CreateUser(requestBody.CreateUserPayload)
+	_, err = c.UserService.CreateUser(requestBody.CreateUserPayload, tx)
 
 	if err != nil {
 		c.Log.Error(err)

@@ -1,7 +1,8 @@
 package authController
 
-import "github.com/kzmijak/zswod_api_go/controller"
-
+import (
+	controller "github.com/kzmijak/zswod_api_go/controller/model"
+)
 type AuthController struct {
 	controller.Controller
 }

@@ -6,8 +6,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
-	entRole "github.com/kzmijak/zswod_api_go/ent/role"
-	"github.com/kzmijak/zswod_api_go/models/role"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 	"github.com/kzmijak/zswod_api_go/utils/encryption"
 )
 
@@ -27,9 +26,6 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 		return ErrSchemaCreationFail
 	}
 
-	if err := seedRoles(ctx); err != nil {
-		return ErrSchemaCreationFail
-	}
 
 	if cfg.Env == "dev" {
 		if err := seedAdmin(ctx); err != nil {
@@ -40,9 +36,8 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 	return nil;
 }
 
-
 func seedAdmin(ctx context.Context) error {
-	adminsCount, err := Client.Role.Query().Where(entRole.ID(role.Admin.String())).QueryUsers().Count(ctx)
+	adminsCount, err := Client.User.Query().Where(user.RoleEQ(user.RoleAdmin)).Count(ctx)
 	if err != nil {
 		return ErrCouldNotQuery
 	}
@@ -53,7 +48,7 @@ func seedAdmin(ctx context.Context) error {
 
 	adminPassword, _ := encryption.HashString("root")
 
-	err = Client.User.Create().SetID(uuid.UUID{}).SetEmail("root@sporlowd.pl").SetPassword(adminPassword).SetRolesID(role.Admin.String()).Exec(ctx)
+	err = Client.User.Create().SetID(uuid.UUID{}).SetEmail("root@sporlowd.pl").SetPassword(adminPassword).SetRole(user.RoleAdmin).Exec(ctx)
 
 	return err
 }

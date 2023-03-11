@@ -4,9 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/modules/database"
 )
 
 func (c UserController) VerifyResetPasswordToken(ctx *gin.Context) {
@@ -14,13 +13,10 @@ func (c UserController) VerifyResetPasswordToken(ctx *gin.Context) {
 	var err error
 	defer utils.HandleError(&err, ctx)
 
-	tokenUuid, err := uuid.Parse(tokenString)
-	if err != nil {
-		err = errors.Error(ErrCouldNotParseUuid)
-		return
-	}
+	tx, _ := database.Client.Tx(c.Ctx)
+	defer tx.Rollback()
 
-	_, err = c.UserService.GetResetPasswordTokenOwner(tokenUuid)
+	_, err = c.UserService.GetResetPasswordTokenOwner(tokenString, tx)
 	if err != nil {
 		return
 	}

@@ -6,23 +6,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
+	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 )
 
-type ResetPasswordBody struct {
+type ResetPasswordRequest struct {
 	Email string `json:"email"`
 }
 
 func (c UserController) ResetPassword(ctx *gin.Context) {
-	var requestBody ResetPasswordBody
+	var requestBody ResetPasswordRequest
 	var err error
-	defer utils.HandleError(&err, ctx)
+	var status = http.StatusBadRequest
+	defer utils.HandleError(&err, ctx, &status)
 
-	if err := ctx.BindJSON(&requestBody); err != nil {
+	tx, _ := database.Client.Tx(c.Ctx)
+	defer tx.Rollback()
+
+	if err = ctx.BindJSON(&requestBody); err != nil {
 		return
 	}
 
-	token, err := c.UserService.CreateResetPasswordToken(requestBody.Email)
+	token, err := c.UserService.CreateResetPasswordToken(requestBody.Email, tx)
 	if err != nil {
 		return
 	}

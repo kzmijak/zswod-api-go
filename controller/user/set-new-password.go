@@ -4,50 +4,42 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/user"
 )
 
-const (
-	ErrCouldNotParseUuid = "ErrCouldNotParseUuid: Could not parse string to uuid"
-)
-
-type SetNewPasswordBody struct {
+type SetNewPasswordRequest struct {
 	Token    string `json:"token"`
 	Password string `json:"password"`
 }
 
 func (c UserController) SetNewPassword(ctx *gin.Context) {
-	var requestBody SetNewPasswordBody
+	var requestBody SetNewPasswordRequest
 	var err error
-	defer utils.HandleError(&err, ctx)
+	var status = http.StatusBadRequest
+	defer utils.HandleError(&err, ctx, &status)
 
-	if err := ctx.BindJSON(&requestBody); err != nil {
+	tx, _ := database.Client.Tx(c.Ctx)
+	defer tx.Rollback()
+
+	if err = ctx.BindJSON(&requestBody); err != nil {
 		return
 	}
 
-	tokenUuid, err := uuid.Parse(requestBody.Token)
-	if err != nil {
-		err = errors.Error(ErrCouldNotParseUuid)
-		return
-	}
-
-	owner, err := c.UserService.GetResetPasswordTokenOwner(tokenUuid)
+	owner, err := c.UserService.GetResetPasswordTokenOwner(requestBody.Token, tx)
 	if err != nil {
 		return
 	}
 
-	err = c.UserService.SetNewPassword(user.SetNewPasswordParams{
-		UserId:      owner.ID,
+	_, err = c.UserService.UpdateUserPassword(owner.ID.String(), user.UpdateUserPasswordPayload{
 		NewPassword: requestBody.Password,
-	})
+	}, tx)
 	if err != nil {
 		return
 	}
 
-	err = c.UserService.InvalidateResetPasswordToken(tokenUuid)
+	err = c.UserService.InvalidateResetPasswordToken(requestBody.Token, tx)
 	if err != nil {
 		return
 	}
