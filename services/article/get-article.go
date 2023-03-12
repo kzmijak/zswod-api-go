@@ -7,17 +7,11 @@ import (
 )
 
 const (
-	ErrCouldNotParseArticleId = "ErrCouldNotParseArticleId: Could not parse specified string to UUID"
 	ErrArticleIdNotFound = "ErrArticleIdNotFound: Could not find article by given ID"
 )
 
-func (s ArticleService) GetArticle(articleId string, tx *ent.Tx) (*ent.Article, error) {
-	articleIdParsed, err := uuid.Parse(articleId)
-	if err != nil {
-		return nil, errors.Error(ErrCouldNotParseArticleId)
-	}
-
-	article, err := tx.Article.Get(s.ctx, articleIdParsed)
+func (s ArticleService) GetArticle(articleId uuid.UUID, tx *ent.Tx) (*ent.Article, error) {
+	article, err := tx.Article.Get(s.ctx, articleId)
 	if err != nil {
 		return nil, errors.Error(ErrArticleIdNotFound)
 	}

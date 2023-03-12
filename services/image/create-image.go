@@ -18,17 +18,6 @@ type CreateImagePayload struct {
 }
 
 func (s ImageService) CreateImage(req CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Image, error) {
-
-	blob, err := s.blobService.GetBlob(req.BlobId)
-	if err != nil {
-		return nil, err
-	}
-
-	if (blob.Alt != "") {
-		blob.Alt = req.Alt
-		s.blobService.UpdateBlob(blob)
-	}
-
 	image, err := tx.Image.Create().
 		SetID(uuid.New()).
 		SetTitle(req.Title).

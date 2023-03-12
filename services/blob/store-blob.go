@@ -1,13 +1,12 @@
 package blob
 
 import (
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -18,7 +17,7 @@ const (
 	ErrCouldNotSaveToDb = "ErrCouldNotSaveToDb: Failed to save to database"
 )
 
-func (s BlobService) StoreBlob(file *multipart.FileHeader) (*ent.Blob, error) {
+func (s BlobService) StoreBlob(file *multipart.FileHeader, tx *ent.Tx) (*ent.Blob, error) {
 	const FOUR_MEGABYTES = 4 << 20
 	if file.Size > FOUR_MEGABYTES {
 		return nil, errors.Error(ErrFileTooLarge)
@@ -31,12 +30,12 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader) (*ent.Blob, error) {
 		return nil, errors.Error(ErrFileOpenFailed)
 	}
 
-	byteContainer, err := ioutil.ReadAll(content)
+	byteContainer, err := io.ReadAll(content)
 	if err != nil {
 		return nil, errors.Error(ErrFileReadFailed)
 	}
 
-	response, err := database.Client.Blob.
+	response, err := tx.Blob.
 		Create().
 		SetID(uuid.New()).
 		SetBlob(byteContainer).

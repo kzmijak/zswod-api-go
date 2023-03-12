@@ -17,7 +17,7 @@ type UpdateArticlePayload struct {
 	GalleryId uuid.UUID `json:"galleryId"`
 }
 
-func (s ArticleService) UpdateArticle(articleId string, payload UpdateArticlePayload, tx *ent.Tx) (*ent.Article, error) {
+func (s ArticleService) UpdateArticle(articleId uuid.UUID, payload UpdateArticlePayload, tx *ent.Tx) (*ent.Article, error) {
 	article, err := s.GetArticle(articleId, tx)
 	if err != nil {
 		return nil, err

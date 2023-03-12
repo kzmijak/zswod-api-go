@@ -15,7 +15,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/logger"
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/article"
-	"github.com/kzmijak/zswod_api_go/services/auth"
 	"github.com/kzmijak/zswod_api_go/services/blob"
 	"github.com/kzmijak/zswod_api_go/services/gallery"
 	"github.com/kzmijak/zswod_api_go/services/image"
@@ -68,7 +67,6 @@ func (c Controller) Run() {
 	c.ImageService = image.New().WithContext(c.Ctx)
 	c.ArticleService = article.New(c.Ctx)
 	c.GalleryService = gallery.New().WithContext(c.Ctx)
-	c.AuthService = auth.New().WithContext(c.Ctx)
 	
 	jwtController.New(c.Controller)
 	jc := jwtController.New(c.Controller)

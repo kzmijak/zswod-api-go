@@ -4,19 +4,25 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/controller/utils"
+	"github.com/kzmijak/zswod_api_go/modules/database"
+	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
 
 func (c *BlobController) GetBlobByUuid(ctx *gin.Context) {
-	uuidString := ctx.Param("uuid")
+	var err error
+	defer utils.HandleError(&err, ctx)
 
-	uuidParsed, err := uuid.Parse(uuidString)
+	tx, _ := database.Client.Tx(c.Ctx)
+	defer tx.Rollback()
+
+	uuidString := ctx.Param("uuid")
+	uuidParsed, err := parser.ParseUuid(uuidString)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	blob, err := c.BlobService.GetBlob(uuidParsed)
+	blob, err := c.BlobService.GetBlob(uuidParsed, tx)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return

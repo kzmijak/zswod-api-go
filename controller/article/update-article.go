@@ -8,6 +8,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
+	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
 
 const (
@@ -34,7 +35,12 @@ func (c *ArticleController) UpdateArticle(ctx *gin.Context) {
 		return
 	}
 
-	article, err := c.ArticleService.UpdateArticle(requestBody.ArticleId, requestBody.Article, tx)
+	articleUuid, err := parser.ParseUuid(requestBody.ArticleId)
+	if err != nil {
+		return
+	}
+
+	article, err := c.ArticleService.UpdateArticle(articleUuid, requestBody.Article, tx)
 	if err != nil {
 		return
 	}
@@ -45,7 +51,13 @@ func (c *ArticleController) UpdateArticle(ctx *gin.Context) {
 		return 
 	}
 
+	
 	for _, imageRequest := range requestBody.Images {
+		err = c.BlobService.FillBlobAlt(imageRequest.BlobId, imageRequest.Alt, tx)
+		if err != nil {
+			return
+		}
+
 		_, err := c.ImageService.CreateImage(imageRequest, gallery.ID, tx)
 		if err != nil {
 			return

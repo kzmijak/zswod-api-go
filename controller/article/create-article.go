@@ -21,8 +21,7 @@ type CreateArticleRequest struct {
 func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleRequest
 	var err error
-	var status = http.StatusBadRequest
-	defer utils.HandleError(&err, ctx, &status)
+	defer utils.HandleError(&err, ctx)
 
 	tx, _ := database.Client.Tx(c.Ctx)
 	defer tx.Rollback()

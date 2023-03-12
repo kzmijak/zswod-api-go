@@ -3,7 +3,6 @@ package blob
 import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -16,8 +15,8 @@ type GetBlobsReturnType struct {
 	Eof bool `json:"eof"` 
 }
 
-func (s BlobService) GetBlobs(amount int, offset int) (*GetBlobsReturnType, error) {
-	queryBase := database.Client.Blob.Query()
+func (s BlobService) GetBlobs(amount int, offset int, tx *ent.Tx) (*GetBlobsReturnType, error) {
+	queryBase := tx.Blob.Query()
 	
 	count, err := queryBase.Count(s.ctx)
 

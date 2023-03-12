@@ -7,7 +7,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/logger"
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/article"
-	"github.com/kzmijak/zswod_api_go/services/auth"
 	"github.com/kzmijak/zswod_api_go/services/blob"
 	"github.com/kzmijak/zswod_api_go/services/gallery"
 	"github.com/kzmijak/zswod_api_go/services/image"
@@ -27,5 +26,4 @@ type Controller struct {
 	ArticleService article.ArticleService
 	ImageService   image.ImageService
 	GalleryService gallery.GalleryService
-	AuthService		 auth.AuthService
 }
