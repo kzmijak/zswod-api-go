@@ -8,6 +8,7 @@ import (
 	articleController "github.com/kzmijak/zswod_api_go/controller/article"
 	authController "github.com/kzmijak/zswod_api_go/controller/auth"
 	blobController "github.com/kzmijak/zswod_api_go/controller/blob"
+	galleryController "github.com/kzmijak/zswod_api_go/controller/gallery"
 	jwtController "github.com/kzmijak/zswod_api_go/controller/jwt"
 	model "github.com/kzmijak/zswod_api_go/controller/model"
 	userController "github.com/kzmijak/zswod_api_go/controller/user"
@@ -106,6 +107,12 @@ func (c Controller) Run() {
 			article.GET("", ac.GetArticleHeadersList)
 			article.POST("/create", ac.CreateArticle).Use(jc.RequireTeacher)
 			article.PATCH("/update", ac.UpdateArticle).Use(jc.RequireTeacher)
+		}
+
+		gc := galleryController.New(c.Controller)
+		gallery := v1.Group("/gallery")
+		{
+			gallery.GET("", gc.GetGalleryHeadersList)
 		}
 	}
 

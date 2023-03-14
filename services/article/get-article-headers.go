@@ -23,8 +23,8 @@ type ArticleHeader struct  {
 	UploadDate time.Time `json:"uploadDate,omitempty"`
 	TitleNormalized string `json:"titleNormalized,omitempty"`
 	Images []imageMdl.Image `json:"images"`
-
 }
+
 func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([]ArticleHeader, error) {
 	articles, err := articleRepo.ArticleTx(tx).
 		JoinAllImagesToArticle().
