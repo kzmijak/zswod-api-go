@@ -10,7 +10,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 )
 
@@ -21,6 +20,8 @@ type Article struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// TitleNormalized holds the value of the "titleNormalized" field.
+	TitleNormalized string `json:"titleNormalized,omitempty"`
 	// Short holds the value of the "short" field.
 	Short string `json:"short,omitempty"`
 	// Content holds the value of the "content" field.
@@ -35,32 +36,17 @@ type Article struct {
 
 // ArticleEdges holds the relations/edges for other nodes in the graph.
 type ArticleEdges struct {
-	// TitleNormalized holds the value of the titleNormalized edge.
-	TitleNormalized *ArticleTitleGuid `json:"titleNormalized,omitempty"`
 	// Gallery holds the value of the gallery edge.
 	Gallery *Gallery `json:"gallery,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// TitleNormalizedOrErr returns the TitleNormalized value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ArticleEdges) TitleNormalizedOrErr() (*ArticleTitleGuid, error) {
-	if e.loadedTypes[0] {
-		if e.TitleNormalized == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: articletitleguid.Label}
-		}
-		return e.TitleNormalized, nil
-	}
-	return nil, &NotLoadedError{edge: "titleNormalized"}
+	loadedTypes [1]bool
 }
 
 // GalleryOrErr returns the Gallery value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ArticleEdges) GalleryOrErr() (*Gallery, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[0] {
 		if e.Gallery == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: gallery.Label}
@@ -75,7 +61,7 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case article.FieldTitle, article.FieldShort, article.FieldContent:
+		case article.FieldTitle, article.FieldTitleNormalized, article.FieldShort, article.FieldContent:
 			values[i] = new(sql.NullString)
 		case article.FieldUploadDate:
 			values[i] = new(sql.NullTime)
@@ -110,6 +96,12 @@ func (a *Article) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Title = value.String
 			}
+		case article.FieldTitleNormalized:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field titleNormalized", values[i])
+			} else if value.Valid {
+				a.TitleNormalized = value.String
+			}
 		case article.FieldShort:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field short", values[i])
@@ -138,11 +130,6 @@ func (a *Article) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryTitleNormalized queries the "titleNormalized" edge of the Article entity.
-func (a *Article) QueryTitleNormalized() *ArticleTitleGuidQuery {
-	return (&ArticleClient{config: a.config}).QueryTitleNormalized(a)
 }
 
 // QueryGallery queries the "gallery" edge of the Article entity.
@@ -175,6 +162,9 @@ func (a *Article) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
 	builder.WriteString("title=")
 	builder.WriteString(a.Title)
+	builder.WriteString(", ")
+	builder.WriteString("titleNormalized=")
+	builder.WriteString(a.TitleNormalized)
 	builder.WriteString(", ")
 	builder.WriteString("short=")
 	builder.WriteString(a.Short)

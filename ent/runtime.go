@@ -32,7 +32,7 @@ func init() {
 		}
 	}()
 	// articleDescShort is the schema descriptor for short field.
-	articleDescShort := articleFields[2].Descriptor()
+	articleDescShort := articleFields[3].Descriptor()
 	// article.ShortValidator is a validator for the "short" field. It is called by the builders before save.
 	article.ShortValidator = func() func(string) error {
 		validators := articleDescShort.Validators

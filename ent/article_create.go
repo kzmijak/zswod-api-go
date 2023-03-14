@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 )
 
@@ -26,6 +25,12 @@ type ArticleCreate struct {
 // SetTitle sets the "title" field.
 func (ac *ArticleCreate) SetTitle(s string) *ArticleCreate {
 	ac.mutation.SetTitle(s)
+	return ac
+}
+
+// SetTitleNormalized sets the "titleNormalized" field.
+func (ac *ArticleCreate) SetTitleNormalized(s string) *ArticleCreate {
+	ac.mutation.SetTitleNormalized(s)
 	return ac
 }
 
@@ -51,25 +56,6 @@ func (ac *ArticleCreate) SetUploadDate(t time.Time) *ArticleCreate {
 func (ac *ArticleCreate) SetID(u uuid.UUID) *ArticleCreate {
 	ac.mutation.SetID(u)
 	return ac
-}
-
-// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
-func (ac *ArticleCreate) SetTitleNormalizedID(id uuid.UUID) *ArticleCreate {
-	ac.mutation.SetTitleNormalizedID(id)
-	return ac
-}
-
-// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
-func (ac *ArticleCreate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleCreate {
-	if id != nil {
-		ac = ac.SetTitleNormalizedID(*id)
-	}
-	return ac
-}
-
-// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (ac *ArticleCreate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleCreate {
-	return ac.SetTitleNormalizedID(a.ID)
 }
 
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
@@ -175,6 +161,9 @@ func (ac *ArticleCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "Article.title": %w`, err)}
 		}
 	}
+	if _, ok := ac.mutation.TitleNormalized(); !ok {
+		return &ValidationError{Name: "titleNormalized", err: errors.New(`ent: missing required field "Article.titleNormalized"`)}
+	}
 	if _, ok := ac.mutation.Short(); !ok {
 		return &ValidationError{Name: "short", err: errors.New(`ent: missing required field "Article.short"`)}
 	}
@@ -229,6 +218,10 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
+	if value, ok := ac.mutation.TitleNormalized(); ok {
+		_spec.SetField(article.FieldTitleNormalized, field.TypeString, value)
+		_node.TitleNormalized = value
+	}
 	if value, ok := ac.mutation.Short(); ok {
 		_spec.SetField(article.FieldShort, field.TypeString, value)
 		_node.Short = value
@@ -240,25 +233,6 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.UploadDate(); ok {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
 		_node.UploadDate = value
-	}
-	if nodes := ac.mutation.TitleNormalizedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   article.TitleNormalizedTable,
-			Columns: []string{article.TitleNormalizedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: articletitleguid.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

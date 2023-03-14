@@ -9,25 +9,18 @@ const (
 	FieldID = "id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldTitleNormalized holds the string denoting the titlenormalized field in the database.
+	FieldTitleNormalized = "title_normalized"
 	// FieldShort holds the string denoting the short field in the database.
 	FieldShort = "short"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
 	// FieldUploadDate holds the string denoting the uploaddate field in the database.
 	FieldUploadDate = "upload_date"
-	// EdgeTitleNormalized holds the string denoting the titlenormalized edge name in mutations.
-	EdgeTitleNormalized = "titleNormalized"
 	// EdgeGallery holds the string denoting the gallery edge name in mutations.
 	EdgeGallery = "gallery"
 	// Table holds the table name of the article in the database.
 	Table = "articles"
-	// TitleNormalizedTable is the table that holds the titleNormalized relation/edge.
-	TitleNormalizedTable = "article_title_guids"
-	// TitleNormalizedInverseTable is the table name for the ArticleTitleGuid entity.
-	// It exists in this package in order to avoid circular dependency with the "articletitleguid" package.
-	TitleNormalizedInverseTable = "article_title_guids"
-	// TitleNormalizedColumn is the table column denoting the titleNormalized relation/edge.
-	TitleNormalizedColumn = "article_title_normalized"
 	// GalleryTable is the table that holds the gallery relation/edge.
 	GalleryTable = "articles"
 	// GalleryInverseTable is the table name for the Gallery entity.
@@ -41,6 +34,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTitle,
+	FieldTitleNormalized,
 	FieldShort,
 	FieldContent,
 	FieldUploadDate,

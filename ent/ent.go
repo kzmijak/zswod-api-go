@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
@@ -38,7 +37,6 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		article.Table:            article.ValidColumn,
-		articletitleguid.Table:   articletitleguid.ValidColumn,
 		blob.Table:               blob.ValidColumn,
 		gallery.Table:            gallery.ValidColumn,
 		image.Table:              image.ValidColumn,

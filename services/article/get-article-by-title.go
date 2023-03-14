@@ -11,7 +11,7 @@ const (
 )
 
 func (s ArticleService) GetArticleByTitle(titleNormalized string, tx *ent.Tx) (*ent.Article, error) {
-	articleEntity, err := articleRepo.ArticleTitleTx(tx).
+	articleEntity, err := articleRepo.ArticleTx(tx).
 		QueryArticleEntityByTitle(titleNormalized).
 		Only(s.ctx)
 

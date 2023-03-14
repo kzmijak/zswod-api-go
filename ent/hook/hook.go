@@ -22,19 +22,6 @@ func (f ArticleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
-// The ArticleTitleGuidFunc type is an adapter to allow the use of ordinary
-// function as ArticleTitleGuid mutator.
-type ArticleTitleGuidFunc func(context.Context, *ent.ArticleTitleGuidMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ArticleTitleGuidFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.ArticleTitleGuidMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ArticleTitleGuidMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The BlobFunc type is an adapter to allow the use of ordinary
 // function as Blob mutator.
 type BlobFunc func(context.Context, *ent.BlobMutation) (ent.Value, error)

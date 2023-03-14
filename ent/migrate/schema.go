@@ -12,6 +12,7 @@ var (
 	ArticlesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "title", Type: field.TypeString, Size: 200},
+		{Name: "title_normalized", Type: field.TypeString},
 		{Name: "short", Type: field.TypeString, Size: 300},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
 		{Name: "upload_date", Type: field.TypeTime},
@@ -25,29 +26,9 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "articles_galleries_article",
-				Columns:    []*schema.Column{ArticlesColumns[5]},
+				Columns:    []*schema.Column{ArticlesColumns[6]},
 				RefColumns: []*schema.Column{GalleriesColumns[0]},
 				OnDelete:   schema.SetNull,
-			},
-		},
-	}
-	// ArticleTitleGuidsColumns holds the columns for the "article_title_guids" table.
-	ArticleTitleGuidsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "title_normalized", Type: field.TypeString, Unique: true},
-		{Name: "article_title_normalized", Type: field.TypeUUID, Unique: true},
-	}
-	// ArticleTitleGuidsTable holds the schema information for the "article_title_guids" table.
-	ArticleTitleGuidsTable = &schema.Table{
-		Name:       "article_title_guids",
-		Columns:    ArticleTitleGuidsColumns,
-		PrimaryKey: []*schema.Column{ArticleTitleGuidsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "article_title_guids_articles_titleNormalized",
-				Columns:    []*schema.Column{ArticleTitleGuidsColumns[2]},
-				RefColumns: []*schema.Column{ArticlesColumns[0]},
-				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -143,7 +124,6 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ArticlesTable,
-		ArticleTitleGuidsTable,
 		BlobsTable,
 		GalleriesTable,
 		ImagesTable,
@@ -154,7 +134,6 @@ var (
 
 func init() {
 	ArticlesTable.ForeignKeys[0].RefTable = GalleriesTable
-	ArticleTitleGuidsTable.ForeignKeys[0].RefTable = ArticlesTable
 	ImagesTable.ForeignKeys[0].RefTable = BlobsTable
 	ImagesTable.ForeignKeys[1].RefTable = GalleriesTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable

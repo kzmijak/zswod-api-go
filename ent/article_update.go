@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -37,6 +36,12 @@ func (au *ArticleUpdate) SetTitle(s string) *ArticleUpdate {
 	return au
 }
 
+// SetTitleNormalized sets the "titleNormalized" field.
+func (au *ArticleUpdate) SetTitleNormalized(s string) *ArticleUpdate {
+	au.mutation.SetTitleNormalized(s)
+	return au
+}
+
 // SetShort sets the "short" field.
 func (au *ArticleUpdate) SetShort(s string) *ArticleUpdate {
 	au.mutation.SetShort(s)
@@ -53,25 +58,6 @@ func (au *ArticleUpdate) SetContent(s string) *ArticleUpdate {
 func (au *ArticleUpdate) SetUploadDate(t time.Time) *ArticleUpdate {
 	au.mutation.SetUploadDate(t)
 	return au
-}
-
-// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
-func (au *ArticleUpdate) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdate {
-	au.mutation.SetTitleNormalizedID(id)
-	return au
-}
-
-// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
-func (au *ArticleUpdate) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleUpdate {
-	if id != nil {
-		au = au.SetTitleNormalizedID(*id)
-	}
-	return au
-}
-
-// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (au *ArticleUpdate) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpdate {
-	return au.SetTitleNormalizedID(a.ID)
 }
 
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
@@ -96,12 +82,6 @@ func (au *ArticleUpdate) SetGallery(g *Gallery) *ArticleUpdate {
 // Mutation returns the ArticleMutation object of the builder.
 func (au *ArticleUpdate) Mutation() *ArticleMutation {
 	return au.mutation
-}
-
-// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (au *ArticleUpdate) ClearTitleNormalized() *ArticleUpdate {
-	au.mutation.ClearTitleNormalized()
-	return au
 }
 
 // ClearGallery clears the "gallery" edge to the Gallery entity.
@@ -206,6 +186,9 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := au.mutation.TitleNormalized(); ok {
+		_spec.SetField(article.FieldTitleNormalized, field.TypeString, value)
+	}
 	if value, ok := au.mutation.Short(); ok {
 		_spec.SetField(article.FieldShort, field.TypeString, value)
 	}
@@ -214,41 +197,6 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.UploadDate(); ok {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
-	}
-	if au.mutation.TitleNormalizedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   article.TitleNormalizedTable,
-			Columns: []string{article.TitleNormalizedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: articletitleguid.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.TitleNormalizedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   article.TitleNormalizedTable,
-			Columns: []string{article.TitleNormalizedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: articletitleguid.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if au.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -310,6 +258,12 @@ func (auo *ArticleUpdateOne) SetTitle(s string) *ArticleUpdateOne {
 	return auo
 }
 
+// SetTitleNormalized sets the "titleNormalized" field.
+func (auo *ArticleUpdateOne) SetTitleNormalized(s string) *ArticleUpdateOne {
+	auo.mutation.SetTitleNormalized(s)
+	return auo
+}
+
 // SetShort sets the "short" field.
 func (auo *ArticleUpdateOne) SetShort(s string) *ArticleUpdateOne {
 	auo.mutation.SetShort(s)
@@ -326,25 +280,6 @@ func (auo *ArticleUpdateOne) SetContent(s string) *ArticleUpdateOne {
 func (auo *ArticleUpdateOne) SetUploadDate(t time.Time) *ArticleUpdateOne {
 	auo.mutation.SetUploadDate(t)
 	return auo
-}
-
-// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID.
-func (auo *ArticleUpdateOne) SetTitleNormalizedID(id uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.SetTitleNormalizedID(id)
-	return auo
-}
-
-// SetNillableTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by ID if the given value is not nil.
-func (auo *ArticleUpdateOne) SetNillableTitleNormalizedID(id *uuid.UUID) *ArticleUpdateOne {
-	if id != nil {
-		auo = auo.SetTitleNormalizedID(*id)
-	}
-	return auo
-}
-
-// SetTitleNormalized sets the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (auo *ArticleUpdateOne) SetTitleNormalized(a *ArticleTitleGuid) *ArticleUpdateOne {
-	return auo.SetTitleNormalizedID(a.ID)
 }
 
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
@@ -369,12 +304,6 @@ func (auo *ArticleUpdateOne) SetGallery(g *Gallery) *ArticleUpdateOne {
 // Mutation returns the ArticleMutation object of the builder.
 func (auo *ArticleUpdateOne) Mutation() *ArticleMutation {
 	return auo.mutation
-}
-
-// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (auo *ArticleUpdateOne) ClearTitleNormalized() *ArticleUpdateOne {
-	auo.mutation.ClearTitleNormalized()
-	return auo
 }
 
 // ClearGallery clears the "gallery" edge to the Gallery entity.
@@ -509,6 +438,9 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	if value, ok := auo.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 	}
+	if value, ok := auo.mutation.TitleNormalized(); ok {
+		_spec.SetField(article.FieldTitleNormalized, field.TypeString, value)
+	}
 	if value, ok := auo.mutation.Short(); ok {
 		_spec.SetField(article.FieldShort, field.TypeString, value)
 	}
@@ -517,41 +449,6 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	}
 	if value, ok := auo.mutation.UploadDate(); ok {
 		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
-	}
-	if auo.mutation.TitleNormalizedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   article.TitleNormalizedTable,
-			Columns: []string{article.TitleNormalizedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: articletitleguid.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.TitleNormalizedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   article.TitleNormalizedTable,
-			Columns: []string{article.TitleNormalizedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: articletitleguid.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if auo.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{

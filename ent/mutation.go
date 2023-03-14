@@ -11,7 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
@@ -32,7 +31,6 @@ const (
 
 	// Node types.
 	TypeArticle            = "Article"
-	TypeArticleTitleGuid   = "ArticleTitleGuid"
 	TypeBlob               = "Blob"
 	TypeGallery            = "Gallery"
 	TypeImage              = "Image"
@@ -43,21 +41,20 @@ const (
 // ArticleMutation represents an operation that mutates the Article nodes in the graph.
 type ArticleMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *uuid.UUID
-	title                  *string
-	short                  *string
-	content                *string
-	uploadDate             *time.Time
-	clearedFields          map[string]struct{}
-	titleNormalized        *uuid.UUID
-	clearedtitleNormalized bool
-	gallery                *uuid.UUID
-	clearedgallery         bool
-	done                   bool
-	oldValue               func(context.Context) (*Article, error)
-	predicates             []predicate.Article
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	title           *string
+	titleNormalized *string
+	short           *string
+	content         *string
+	uploadDate      *time.Time
+	clearedFields   map[string]struct{}
+	gallery         *uuid.UUID
+	clearedgallery  bool
+	done            bool
+	oldValue        func(context.Context) (*Article, error)
+	predicates      []predicate.Article
 }
 
 var _ ent.Mutation = (*ArticleMutation)(nil)
@@ -200,6 +197,42 @@ func (m *ArticleMutation) ResetTitle() {
 	m.title = nil
 }
 
+// SetTitleNormalized sets the "titleNormalized" field.
+func (m *ArticleMutation) SetTitleNormalized(s string) {
+	m.titleNormalized = &s
+}
+
+// TitleNormalized returns the value of the "titleNormalized" field in the mutation.
+func (m *ArticleMutation) TitleNormalized() (r string, exists bool) {
+	v := m.titleNormalized
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitleNormalized returns the old "titleNormalized" field's value of the Article entity.
+// If the Article object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ArticleMutation) OldTitleNormalized(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitleNormalized is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitleNormalized requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitleNormalized: %w", err)
+	}
+	return oldValue.TitleNormalized, nil
+}
+
+// ResetTitleNormalized resets all changes to the "titleNormalized" field.
+func (m *ArticleMutation) ResetTitleNormalized() {
+	m.titleNormalized = nil
+}
+
 // SetShort sets the "short" field.
 func (m *ArticleMutation) SetShort(s string) {
 	m.short = &s
@@ -308,45 +341,6 @@ func (m *ArticleMutation) ResetUploadDate() {
 	m.uploadDate = nil
 }
 
-// SetTitleNormalizedID sets the "titleNormalized" edge to the ArticleTitleGuid entity by id.
-func (m *ArticleMutation) SetTitleNormalizedID(id uuid.UUID) {
-	m.titleNormalized = &id
-}
-
-// ClearTitleNormalized clears the "titleNormalized" edge to the ArticleTitleGuid entity.
-func (m *ArticleMutation) ClearTitleNormalized() {
-	m.clearedtitleNormalized = true
-}
-
-// TitleNormalizedCleared reports if the "titleNormalized" edge to the ArticleTitleGuid entity was cleared.
-func (m *ArticleMutation) TitleNormalizedCleared() bool {
-	return m.clearedtitleNormalized
-}
-
-// TitleNormalizedID returns the "titleNormalized" edge ID in the mutation.
-func (m *ArticleMutation) TitleNormalizedID() (id uuid.UUID, exists bool) {
-	if m.titleNormalized != nil {
-		return *m.titleNormalized, true
-	}
-	return
-}
-
-// TitleNormalizedIDs returns the "titleNormalized" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TitleNormalizedID instead. It exists only for internal usage by the builders.
-func (m *ArticleMutation) TitleNormalizedIDs() (ids []uuid.UUID) {
-	if id := m.titleNormalized; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTitleNormalized resets all changes to the "titleNormalized" edge.
-func (m *ArticleMutation) ResetTitleNormalized() {
-	m.titleNormalized = nil
-	m.clearedtitleNormalized = false
-}
-
 // SetGalleryID sets the "gallery" edge to the Gallery entity by id.
 func (m *ArticleMutation) SetGalleryID(id uuid.UUID) {
 	m.gallery = &id
@@ -405,9 +399,12 @@ func (m *ArticleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ArticleMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.title != nil {
 		fields = append(fields, article.FieldTitle)
+	}
+	if m.titleNormalized != nil {
+		fields = append(fields, article.FieldTitleNormalized)
 	}
 	if m.short != nil {
 		fields = append(fields, article.FieldShort)
@@ -428,6 +425,8 @@ func (m *ArticleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case article.FieldTitle:
 		return m.Title()
+	case article.FieldTitleNormalized:
+		return m.TitleNormalized()
 	case article.FieldShort:
 		return m.Short()
 	case article.FieldContent:
@@ -445,6 +444,8 @@ func (m *ArticleMutation) OldField(ctx context.Context, name string) (ent.Value,
 	switch name {
 	case article.FieldTitle:
 		return m.OldTitle(ctx)
+	case article.FieldTitleNormalized:
+		return m.OldTitleNormalized(ctx)
 	case article.FieldShort:
 		return m.OldShort(ctx)
 	case article.FieldContent:
@@ -466,6 +467,13 @@ func (m *ArticleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case article.FieldTitleNormalized:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitleNormalized(v)
 		return nil
 	case article.FieldShort:
 		v, ok := value.(string)
@@ -540,6 +548,9 @@ func (m *ArticleMutation) ResetField(name string) error {
 	case article.FieldTitle:
 		m.ResetTitle()
 		return nil
+	case article.FieldTitleNormalized:
+		m.ResetTitleNormalized()
+		return nil
 	case article.FieldShort:
 		m.ResetShort()
 		return nil
@@ -555,10 +566,7 @@ func (m *ArticleMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ArticleMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.titleNormalized != nil {
-		edges = append(edges, article.EdgeTitleNormalized)
-	}
+	edges := make([]string, 0, 1)
 	if m.gallery != nil {
 		edges = append(edges, article.EdgeGallery)
 	}
@@ -569,10 +577,6 @@ func (m *ArticleMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ArticleMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case article.EdgeTitleNormalized:
-		if id := m.titleNormalized; id != nil {
-			return []ent.Value{*id}
-		}
 	case article.EdgeGallery:
 		if id := m.gallery; id != nil {
 			return []ent.Value{*id}
@@ -583,7 +587,7 @@ func (m *ArticleMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ArticleMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -595,10 +599,7 @@ func (m *ArticleMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ArticleMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedtitleNormalized {
-		edges = append(edges, article.EdgeTitleNormalized)
-	}
+	edges := make([]string, 0, 1)
 	if m.clearedgallery {
 		edges = append(edges, article.EdgeGallery)
 	}
@@ -609,8 +610,6 @@ func (m *ArticleMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ArticleMutation) EdgeCleared(name string) bool {
 	switch name {
-	case article.EdgeTitleNormalized:
-		return m.clearedtitleNormalized
 	case article.EdgeGallery:
 		return m.clearedgallery
 	}
@@ -621,9 +620,6 @@ func (m *ArticleMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ArticleMutation) ClearEdge(name string) error {
 	switch name {
-	case article.EdgeTitleNormalized:
-		m.ClearTitleNormalized()
-		return nil
 	case article.EdgeGallery:
 		m.ClearGallery()
 		return nil
@@ -635,398 +631,11 @@ func (m *ArticleMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ArticleMutation) ResetEdge(name string) error {
 	switch name {
-	case article.EdgeTitleNormalized:
-		m.ResetTitleNormalized()
-		return nil
 	case article.EdgeGallery:
 		m.ResetGallery()
 		return nil
 	}
 	return fmt.Errorf("unknown Article edge %s", name)
-}
-
-// ArticleTitleGuidMutation represents an operation that mutates the ArticleTitleGuid nodes in the graph.
-type ArticleTitleGuidMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	titleNormalized *string
-	clearedFields   map[string]struct{}
-	article         *uuid.UUID
-	clearedarticle  bool
-	done            bool
-	oldValue        func(context.Context) (*ArticleTitleGuid, error)
-	predicates      []predicate.ArticleTitleGuid
-}
-
-var _ ent.Mutation = (*ArticleTitleGuidMutation)(nil)
-
-// articletitleguidOption allows management of the mutation configuration using functional options.
-type articletitleguidOption func(*ArticleTitleGuidMutation)
-
-// newArticleTitleGuidMutation creates new mutation for the ArticleTitleGuid entity.
-func newArticleTitleGuidMutation(c config, op Op, opts ...articletitleguidOption) *ArticleTitleGuidMutation {
-	m := &ArticleTitleGuidMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeArticleTitleGuid,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withArticleTitleGuidID sets the ID field of the mutation.
-func withArticleTitleGuidID(id uuid.UUID) articletitleguidOption {
-	return func(m *ArticleTitleGuidMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ArticleTitleGuid
-		)
-		m.oldValue = func(ctx context.Context) (*ArticleTitleGuid, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ArticleTitleGuid.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withArticleTitleGuid sets the old ArticleTitleGuid of the mutation.
-func withArticleTitleGuid(node *ArticleTitleGuid) articletitleguidOption {
-	return func(m *ArticleTitleGuidMutation) {
-		m.oldValue = func(context.Context) (*ArticleTitleGuid, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ArticleTitleGuidMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ArticleTitleGuidMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ArticleTitleGuid entities.
-func (m *ArticleTitleGuidMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ArticleTitleGuidMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ArticleTitleGuidMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ArticleTitleGuid.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTitleNormalized sets the "titleNormalized" field.
-func (m *ArticleTitleGuidMutation) SetTitleNormalized(s string) {
-	m.titleNormalized = &s
-}
-
-// TitleNormalized returns the value of the "titleNormalized" field in the mutation.
-func (m *ArticleTitleGuidMutation) TitleNormalized() (r string, exists bool) {
-	v := m.titleNormalized
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTitleNormalized returns the old "titleNormalized" field's value of the ArticleTitleGuid entity.
-// If the ArticleTitleGuid object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ArticleTitleGuidMutation) OldTitleNormalized(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTitleNormalized is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTitleNormalized requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTitleNormalized: %w", err)
-	}
-	return oldValue.TitleNormalized, nil
-}
-
-// ResetTitleNormalized resets all changes to the "titleNormalized" field.
-func (m *ArticleTitleGuidMutation) ResetTitleNormalized() {
-	m.titleNormalized = nil
-}
-
-// SetArticleID sets the "article" edge to the Article entity by id.
-func (m *ArticleTitleGuidMutation) SetArticleID(id uuid.UUID) {
-	m.article = &id
-}
-
-// ClearArticle clears the "article" edge to the Article entity.
-func (m *ArticleTitleGuidMutation) ClearArticle() {
-	m.clearedarticle = true
-}
-
-// ArticleCleared reports if the "article" edge to the Article entity was cleared.
-func (m *ArticleTitleGuidMutation) ArticleCleared() bool {
-	return m.clearedarticle
-}
-
-// ArticleID returns the "article" edge ID in the mutation.
-func (m *ArticleTitleGuidMutation) ArticleID() (id uuid.UUID, exists bool) {
-	if m.article != nil {
-		return *m.article, true
-	}
-	return
-}
-
-// ArticleIDs returns the "article" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ArticleID instead. It exists only for internal usage by the builders.
-func (m *ArticleTitleGuidMutation) ArticleIDs() (ids []uuid.UUID) {
-	if id := m.article; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetArticle resets all changes to the "article" edge.
-func (m *ArticleTitleGuidMutation) ResetArticle() {
-	m.article = nil
-	m.clearedarticle = false
-}
-
-// Where appends a list predicates to the ArticleTitleGuidMutation builder.
-func (m *ArticleTitleGuidMutation) Where(ps ...predicate.ArticleTitleGuid) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// Op returns the operation name.
-func (m *ArticleTitleGuidMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (ArticleTitleGuid).
-func (m *ArticleTitleGuidMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ArticleTitleGuidMutation) Fields() []string {
-	fields := make([]string, 0, 1)
-	if m.titleNormalized != nil {
-		fields = append(fields, articletitleguid.FieldTitleNormalized)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ArticleTitleGuidMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case articletitleguid.FieldTitleNormalized:
-		return m.TitleNormalized()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ArticleTitleGuidMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case articletitleguid.FieldTitleNormalized:
-		return m.OldTitleNormalized(ctx)
-	}
-	return nil, fmt.Errorf("unknown ArticleTitleGuid field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ArticleTitleGuidMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case articletitleguid.FieldTitleNormalized:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTitleNormalized(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ArticleTitleGuid field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ArticleTitleGuidMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ArticleTitleGuidMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ArticleTitleGuidMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown ArticleTitleGuid numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ArticleTitleGuidMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ArticleTitleGuidMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ArticleTitleGuidMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown ArticleTitleGuid nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ArticleTitleGuidMutation) ResetField(name string) error {
-	switch name {
-	case articletitleguid.FieldTitleNormalized:
-		m.ResetTitleNormalized()
-		return nil
-	}
-	return fmt.Errorf("unknown ArticleTitleGuid field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ArticleTitleGuidMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.article != nil {
-		edges = append(edges, articletitleguid.EdgeArticle)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ArticleTitleGuidMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case articletitleguid.EdgeArticle:
-		if id := m.article; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ArticleTitleGuidMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ArticleTitleGuidMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ArticleTitleGuidMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedarticle {
-		edges = append(edges, articletitleguid.EdgeArticle)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ArticleTitleGuidMutation) EdgeCleared(name string) bool {
-	switch name {
-	case articletitleguid.EdgeArticle:
-		return m.clearedarticle
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ArticleTitleGuidMutation) ClearEdge(name string) error {
-	switch name {
-	case articletitleguid.EdgeArticle:
-		m.ClearArticle()
-		return nil
-	}
-	return fmt.Errorf("unknown ArticleTitleGuid unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ArticleTitleGuidMutation) ResetEdge(name string) error {
-	switch name {
-	case articletitleguid.EdgeArticle:
-		m.ResetArticle()
-		return nil
-	}
-	return fmt.Errorf("unknown ArticleTitleGuid edge %s", name)
 }
 
 // BlobMutation represents an operation that mutates the Blob nodes in the graph.

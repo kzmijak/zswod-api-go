@@ -1,12 +1,9 @@
 package articleRepo
 
-import (
-	"github.com/kzmijak/zswod_api_go/ent/articletitleguid"
-)
+import "github.com/kzmijak/zswod_api_go/ent/article"
 
-func (query ArticleTitleGuidQuery) QueryArticleEntityByTitle(titleNormalized string) ArticleQuery {
-	articleQuery := query.Where(articletitleguid.TitleNormalized(titleNormalized)).
-		QueryArticle()
+func (query ArticleQuery) QueryArticleEntityByTitle(titleNormalized string) ArticleQuery {
+	articleQuery := query.Where(article.TitleNormalized(titleNormalized))
 
 	return QueryArticle(articleQuery)
 }

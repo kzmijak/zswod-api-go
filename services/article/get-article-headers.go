@@ -31,7 +31,6 @@ func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([
 		Order(ent.Desc(article.FieldUploadDate)).
 		Limit(amount).
 		Offset(offset).
-		WithTitleNormalized().
 		All(s.ctx)
 
 	articleHeaders := lo.Map(articles, func(a *ent.Article, _ int) ArticleHeader {
@@ -41,7 +40,7 @@ func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([
 			Title: a.Title,
 			Short: a.Short,
 			UploadDate: a.UploadDate,
-			TitleNormalized: a.Edges.TitleNormalized.TitleNormalized,
+			TitleNormalized: a.TitleNormalized,
 			Images: imageMdl.ArrayFromEntities(a.Edges.Gallery.Edges.Images),
 		}
 	})

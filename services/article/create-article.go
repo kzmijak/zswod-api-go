@@ -20,25 +20,21 @@ type CreateArticlePayload struct {
 	Content  string `json:"content"`
 }
 
+const MAX_TITLE_LENGTH = 64	
+
+
 func (s ArticleService) CreateArticle(req CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Article, error) {
-	article, err := s.createArticle(req, galleryId, tx)
-	if err != nil {
-		return nil, err
-	}
-	
-	if err = s.createArticleTitle(article, tx); err != nil {
-		return nil, err
+
+	titleSanitized := SanitizeTitle(req.Title)
+	if len(titleSanitized) > MAX_TITLE_LENGTH {
+		titleSanitized = titleSanitized[:MAX_TITLE_LENGTH - 1]
 	}
 
-	return article, nil
-}
-
-func (s ArticleService) createArticle(req CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (article *ent.Article, err error) {
 	articleId := uuid.New()
-
-	article, err = tx.Article.Create().
+	article, err := tx.Article.Create().
 		SetID(articleId).
 		SetTitle(req.Title).
+		SetTitleNormalized(titleSanitized).
 		SetShort(req.Short).
 		SetContent(req.Content).
 		SetUploadDate(time.Now()).
@@ -46,33 +42,8 @@ func (s ArticleService) createArticle(req CreateArticlePayload, galleryId uuid.U
 		Save(s.ctx)
 
 	if err != nil {
-		err = errors.Error(ErrFailedCreatingArticle)
-		return
+		return nil, errors.Error(ErrFailedCreatingArticle)
 	}
 
-	return
-}
-
-func (s ArticleService) createArticleTitle(article *ent.Article, tx *ent.Tx) (err error) {
-	const MAX_LENGTH = 64	
-	articleTitleId := uuid.New()
-
-	titleSanitized := SanitizeTitle(article.Title)
-	if len(titleSanitized) > MAX_LENGTH {
-		titleSanitized = titleSanitized[:MAX_LENGTH - 1]
-	}
-
-	err = tx.ArticleTitleGuid.
-		Create().
-		SetID(articleTitleId).
-		SetTitleNormalized(titleSanitized).
-		SetArticleID(article.ID).
-		Exec(s.ctx)
-
-	if err != nil {
-		err = errors.Error(ErrFailedCreatingArticleTitle)
-		return
-	}
-
-	return 
+	return article, nil
 }
