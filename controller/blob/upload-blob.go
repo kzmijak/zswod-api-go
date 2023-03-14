@@ -45,5 +45,6 @@ func (c *BlobController) UploadBlob(ctx *gin.Context) {
 		})
 	}
 
+	tx.Commit()
 	ctx.IndentedJSON(http.StatusOK, blobs)
 }

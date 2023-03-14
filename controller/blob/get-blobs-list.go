@@ -42,6 +42,7 @@ func (c *BlobController) GetBlobsList(ctx *gin.Context) {
 		}
 	})
 
+	
 	ctx.IndentedJSON(http.StatusOK, GetBlobsListResponse {
 		Blobs: blobUrls,
 		Eof: response.Eof,

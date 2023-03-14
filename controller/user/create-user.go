@@ -38,11 +38,6 @@ func (c UserController) CreateUser(ctx *gin.Context) {
 
 	c.Log.Trace("Creating user")
 
-	if err := ctx.BindJSON(&requestBody); err != nil {
-		c.Log.Error(err)
-		ctx.JSON(http.StatusBadRequest, err)
-		return
-	}
 
 	elevatedRoles := []role.Role{
 		role.Admin,
@@ -74,5 +69,6 @@ func (c UserController) CreateUser(ctx *gin.Context) {
 
 	c.Log.Trace("Creating user success")
 
+	tx.Commit()
 	ctx.IndentedJSON(http.StatusAccepted, nil)
 }

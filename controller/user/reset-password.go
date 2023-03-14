@@ -43,5 +43,6 @@ func (c UserController) ResetPassword(ctx *gin.Context) {
 		return
 	}
 
+	tx.Commit()
 	ctx.JSON(http.StatusOK, true)
 }

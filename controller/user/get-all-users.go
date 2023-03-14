@@ -24,5 +24,6 @@ func (c UserController) GetAllUsers(ctx *gin.Context) {
 		c.Log.Error(err)
 	}
 
+	tx.Commit()
 	ctx.IndentedJSON(http.StatusOK, users)
 }

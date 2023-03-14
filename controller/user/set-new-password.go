@@ -43,6 +43,7 @@ func (c UserController) SetNewPassword(ctx *gin.Context) {
 	if err != nil {
 		return
 	}
-
+		
+	tx.Commit()
 	ctx.JSON(http.StatusOK, true)
 }

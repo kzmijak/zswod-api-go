@@ -17,7 +17,7 @@ func (c UserController) GetAuthenticatedUser(ctx *gin.Context) {
 	defer utils.HandleError(&err, ctx)
 	token := utils.ExtractToken(ctx)
 
-	roleId, err := c.JwtService.ExtractTokenID(token)
+	roleId, err := c.JwtService.ExtractTokenRole(token)
 	if err != nil {
 		return
 	}
