@@ -16,6 +16,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // GalleryUpdate is the builder for updating Gallery entities.
@@ -31,15 +32,15 @@ func (gu *GalleryUpdate) Where(ps ...predicate.Gallery) *GalleryUpdate {
 	return gu
 }
 
-// SetTitle sets the "title" field.
-func (gu *GalleryUpdate) SetTitle(s string) *GalleryUpdate {
-	gu.mutation.SetTitle(s)
+// SetUpdateTime sets the "update_time" field.
+func (gu *GalleryUpdate) SetUpdateTime(t time.Time) *GalleryUpdate {
+	gu.mutation.SetUpdateTime(t)
 	return gu
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (gu *GalleryUpdate) SetCreatedAt(t time.Time) *GalleryUpdate {
-	gu.mutation.SetCreatedAt(t)
+// SetTitle sets the "title" field.
+func (gu *GalleryUpdate) SetTitle(s string) *GalleryUpdate {
+	gu.mutation.SetTitle(s)
 	return gu
 }
 
@@ -58,19 +59,34 @@ func (gu *GalleryUpdate) AddImages(i ...*Image) *GalleryUpdate {
 	return gu.AddImageIDs(ids...)
 }
 
-// AddArticleIDs adds the "article" edge to the Article entity by IDs.
-func (gu *GalleryUpdate) AddArticleIDs(ids ...uuid.UUID) *GalleryUpdate {
-	gu.mutation.AddArticleIDs(ids...)
+// SetArticleID sets the "article" edge to the Article entity by ID.
+func (gu *GalleryUpdate) SetArticleID(id uuid.UUID) *GalleryUpdate {
+	gu.mutation.SetArticleID(id)
 	return gu
 }
 
-// AddArticle adds the "article" edges to the Article entity.
-func (gu *GalleryUpdate) AddArticle(a ...*Article) *GalleryUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
+func (gu *GalleryUpdate) SetNillableArticleID(id *uuid.UUID) *GalleryUpdate {
+	if id != nil {
+		gu = gu.SetArticleID(*id)
 	}
-	return gu.AddArticleIDs(ids...)
+	return gu
+}
+
+// SetArticle sets the "article" edge to the Article entity.
+func (gu *GalleryUpdate) SetArticle(a *Article) *GalleryUpdate {
+	return gu.SetArticleID(a.ID)
+}
+
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (gu *GalleryUpdate) SetAuthorID(id uuid.UUID) *GalleryUpdate {
+	gu.mutation.SetAuthorID(id)
+	return gu
+}
+
+// SetAuthor sets the "author" edge to the User entity.
+func (gu *GalleryUpdate) SetAuthor(u *User) *GalleryUpdate {
+	return gu.SetAuthorID(u.ID)
 }
 
 // Mutation returns the GalleryMutation object of the builder.
@@ -99,25 +115,16 @@ func (gu *GalleryUpdate) RemoveImages(i ...*Image) *GalleryUpdate {
 	return gu.RemoveImageIDs(ids...)
 }
 
-// ClearArticle clears all "article" edges to the Article entity.
+// ClearArticle clears the "article" edge to the Article entity.
 func (gu *GalleryUpdate) ClearArticle() *GalleryUpdate {
 	gu.mutation.ClearArticle()
 	return gu
 }
 
-// RemoveArticleIDs removes the "article" edge to Article entities by IDs.
-func (gu *GalleryUpdate) RemoveArticleIDs(ids ...uuid.UUID) *GalleryUpdate {
-	gu.mutation.RemoveArticleIDs(ids...)
+// ClearAuthor clears the "author" edge to the User entity.
+func (gu *GalleryUpdate) ClearAuthor() *GalleryUpdate {
+	gu.mutation.ClearAuthor()
 	return gu
-}
-
-// RemoveArticle removes "article" edges to Article entities.
-func (gu *GalleryUpdate) RemoveArticle(a ...*Article) *GalleryUpdate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return gu.RemoveArticleIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -126,13 +133,20 @@ func (gu *GalleryUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	gu.defaults()
 	if len(gu.hooks) == 0 {
+		if err = gu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = gu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GalleryMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = gu.check(); err != nil {
+				return 0, err
 			}
 			gu.mutation = mutation
 			affected, err = gu.sqlSave(ctx)
@@ -174,6 +188,22 @@ func (gu *GalleryUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (gu *GalleryUpdate) defaults() {
+	if _, ok := gu.mutation.UpdateTime(); !ok {
+		v := gallery.UpdateDefaultUpdateTime()
+		gu.mutation.SetUpdateTime(v)
+	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (gu *GalleryUpdate) check() error {
+	if _, ok := gu.mutation.AuthorID(); gu.mutation.AuthorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Gallery.author"`)
+	}
+	return nil
+}
+
 func (gu *GalleryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -192,11 +222,11 @@ func (gu *GalleryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := gu.mutation.UpdateTime(); ok {
+		_spec.SetField(gallery.FieldUpdateTime, field.TypeTime, value)
+	}
 	if value, ok := gu.mutation.Title(); ok {
 		_spec.SetField(gallery.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := gu.mutation.CreatedAt(); ok {
-		_spec.SetField(gallery.FieldCreatedAt, field.TypeTime, value)
 	}
 	if gu.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -254,8 +284,8 @@ func (gu *GalleryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if gu.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   gallery.ArticleTable,
 			Columns: []string{gallery.ArticleColumn},
 			Bidi:    false,
@@ -268,10 +298,10 @@ func (gu *GalleryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := gu.mutation.RemovedArticleIDs(); len(nodes) > 0 && !gu.mutation.ArticleCleared() {
+	if nodes := gu.mutation.ArticleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   gallery.ArticleTable,
 			Columns: []string{gallery.ArticleColumn},
 			Bidi:    false,
@@ -285,19 +315,35 @@ func (gu *GalleryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := gu.mutation.ArticleIDs(); len(nodes) > 0 {
+	if gu.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   gallery.ArticleTable,
-			Columns: []string{gallery.ArticleColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   gallery.AuthorTable,
+			Columns: []string{gallery.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := gu.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   gallery.AuthorTable,
+			Columns: []string{gallery.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
 				},
 			},
 		}
@@ -325,15 +371,15 @@ type GalleryUpdateOne struct {
 	mutation *GalleryMutation
 }
 
-// SetTitle sets the "title" field.
-func (guo *GalleryUpdateOne) SetTitle(s string) *GalleryUpdateOne {
-	guo.mutation.SetTitle(s)
+// SetUpdateTime sets the "update_time" field.
+func (guo *GalleryUpdateOne) SetUpdateTime(t time.Time) *GalleryUpdateOne {
+	guo.mutation.SetUpdateTime(t)
 	return guo
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (guo *GalleryUpdateOne) SetCreatedAt(t time.Time) *GalleryUpdateOne {
-	guo.mutation.SetCreatedAt(t)
+// SetTitle sets the "title" field.
+func (guo *GalleryUpdateOne) SetTitle(s string) *GalleryUpdateOne {
+	guo.mutation.SetTitle(s)
 	return guo
 }
 
@@ -352,19 +398,34 @@ func (guo *GalleryUpdateOne) AddImages(i ...*Image) *GalleryUpdateOne {
 	return guo.AddImageIDs(ids...)
 }
 
-// AddArticleIDs adds the "article" edge to the Article entity by IDs.
-func (guo *GalleryUpdateOne) AddArticleIDs(ids ...uuid.UUID) *GalleryUpdateOne {
-	guo.mutation.AddArticleIDs(ids...)
+// SetArticleID sets the "article" edge to the Article entity by ID.
+func (guo *GalleryUpdateOne) SetArticleID(id uuid.UUID) *GalleryUpdateOne {
+	guo.mutation.SetArticleID(id)
 	return guo
 }
 
-// AddArticle adds the "article" edges to the Article entity.
-func (guo *GalleryUpdateOne) AddArticle(a ...*Article) *GalleryUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
+func (guo *GalleryUpdateOne) SetNillableArticleID(id *uuid.UUID) *GalleryUpdateOne {
+	if id != nil {
+		guo = guo.SetArticleID(*id)
 	}
-	return guo.AddArticleIDs(ids...)
+	return guo
+}
+
+// SetArticle sets the "article" edge to the Article entity.
+func (guo *GalleryUpdateOne) SetArticle(a *Article) *GalleryUpdateOne {
+	return guo.SetArticleID(a.ID)
+}
+
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (guo *GalleryUpdateOne) SetAuthorID(id uuid.UUID) *GalleryUpdateOne {
+	guo.mutation.SetAuthorID(id)
+	return guo
+}
+
+// SetAuthor sets the "author" edge to the User entity.
+func (guo *GalleryUpdateOne) SetAuthor(u *User) *GalleryUpdateOne {
+	return guo.SetAuthorID(u.ID)
 }
 
 // Mutation returns the GalleryMutation object of the builder.
@@ -393,25 +454,16 @@ func (guo *GalleryUpdateOne) RemoveImages(i ...*Image) *GalleryUpdateOne {
 	return guo.RemoveImageIDs(ids...)
 }
 
-// ClearArticle clears all "article" edges to the Article entity.
+// ClearArticle clears the "article" edge to the Article entity.
 func (guo *GalleryUpdateOne) ClearArticle() *GalleryUpdateOne {
 	guo.mutation.ClearArticle()
 	return guo
 }
 
-// RemoveArticleIDs removes the "article" edge to Article entities by IDs.
-func (guo *GalleryUpdateOne) RemoveArticleIDs(ids ...uuid.UUID) *GalleryUpdateOne {
-	guo.mutation.RemoveArticleIDs(ids...)
+// ClearAuthor clears the "author" edge to the User entity.
+func (guo *GalleryUpdateOne) ClearAuthor() *GalleryUpdateOne {
+	guo.mutation.ClearAuthor()
 	return guo
-}
-
-// RemoveArticle removes "article" edges to Article entities.
-func (guo *GalleryUpdateOne) RemoveArticle(a ...*Article) *GalleryUpdateOne {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return guo.RemoveArticleIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -427,13 +479,20 @@ func (guo *GalleryUpdateOne) Save(ctx context.Context) (*Gallery, error) {
 		err  error
 		node *Gallery
 	)
+	guo.defaults()
 	if len(guo.hooks) == 0 {
+		if err = guo.check(); err != nil {
+			return nil, err
+		}
 		node, err = guo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*GalleryMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = guo.check(); err != nil {
+				return nil, err
 			}
 			guo.mutation = mutation
 			node, err = guo.sqlSave(ctx)
@@ -481,6 +540,22 @@ func (guo *GalleryUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (guo *GalleryUpdateOne) defaults() {
+	if _, ok := guo.mutation.UpdateTime(); !ok {
+		v := gallery.UpdateDefaultUpdateTime()
+		guo.mutation.SetUpdateTime(v)
+	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (guo *GalleryUpdateOne) check() error {
+	if _, ok := guo.mutation.AuthorID(); guo.mutation.AuthorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Gallery.author"`)
+	}
+	return nil
+}
+
 func (guo *GalleryUpdateOne) sqlSave(ctx context.Context) (_node *Gallery, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -516,11 +591,11 @@ func (guo *GalleryUpdateOne) sqlSave(ctx context.Context) (_node *Gallery, err e
 			}
 		}
 	}
+	if value, ok := guo.mutation.UpdateTime(); ok {
+		_spec.SetField(gallery.FieldUpdateTime, field.TypeTime, value)
+	}
 	if value, ok := guo.mutation.Title(); ok {
 		_spec.SetField(gallery.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := guo.mutation.CreatedAt(); ok {
-		_spec.SetField(gallery.FieldCreatedAt, field.TypeTime, value)
 	}
 	if guo.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -578,8 +653,8 @@ func (guo *GalleryUpdateOne) sqlSave(ctx context.Context) (_node *Gallery, err e
 	}
 	if guo.mutation.ArticleCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   gallery.ArticleTable,
 			Columns: []string{gallery.ArticleColumn},
 			Bidi:    false,
@@ -592,10 +667,10 @@ func (guo *GalleryUpdateOne) sqlSave(ctx context.Context) (_node *Gallery, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := guo.mutation.RemovedArticleIDs(); len(nodes) > 0 && !guo.mutation.ArticleCleared() {
+	if nodes := guo.mutation.ArticleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   gallery.ArticleTable,
 			Columns: []string{gallery.ArticleColumn},
 			Bidi:    false,
@@ -609,19 +684,35 @@ func (guo *GalleryUpdateOne) sqlSave(ctx context.Context) (_node *Gallery, err e
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if nodes := guo.mutation.ArticleIDs(); len(nodes) > 0 {
+	if guo.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   gallery.ArticleTable,
-			Columns: []string{gallery.ArticleColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   gallery.AuthorTable,
+			Columns: []string{gallery.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
-					Column: article.FieldID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := guo.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   gallery.AuthorTable,
+			Columns: []string{gallery.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
 				},
 			},
 		}

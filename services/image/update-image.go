@@ -11,9 +11,7 @@ const (
 )
 
 type UpdateImagePayload struct {
-	Title     string    `json:"title"`
 	Alt       string    `json:"alt"`
-	BlobId    uuid.UUID `json:"blobId"`
 	GalleryId uuid.UUID `json:"galleryId"`
 }
 
@@ -26,9 +24,7 @@ func (s ImageService) UpdateImage(imageId string, payload UpdateImagePayload, tx
 	img, err := image.
 		Update().
 		SetAlt(payload.Alt).
-		SetBlobID(payload.BlobId).
 		SetGalleryID(payload.GalleryId).
-		SetTitle(payload.Title).
 		Save(s.ctx)
 
 	if err != nil {

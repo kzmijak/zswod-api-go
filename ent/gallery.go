@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // Gallery is the model entity for the Gallery schema.
@@ -17,13 +19,17 @@ type Gallery struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// CreatedAt holds the value of the "createdAt" field.
-	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GalleryQuery when eager-loading is set.
-	Edges GalleryEdges `json:"edges"`
+	Edges           GalleryEdges `json:"edges"`
+	article_gallery *uuid.UUID
+	user_galleries  *uuid.UUID
 }
 
 // GalleryEdges holds the relations/edges for other nodes in the graph.
@@ -31,10 +37,12 @@ type GalleryEdges struct {
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
 	// Article holds the value of the article edge.
-	Article []*Article `json:"article,omitempty"`
+	Article *Article `json:"article,omitempty"`
+	// Author holds the value of the author edge.
+	Author *User `json:"author,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ImagesOrErr returns the Images value or an error if the edge
@@ -47,12 +55,29 @@ func (e GalleryEdges) ImagesOrErr() ([]*Image, error) {
 }
 
 // ArticleOrErr returns the Article value or an error if the edge
-// was not loaded in eager-loading.
-func (e GalleryEdges) ArticleOrErr() ([]*Article, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GalleryEdges) ArticleOrErr() (*Article, error) {
 	if e.loadedTypes[1] {
+		if e.Article == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: article.Label}
+		}
 		return e.Article, nil
 	}
 	return nil, &NotLoadedError{edge: "article"}
+}
+
+// AuthorOrErr returns the Author value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e GalleryEdges) AuthorOrErr() (*User, error) {
+	if e.loadedTypes[2] {
+		if e.Author == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
+		return e.Author, nil
+	}
+	return nil, &NotLoadedError{edge: "author"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -62,10 +87,14 @@ func (*Gallery) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case gallery.FieldTitle:
 			values[i] = new(sql.NullString)
-		case gallery.FieldCreatedAt:
+		case gallery.FieldCreateTime, gallery.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case gallery.FieldID:
 			values[i] = new(uuid.UUID)
+		case gallery.ForeignKeys[0]: // article_gallery
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
+		case gallery.ForeignKeys[1]: // user_galleries
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Gallery", columns[i])
 		}
@@ -87,17 +116,37 @@ func (ga *Gallery) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ga.ID = *value
 			}
+		case gallery.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				ga.CreateTime = value.Time
+			}
+		case gallery.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				ga.UpdateTime = value.Time
+			}
 		case gallery.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				ga.Title = value.String
 			}
-		case gallery.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field createdAt", values[i])
+		case gallery.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field article_gallery", values[i])
 			} else if value.Valid {
-				ga.CreatedAt = value.Time
+				ga.article_gallery = new(uuid.UUID)
+				*ga.article_gallery = *value.S.(*uuid.UUID)
+			}
+		case gallery.ForeignKeys[1]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_galleries", values[i])
+			} else if value.Valid {
+				ga.user_galleries = new(uuid.UUID)
+				*ga.user_galleries = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -112,6 +161,11 @@ func (ga *Gallery) QueryImages() *ImageQuery {
 // QueryArticle queries the "article" edge of the Gallery entity.
 func (ga *Gallery) QueryArticle() *ArticleQuery {
 	return (&GalleryClient{config: ga.config}).QueryArticle(ga)
+}
+
+// QueryAuthor queries the "author" edge of the Gallery entity.
+func (ga *Gallery) QueryAuthor() *UserQuery {
+	return (&GalleryClient{config: ga.config}).QueryAuthor(ga)
 }
 
 // Update returns a builder for updating this Gallery.
@@ -137,11 +191,14 @@ func (ga *Gallery) String() string {
 	var builder strings.Builder
 	builder.WriteString("Gallery(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ga.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(ga.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(ga.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(ga.Title)
-	builder.WriteString(", ")
-	builder.WriteString("createdAt=")
-	builder.WriteString(ga.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

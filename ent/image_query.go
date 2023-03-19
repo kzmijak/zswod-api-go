@@ -327,12 +327,12 @@ func (iq *ImageQuery) WithBlob(opts ...func(*BlobQuery)) *ImageQuery {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		GroupBy(image.FieldTitle).
+//		GroupBy(image.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
@@ -355,11 +355,11 @@ func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Image.Query().
-//		Select(image.FieldTitle).
+//		Select(image.FieldCreateTime).
 //		Scan(ctx, &v)
 func (iq *ImageQuery) Select(fields ...string) *ImageSelect {
 	iq.fields = append(iq.fields, fields...)
@@ -472,10 +472,7 @@ func (iq *ImageQuery) loadBlob(ctx context.Context, query *BlobQuery, nodes []*I
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Image)
 	for i := range nodes {
-		if nodes[i].blob_article_images == nil {
-			continue
-		}
-		fk := *nodes[i].blob_article_images
+		fk := nodes[i].BlobId
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -489,7 +486,7 @@ func (iq *ImageQuery) loadBlob(ctx context.Context, query *BlobQuery, nodes []*I
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "blob_article_images" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "blobId" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

@@ -12,7 +12,9 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/migrate"
 
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/custompage"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
@@ -30,8 +32,12 @@ type Client struct {
 	Schema *migrate.Schema
 	// Article is the client for interacting with the Article builders.
 	Article *ArticleClient
+	// Attachment is the client for interacting with the Attachment builders.
+	Attachment *AttachmentClient
 	// Blob is the client for interacting with the Blob builders.
 	Blob *BlobClient
+	// CustomPage is the client for interacting with the CustomPage builders.
+	CustomPage *CustomPageClient
 	// Gallery is the client for interacting with the Gallery builders.
 	Gallery *GalleryClient
 	// Image is the client for interacting with the Image builders.
@@ -54,7 +60,9 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Article = NewArticleClient(c.config)
+	c.Attachment = NewAttachmentClient(c.config)
 	c.Blob = NewBlobClient(c.config)
+	c.CustomPage = NewCustomPageClient(c.config)
 	c.Gallery = NewGalleryClient(c.config)
 	c.Image = NewImageClient(c.config)
 	c.ResetPasswordToken = NewResetPasswordTokenClient(c.config)
@@ -93,7 +101,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                ctx,
 		config:             cfg,
 		Article:            NewArticleClient(cfg),
+		Attachment:         NewAttachmentClient(cfg),
 		Blob:               NewBlobClient(cfg),
+		CustomPage:         NewCustomPageClient(cfg),
 		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
@@ -118,7 +128,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                ctx,
 		config:             cfg,
 		Article:            NewArticleClient(cfg),
+		Attachment:         NewAttachmentClient(cfg),
 		Blob:               NewBlobClient(cfg),
+		CustomPage:         NewCustomPageClient(cfg),
 		Gallery:            NewGalleryClient(cfg),
 		Image:              NewImageClient(cfg),
 		ResetPasswordToken: NewResetPasswordTokenClient(cfg),
@@ -152,7 +164,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Article.Use(hooks...)
+	c.Attachment.Use(hooks...)
 	c.Blob.Use(hooks...)
+	c.CustomPage.Use(hooks...)
 	c.Gallery.Use(hooks...)
 	c.Image.Use(hooks...)
 	c.ResetPasswordToken.Use(hooks...)
@@ -252,7 +266,39 @@ func (c *ArticleClient) QueryGallery(a *Article) *GalleryQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(article.Table, article.FieldID, id),
 			sqlgraph.To(gallery.Table, gallery.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, article.GalleryTable, article.GalleryColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, article.GalleryTable, article.GalleryColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthor queries the author edge of a Article.
+func (c *ArticleClient) QueryAuthor(a *Article) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, article.AuthorTable, article.AuthorPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAttachments queries the attachments edge of a Article.
+func (c *ArticleClient) QueryAttachments(a *Article) *AttachmentQuery {
+	query := &AttachmentQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, id),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, article.AttachmentsTable, article.AttachmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -263,6 +309,144 @@ func (c *ArticleClient) QueryGallery(a *Article) *GalleryQuery {
 // Hooks returns the client hooks.
 func (c *ArticleClient) Hooks() []Hook {
 	return c.hooks.Article
+}
+
+// AttachmentClient is a client for the Attachment schema.
+type AttachmentClient struct {
+	config
+}
+
+// NewAttachmentClient returns a client for the Attachment from the given config.
+func NewAttachmentClient(c config) *AttachmentClient {
+	return &AttachmentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `attachment.Hooks(f(g(h())))`.
+func (c *AttachmentClient) Use(hooks ...Hook) {
+	c.hooks.Attachment = append(c.hooks.Attachment, hooks...)
+}
+
+// Create returns a builder for creating a Attachment entity.
+func (c *AttachmentClient) Create() *AttachmentCreate {
+	mutation := newAttachmentMutation(c.config, OpCreate)
+	return &AttachmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Attachment entities.
+func (c *AttachmentClient) CreateBulk(builders ...*AttachmentCreate) *AttachmentCreateBulk {
+	return &AttachmentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Attachment.
+func (c *AttachmentClient) Update() *AttachmentUpdate {
+	mutation := newAttachmentMutation(c.config, OpUpdate)
+	return &AttachmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AttachmentClient) UpdateOne(a *Attachment) *AttachmentUpdateOne {
+	mutation := newAttachmentMutation(c.config, OpUpdateOne, withAttachment(a))
+	return &AttachmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AttachmentClient) UpdateOneID(id uuid.UUID) *AttachmentUpdateOne {
+	mutation := newAttachmentMutation(c.config, OpUpdateOne, withAttachmentID(id))
+	return &AttachmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Attachment.
+func (c *AttachmentClient) Delete() *AttachmentDelete {
+	mutation := newAttachmentMutation(c.config, OpDelete)
+	return &AttachmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AttachmentClient) DeleteOne(a *Attachment) *AttachmentDeleteOne {
+	return c.DeleteOneID(a.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AttachmentClient) DeleteOneID(id uuid.UUID) *AttachmentDeleteOne {
+	builder := c.Delete().Where(attachment.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AttachmentDeleteOne{builder}
+}
+
+// Query returns a query builder for Attachment.
+func (c *AttachmentClient) Query() *AttachmentQuery {
+	return &AttachmentQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Attachment entity by its id.
+func (c *AttachmentClient) Get(ctx context.Context, id uuid.UUID) (*Attachment, error) {
+	return c.Query().Where(attachment.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AttachmentClient) GetX(ctx context.Context, id uuid.UUID) *Attachment {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBlob queries the blob edge of a Attachment.
+func (c *AttachmentClient) QueryBlob(a *Attachment) *BlobQuery {
+	query := &BlobQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(attachment.Table, attachment.FieldID, id),
+			sqlgraph.To(blob.Table, blob.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, attachment.BlobTable, attachment.BlobColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPage queries the page edge of a Attachment.
+func (c *AttachmentClient) QueryPage(a *Attachment) *CustomPageQuery {
+	query := &CustomPageQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(attachment.Table, attachment.FieldID, id),
+			sqlgraph.To(custompage.Table, custompage.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, attachment.PageTable, attachment.PageColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryArticle queries the article edge of a Attachment.
+func (c *AttachmentClient) QueryArticle(a *Attachment) *ArticleQuery {
+	query := &ArticleQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(attachment.Table, attachment.FieldID, id),
+			sqlgraph.To(article.Table, article.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, attachment.ArticleTable, attachment.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AttachmentClient) Hooks() []Hook {
+	return c.hooks.Attachment
 }
 
 // BlobClient is a client for the Blob schema.
@@ -350,15 +534,31 @@ func (c *BlobClient) GetX(ctx context.Context, id uuid.UUID) *Blob {
 	return obj
 }
 
-// QueryArticleImages queries the articleImages edge of a Blob.
-func (c *BlobClient) QueryArticleImages(b *Blob) *ImageQuery {
+// QueryAttachments queries the attachments edge of a Blob.
+func (c *BlobClient) QueryAttachments(b *Blob) *AttachmentQuery {
+	query := &AttachmentQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(blob.Table, blob.FieldID, id),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, blob.AttachmentsTable, blob.AttachmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryImages queries the images edge of a Blob.
+func (c *BlobClient) QueryImages(b *Blob) *ImageQuery {
 	query := &ImageQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := b.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(blob.Table, blob.FieldID, id),
 			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, blob.ArticleImagesTable, blob.ArticleImagesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, blob.ImagesTable, blob.ImagesColumn),
 		)
 		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
 		return fromV, nil
@@ -369,6 +569,112 @@ func (c *BlobClient) QueryArticleImages(b *Blob) *ImageQuery {
 // Hooks returns the client hooks.
 func (c *BlobClient) Hooks() []Hook {
 	return c.hooks.Blob
+}
+
+// CustomPageClient is a client for the CustomPage schema.
+type CustomPageClient struct {
+	config
+}
+
+// NewCustomPageClient returns a client for the CustomPage from the given config.
+func NewCustomPageClient(c config) *CustomPageClient {
+	return &CustomPageClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `custompage.Hooks(f(g(h())))`.
+func (c *CustomPageClient) Use(hooks ...Hook) {
+	c.hooks.CustomPage = append(c.hooks.CustomPage, hooks...)
+}
+
+// Create returns a builder for creating a CustomPage entity.
+func (c *CustomPageClient) Create() *CustomPageCreate {
+	mutation := newCustomPageMutation(c.config, OpCreate)
+	return &CustomPageCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of CustomPage entities.
+func (c *CustomPageClient) CreateBulk(builders ...*CustomPageCreate) *CustomPageCreateBulk {
+	return &CustomPageCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for CustomPage.
+func (c *CustomPageClient) Update() *CustomPageUpdate {
+	mutation := newCustomPageMutation(c.config, OpUpdate)
+	return &CustomPageUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CustomPageClient) UpdateOne(cp *CustomPage) *CustomPageUpdateOne {
+	mutation := newCustomPageMutation(c.config, OpUpdateOne, withCustomPage(cp))
+	return &CustomPageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CustomPageClient) UpdateOneID(id uuid.UUID) *CustomPageUpdateOne {
+	mutation := newCustomPageMutation(c.config, OpUpdateOne, withCustomPageID(id))
+	return &CustomPageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for CustomPage.
+func (c *CustomPageClient) Delete() *CustomPageDelete {
+	mutation := newCustomPageMutation(c.config, OpDelete)
+	return &CustomPageDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CustomPageClient) DeleteOne(cp *CustomPage) *CustomPageDeleteOne {
+	return c.DeleteOneID(cp.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CustomPageClient) DeleteOneID(id uuid.UUID) *CustomPageDeleteOne {
+	builder := c.Delete().Where(custompage.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CustomPageDeleteOne{builder}
+}
+
+// Query returns a query builder for CustomPage.
+func (c *CustomPageClient) Query() *CustomPageQuery {
+	return &CustomPageQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a CustomPage entity by its id.
+func (c *CustomPageClient) Get(ctx context.Context, id uuid.UUID) (*CustomPage, error) {
+	return c.Query().Where(custompage.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CustomPageClient) GetX(ctx context.Context, id uuid.UUID) *CustomPage {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAttachments queries the attachments edge of a CustomPage.
+func (c *CustomPageClient) QueryAttachments(cp *CustomPage) *AttachmentQuery {
+	query := &AttachmentQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(custompage.Table, custompage.FieldID, id),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, custompage.AttachmentsTable, custompage.AttachmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(cp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CustomPageClient) Hooks() []Hook {
+	return c.hooks.CustomPage
 }
 
 // GalleryClient is a client for the Gallery schema.
@@ -480,7 +786,23 @@ func (c *GalleryClient) QueryArticle(ga *Gallery) *ArticleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(gallery.Table, gallery.FieldID, id),
 			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, gallery.ArticleTable, gallery.ArticleColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, gallery.ArticleTable, gallery.ArticleColumn),
+		)
+		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAuthor queries the author edge of a Gallery.
+func (c *GalleryClient) QueryAuthor(ga *Gallery) *UserQuery {
+	query := &UserQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ga.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gallery.Table, gallery.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, gallery.AuthorTable, gallery.AuthorColumn),
 		)
 		fromV = sqlgraph.Neighbors(ga.driver.Dialect(), step)
 		return fromV, nil
@@ -804,6 +1126,54 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryGalleries queries the galleries edge of a User.
+func (c *UserClient) QueryGalleries(u *User) *GalleryQuery {
+	query := &GalleryQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.GalleriesTable, user.GalleriesColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryArticles queries the articles edge of a User.
+func (c *UserClient) QueryArticles(u *User) *ArticleQuery {
+	query := &ArticleQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(article.Table, article.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.ArticlesTable, user.ArticlesPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAvatar queries the avatar edge of a User.
+func (c *UserClient) QueryAvatar(u *User) *ImageQuery {
+	query := &ImageQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.AvatarTable, user.AvatarColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryResetPasswordTokens queries the resetPasswordTokens edge of a User.

@@ -15,7 +15,7 @@ const (
 func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([]articleHeaderModel.ArticleHeaderModel, error) {
 	articles, err := articleQuery.FromTx(tx).
 		JoinAllImagesToArticle().
-		Order(ent.Desc(article.FieldUploadDate)).
+		Order(ent.Desc(article.FieldCreateTime)).
 		Limit(amount).
 		Offset(offset).
 		All(s.ctx)

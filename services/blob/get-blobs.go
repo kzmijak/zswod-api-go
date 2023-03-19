@@ -27,7 +27,7 @@ func (s BlobService) GetBlobs(amount int, offset int, tx *ent.Tx) (*GetBlobsRetu
 	blobs, err := queryBase.
 		Limit(amount).
 		Offset(offset).
-		Order(ent.Desc(blob.FieldCreatedAt)).
+		Order(ent.Desc(blob.FieldCreateTime)).
 		All(s.ctx)
 	
 	if err != nil {

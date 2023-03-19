@@ -11,10 +11,11 @@ import (
 
 type ArticleModel struct {
 	ID         uuid.UUID     `json:"id,omitempty"`
+	CreateTime time.Time     `json:"createTime,omitempty"`
+	UpdateTime time.Time	   `json:"updateTime,omitempty"`
 	Title      string        `json:"title,omitempty"`
 	Short      string        `json:"short,omitempty"`
 	Content    string        `json:"content,omitempty"`
-	UploadDate time.Time     `json:"uploadDate,omitempty"`
 	Gallery	galleryModel.GalleryModel `json:"gallery"`
 }
 
@@ -36,7 +37,8 @@ func FromEntity(articleEntity *ent.Article) (ArticleModel, error) {
 		Title: articleEntity.Title,
 		Short: articleEntity.Short,
 		Content: articleEntity.Content,
-		UploadDate: articleEntity.UploadDate,
+		CreateTime: articleEntity.CreateTime,
+		UpdateTime: articleEntity.UpdateTime,
 		Gallery: galleryModel,
 	}, nil
 }

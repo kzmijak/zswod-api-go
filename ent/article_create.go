@@ -12,7 +12,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // ArticleCreate is the builder for creating a Article entity.
@@ -20,6 +22,34 @@ type ArticleCreate struct {
 	config
 	mutation *ArticleMutation
 	hooks    []Hook
+}
+
+// SetCreateTime sets the "create_time" field.
+func (ac *ArticleCreate) SetCreateTime(t time.Time) *ArticleCreate {
+	ac.mutation.SetCreateTime(t)
+	return ac
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (ac *ArticleCreate) SetNillableCreateTime(t *time.Time) *ArticleCreate {
+	if t != nil {
+		ac.SetCreateTime(*t)
+	}
+	return ac
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (ac *ArticleCreate) SetUpdateTime(t time.Time) *ArticleCreate {
+	ac.mutation.SetUpdateTime(t)
+	return ac
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (ac *ArticleCreate) SetNillableUpdateTime(t *time.Time) *ArticleCreate {
+	if t != nil {
+		ac.SetUpdateTime(*t)
+	}
+	return ac
 }
 
 // SetTitle sets the "title" field.
@@ -46,15 +76,17 @@ func (ac *ArticleCreate) SetContent(s string) *ArticleCreate {
 	return ac
 }
 
-// SetUploadDate sets the "uploadDate" field.
-func (ac *ArticleCreate) SetUploadDate(t time.Time) *ArticleCreate {
-	ac.mutation.SetUploadDate(t)
-	return ac
-}
-
 // SetID sets the "id" field.
 func (ac *ArticleCreate) SetID(u uuid.UUID) *ArticleCreate {
 	ac.mutation.SetID(u)
+	return ac
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ac *ArticleCreate) SetNillableID(u *uuid.UUID) *ArticleCreate {
+	if u != nil {
+		ac.SetID(*u)
+	}
 	return ac
 }
 
@@ -64,17 +96,39 @@ func (ac *ArticleCreate) SetGalleryID(id uuid.UUID) *ArticleCreate {
 	return ac
 }
 
-// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
-func (ac *ArticleCreate) SetNillableGalleryID(id *uuid.UUID) *ArticleCreate {
-	if id != nil {
-		ac = ac.SetGalleryID(*id)
-	}
-	return ac
-}
-
 // SetGallery sets the "gallery" edge to the Gallery entity.
 func (ac *ArticleCreate) SetGallery(g *Gallery) *ArticleCreate {
 	return ac.SetGalleryID(g.ID)
+}
+
+// AddAuthorIDs adds the "author" edge to the User entity by IDs.
+func (ac *ArticleCreate) AddAuthorIDs(ids ...uuid.UUID) *ArticleCreate {
+	ac.mutation.AddAuthorIDs(ids...)
+	return ac
+}
+
+// AddAuthor adds the "author" edges to the User entity.
+func (ac *ArticleCreate) AddAuthor(u ...*User) *ArticleCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ac.AddAuthorIDs(ids...)
+}
+
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (ac *ArticleCreate) AddAttachmentIDs(ids ...uuid.UUID) *ArticleCreate {
+	ac.mutation.AddAttachmentIDs(ids...)
+	return ac
+}
+
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (ac *ArticleCreate) AddAttachments(a ...*Attachment) *ArticleCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ac.AddAttachmentIDs(ids...)
 }
 
 // Mutation returns the ArticleMutation object of the builder.
@@ -88,6 +142,7 @@ func (ac *ArticleCreate) Save(ctx context.Context) (*Article, error) {
 		err  error
 		node *Article
 	)
+	ac.defaults()
 	if len(ac.hooks) == 0 {
 		if err = ac.check(); err != nil {
 			return nil, err
@@ -151,8 +206,30 @@ func (ac *ArticleCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ac *ArticleCreate) defaults() {
+	if _, ok := ac.mutation.CreateTime(); !ok {
+		v := article.DefaultCreateTime()
+		ac.mutation.SetCreateTime(v)
+	}
+	if _, ok := ac.mutation.UpdateTime(); !ok {
+		v := article.DefaultUpdateTime()
+		ac.mutation.SetUpdateTime(v)
+	}
+	if _, ok := ac.mutation.ID(); !ok {
+		v := article.DefaultID()
+		ac.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ac *ArticleCreate) check() error {
+	if _, ok := ac.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Article.create_time"`)}
+	}
+	if _, ok := ac.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Article.update_time"`)}
+	}
 	if _, ok := ac.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Article.title"`)}
 	}
@@ -175,8 +252,11 @@ func (ac *ArticleCreate) check() error {
 	if _, ok := ac.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Article.content"`)}
 	}
-	if _, ok := ac.mutation.UploadDate(); !ok {
-		return &ValidationError{Name: "uploadDate", err: errors.New(`ent: missing required field "Article.uploadDate"`)}
+	if _, ok := ac.mutation.GalleryID(); !ok {
+		return &ValidationError{Name: "gallery", err: errors.New(`ent: missing required edge "Article.gallery"`)}
+	}
+	if len(ac.mutation.AuthorIDs()) == 0 {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required edge "Article.author"`)}
 	}
 	return nil
 }
@@ -214,6 +294,14 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := ac.mutation.CreateTime(); ok {
+		_spec.SetField(article.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := ac.mutation.UpdateTime(); ok {
+		_spec.SetField(article.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := ac.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -230,14 +318,10 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
 		_node.Content = value
 	}
-	if value, ok := ac.mutation.UploadDate(); ok {
-		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
-		_node.UploadDate = value
-	}
 	if nodes := ac.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   article.GalleryTable,
 			Columns: []string{article.GalleryColumn},
 			Bidi:    false,
@@ -251,7 +335,44 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.gallery_article = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ac.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -271,6 +392,7 @@ func (acb *ArticleCreateBulk) Save(ctx context.Context) ([]*Article, error) {
 	for i := range acb.builders {
 		func(i int, root context.Context) {
 			builder := acb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ArticleMutation)
 				if !ok {

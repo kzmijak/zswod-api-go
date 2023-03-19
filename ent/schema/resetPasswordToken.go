@@ -23,6 +23,9 @@ func (ResetPasswordToken) Fields() []ent.Field {
 // Edges of the ResetPasswordToken.
 func (ResetPasswordToken) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("owner", User.Type).Ref("resetPasswordTokens").Unique().Required(),
+		edge.From("owner", User.Type).
+			Ref("resetPasswordTokens").
+			Unique().
+			Required(),
 	}
 }

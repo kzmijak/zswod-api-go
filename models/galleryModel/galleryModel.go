@@ -11,8 +11,9 @@ import (
 
 type GalleryModel struct {
 	ID        uuid.UUID `json:"id"`
+	CreatedTime time.Time `json:"createTime"`
+	UpdateTime time.Time `json:"updateTime,omitempty"`
 	Title     string `json:"title"`
-	CreatedAt time.Time `json:"createdAt"`
 	Images    []imageModel.Image `json:"images"`
 }
 
@@ -32,7 +33,8 @@ func FromEntity(galleryEntity *ent.Gallery) (GalleryModel, error) {
 	return GalleryModel{
 		ID: galleryEntity.ID,
 		Title: galleryEntity.Title,
-		CreatedAt: galleryEntity.CreatedAt,
+		CreatedTime: galleryEntity.UpdateTime,
+		UpdateTime: galleryEntity.CreateTime,
 		Images: imageModes,
 	}, nil
 } 

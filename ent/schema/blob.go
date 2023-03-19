@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"entgo.io/ent/schema/mixin"
 )
 
 // Blob holds the schema definition for the Image entity.
@@ -13,10 +13,17 @@ type Blob struct {
 	ent.Schema
 }
 
+// Mixin of the Blob schema.
+func (Blob) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		UuidMixin{},
+		mixin.CreateTime{},
+	}
+}
+
 // Fields of the Image.
 func (Blob) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Unique(),
 		field.Bytes("blob").
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumblob",
@@ -24,13 +31,13 @@ func (Blob) Fields() []ent.Field {
 		field.String("title"),
 		field.String("alt"),
 		field.String("contentType"),
-		field.Time("createdAt"),
 	}
 }
 
 // Edges of the Image.
 func (Blob) Edges() []ent.Edge {
 	return []ent.Edge {
-		edge.To("articleImages", Image.Type),
+		edge.To("attachments", Attachment.Type),
+		edge.To("images", Image.Type),
 	}
 }

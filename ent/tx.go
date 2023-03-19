@@ -14,8 +14,12 @@ type Tx struct {
 	config
 	// Article is the client for interacting with the Article builders.
 	Article *ArticleClient
+	// Attachment is the client for interacting with the Attachment builders.
+	Attachment *AttachmentClient
 	// Blob is the client for interacting with the Blob builders.
 	Blob *BlobClient
+	// CustomPage is the client for interacting with the CustomPage builders.
+	CustomPage *CustomPageClient
 	// Gallery is the client for interacting with the Gallery builders.
 	Gallery *GalleryClient
 	// Image is the client for interacting with the Image builders.
@@ -156,7 +160,9 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Article = NewArticleClient(tx.config)
+	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.Blob = NewBlobClient(tx.config)
+	tx.CustomPage = NewCustomPageClient(tx.config)
 	tx.Gallery = NewGalleryClient(tx.config)
 	tx.Image = NewImageClient(tx.config)
 	tx.ResetPasswordToken = NewResetPasswordTokenClient(tx.config)

@@ -16,7 +16,7 @@ const (
 func (s GalleryService) GetGalleryHeaders(amount int, offset int, tx *ent.Tx) ([]galleryHeaderModel.GalleryHeaderModel, error) {
 	galleryEntities, err := galleryQuery.FromTx(tx).
 		JoinPreviewImage().
-		Order(ent.Desc(gallery.FieldCreatedAt)).
+		Order(ent.Desc(gallery.FieldCreateTime)).
 		Limit(amount).
 		Offset(offset).
 		All(s.ctx)

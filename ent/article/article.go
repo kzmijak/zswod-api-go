@@ -2,11 +2,21 @@
 
 package article
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the article type in the database.
 	Label = "article"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
+	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	FieldUpdateTime = "update_time"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldTitleNormalized holds the string denoting the titlenormalized field in the database.
@@ -15,36 +25,51 @@ const (
 	FieldShort = "short"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
-	// FieldUploadDate holds the string denoting the uploaddate field in the database.
-	FieldUploadDate = "upload_date"
 	// EdgeGallery holds the string denoting the gallery edge name in mutations.
 	EdgeGallery = "gallery"
+	// EdgeAuthor holds the string denoting the author edge name in mutations.
+	EdgeAuthor = "author"
+	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
+	EdgeAttachments = "attachments"
 	// Table holds the table name of the article in the database.
 	Table = "articles"
 	// GalleryTable is the table that holds the gallery relation/edge.
-	GalleryTable = "articles"
+	GalleryTable = "galleries"
 	// GalleryInverseTable is the table name for the Gallery entity.
 	// It exists in this package in order to avoid circular dependency with the "gallery" package.
 	GalleryInverseTable = "galleries"
 	// GalleryColumn is the table column denoting the gallery relation/edge.
-	GalleryColumn = "gallery_article"
+	GalleryColumn = "article_gallery"
+	// AuthorTable is the table that holds the author relation/edge. The primary key declared below.
+	AuthorTable = "user_articles"
+	// AuthorInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	AuthorInverseTable = "users"
+	// AttachmentsTable is the table that holds the attachments relation/edge.
+	AttachmentsTable = "attachments"
+	// AttachmentsInverseTable is the table name for the Attachment entity.
+	// It exists in this package in order to avoid circular dependency with the "attachment" package.
+	AttachmentsInverseTable = "attachments"
+	// AttachmentsColumn is the table column denoting the attachments relation/edge.
+	AttachmentsColumn = "article_attachments"
 )
 
 // Columns holds all SQL columns for article fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
+	FieldUpdateTime,
 	FieldTitle,
 	FieldTitleNormalized,
 	FieldShort,
 	FieldContent,
-	FieldUploadDate,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "articles"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"gallery_article",
-}
+var (
+	// AuthorPrimaryKey and AuthorColumn2 are the table columns denoting the
+	// primary key for the author relation (M2M).
+	AuthorPrimaryKey = []string{"user_id", "article_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -53,17 +78,20 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
-			return true
-		}
-	}
 	return false
 }
 
 var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	DefaultUpdateTime func() time.Time
+	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	UpdateDefaultUpdateTime func() time.Time
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
 	// ShortValidator is a validator for the "short" field. It is called by the builders before save.
 	ShortValidator func(string) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

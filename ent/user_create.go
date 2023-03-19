@@ -10,6 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
@@ -33,6 +36,34 @@ func (uc *UserCreate) SetEmail(s string) *UserCreate {
 	return uc
 }
 
+// SetFirstName sets the "firstName" field.
+func (uc *UserCreate) SetFirstName(s string) *UserCreate {
+	uc.mutation.SetFirstName(s)
+	return uc
+}
+
+// SetNillableFirstName sets the "firstName" field if the given value is not nil.
+func (uc *UserCreate) SetNillableFirstName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetFirstName(*s)
+	}
+	return uc
+}
+
+// SetLastName sets the "lastName" field.
+func (uc *UserCreate) SetLastName(s string) *UserCreate {
+	uc.mutation.SetLastName(s)
+	return uc
+}
+
+// SetNillableLastName sets the "lastName" field if the given value is not nil.
+func (uc *UserCreate) SetNillableLastName(s *string) *UserCreate {
+	if s != nil {
+		uc.SetLastName(*s)
+	}
+	return uc
+}
+
 // SetRole sets the "role" field.
 func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
 	uc.mutation.SetRole(u)
@@ -43,6 +74,63 @@ func (uc *UserCreate) SetRole(u user.Role) *UserCreate {
 func (uc *UserCreate) SetID(u uuid.UUID) *UserCreate {
 	uc.mutation.SetID(u)
 	return uc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
+	if u != nil {
+		uc.SetID(*u)
+	}
+	return uc
+}
+
+// AddGalleryIDs adds the "galleries" edge to the Gallery entity by IDs.
+func (uc *UserCreate) AddGalleryIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddGalleryIDs(ids...)
+	return uc
+}
+
+// AddGalleries adds the "galleries" edges to the Gallery entity.
+func (uc *UserCreate) AddGalleries(g ...*Gallery) *UserCreate {
+	ids := make([]uuid.UUID, len(g))
+	for i := range g {
+		ids[i] = g[i].ID
+	}
+	return uc.AddGalleryIDs(ids...)
+}
+
+// AddArticleIDs adds the "articles" edge to the Article entity by IDs.
+func (uc *UserCreate) AddArticleIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddArticleIDs(ids...)
+	return uc
+}
+
+// AddArticles adds the "articles" edges to the Article entity.
+func (uc *UserCreate) AddArticles(a ...*Article) *UserCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uc.AddArticleIDs(ids...)
+}
+
+// SetAvatarID sets the "avatar" edge to the Image entity by ID.
+func (uc *UserCreate) SetAvatarID(id uuid.UUID) *UserCreate {
+	uc.mutation.SetAvatarID(id)
+	return uc
+}
+
+// SetNillableAvatarID sets the "avatar" edge to the Image entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableAvatarID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		uc = uc.SetAvatarID(*id)
+	}
+	return uc
+}
+
+// SetAvatar sets the "avatar" edge to the Image entity.
+func (uc *UserCreate) SetAvatar(i *Image) *UserCreate {
+	return uc.SetAvatarID(i.ID)
 }
 
 // AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
@@ -71,6 +159,7 @@ func (uc *UserCreate) Save(ctx context.Context) (*User, error) {
 		err  error
 		node *User
 	)
+	uc.defaults()
 	if len(uc.hooks) == 0 {
 		if err = uc.check(); err != nil {
 			return nil, err
@@ -134,6 +223,14 @@ func (uc *UserCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (uc *UserCreate) defaults() {
+	if _, ok := uc.mutation.ID(); !ok {
+		v := user.DefaultID()
+		uc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
 	if _, ok := uc.mutation.Password(); !ok {
@@ -194,9 +291,75 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
 	}
+	if value, ok := uc.mutation.FirstName(); ok {
+		_spec.SetField(user.FieldFirstName, field.TypeString, value)
+		_node.FirstName = value
+	}
+	if value, ok := uc.mutation.LastName(); ok {
+		_spec.SetField(user.FieldLastName, field.TypeString, value)
+		_node.LastName = value
+	}
 	if value, ok := uc.mutation.Role(); ok {
 		_spec.SetField(user.FieldRole, field.TypeEnum, value)
 		_node.Role = value
+	}
+	if nodes := uc.mutation.GalleriesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.GalleriesTable,
+			Columns: []string{user.GalleriesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: gallery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.ArticlesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.ArticlesTable,
+			Columns: user.ArticlesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: article.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.AvatarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.AvatarTable,
+			Columns: []string{user.AvatarColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: image.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_avatar = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -234,6 +397,7 @@ func (ucb *UserCreateBulk) Save(ctx context.Context) ([]*User, error) {
 	for i := range ucb.builders {
 		func(i int, root context.Context) {
 			builder := ucb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*UserMutation)
 				if !ok {

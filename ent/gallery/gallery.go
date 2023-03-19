@@ -2,19 +2,29 @@
 
 package gallery
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the gallery type in the database.
 	Label = "gallery"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
+	// FieldUpdateTime holds the string denoting the update_time field in the database.
+	FieldUpdateTime = "update_time"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldCreatedAt holds the string denoting the createdat field in the database.
-	FieldCreatedAt = "created_at"
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
 	// EdgeArticle holds the string denoting the article edge name in mutations.
 	EdgeArticle = "article"
+	// EdgeAuthor holds the string denoting the author edge name in mutations.
+	EdgeAuthor = "author"
 	// Table holds the table name of the gallery in the database.
 	Table = "galleries"
 	// ImagesTable is the table that holds the images relation/edge.
@@ -25,19 +35,34 @@ const (
 	// ImagesColumn is the table column denoting the images relation/edge.
 	ImagesColumn = "gallery_images"
 	// ArticleTable is the table that holds the article relation/edge.
-	ArticleTable = "articles"
+	ArticleTable = "galleries"
 	// ArticleInverseTable is the table name for the Article entity.
 	// It exists in this package in order to avoid circular dependency with the "article" package.
 	ArticleInverseTable = "articles"
 	// ArticleColumn is the table column denoting the article relation/edge.
-	ArticleColumn = "gallery_article"
+	ArticleColumn = "article_gallery"
+	// AuthorTable is the table that holds the author relation/edge.
+	AuthorTable = "galleries"
+	// AuthorInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	AuthorInverseTable = "users"
+	// AuthorColumn is the table column denoting the author relation/edge.
+	AuthorColumn = "user_galleries"
 )
 
 // Columns holds all SQL columns for gallery fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
+	FieldUpdateTime,
 	FieldTitle,
-	FieldCreatedAt,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "galleries"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"article_gallery",
+	"user_galleries",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -47,5 +72,21 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
+
+var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
+	DefaultUpdateTime func() time.Time
+	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
+	UpdateDefaultUpdateTime func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

@@ -8,6 +8,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -20,26 +21,68 @@ type User struct {
 	Password string `json:"password,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
+	// FirstName holds the value of the "firstName" field.
+	FirstName string `json:"firstName,omitempty"`
+	// LastName holds the value of the "lastName" field.
+	LastName string `json:"lastName,omitempty"`
 	// Role holds the value of the "role" field.
 	Role user.Role `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges UserEdges `json:"edges"`
+	Edges       UserEdges `json:"edges"`
+	user_avatar *uuid.UUID
 }
 
 // UserEdges holds the relations/edges for other nodes in the graph.
 type UserEdges struct {
+	// Galleries holds the value of the galleries edge.
+	Galleries []*Gallery `json:"galleries,omitempty"`
+	// Articles holds the value of the articles edge.
+	Articles []*Article `json:"articles,omitempty"`
+	// Avatar holds the value of the avatar edge.
+	Avatar *Image `json:"avatar,omitempty"`
 	// ResetPasswordTokens holds the value of the resetPasswordTokens edge.
 	ResetPasswordTokens []*ResetPasswordToken `json:"resetPasswordTokens,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [4]bool
+}
+
+// GalleriesOrErr returns the Galleries value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) GalleriesOrErr() ([]*Gallery, error) {
+	if e.loadedTypes[0] {
+		return e.Galleries, nil
+	}
+	return nil, &NotLoadedError{edge: "galleries"}
+}
+
+// ArticlesOrErr returns the Articles value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ArticlesOrErr() ([]*Article, error) {
+	if e.loadedTypes[1] {
+		return e.Articles, nil
+	}
+	return nil, &NotLoadedError{edge: "articles"}
+}
+
+// AvatarOrErr returns the Avatar value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) AvatarOrErr() (*Image, error) {
+	if e.loadedTypes[2] {
+		if e.Avatar == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: image.Label}
+		}
+		return e.Avatar, nil
+	}
+	return nil, &NotLoadedError{edge: "avatar"}
 }
 
 // ResetPasswordTokensOrErr returns the ResetPasswordTokens value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) ResetPasswordTokensOrErr() ([]*ResetPasswordToken, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[3] {
 		return e.ResetPasswordTokens, nil
 	}
 	return nil, &NotLoadedError{edge: "resetPasswordTokens"}
@@ -50,10 +93,12 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldPassword, user.FieldEmail, user.FieldRole:
+		case user.FieldPassword, user.FieldEmail, user.FieldFirstName, user.FieldLastName, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
+		case user.ForeignKeys[0]: // user_avatar
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type User", columns[i])
 		}
@@ -87,15 +132,49 @@ func (u *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				u.Email = value.String
 			}
+		case user.FieldFirstName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field firstName", values[i])
+			} else if value.Valid {
+				u.FirstName = value.String
+			}
+		case user.FieldLastName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field lastName", values[i])
+			} else if value.Valid {
+				u.LastName = value.String
+			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				u.Role = user.Role(value.String)
 			}
+		case user.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_avatar", values[i])
+			} else if value.Valid {
+				u.user_avatar = new(uuid.UUID)
+				*u.user_avatar = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryGalleries queries the "galleries" edge of the User entity.
+func (u *User) QueryGalleries() *GalleryQuery {
+	return (&UserClient{config: u.config}).QueryGalleries(u)
+}
+
+// QueryArticles queries the "articles" edge of the User entity.
+func (u *User) QueryArticles() *ArticleQuery {
+	return (&UserClient{config: u.config}).QueryArticles(u)
+}
+
+// QueryAvatar queries the "avatar" edge of the User entity.
+func (u *User) QueryAvatar() *ImageQuery {
+	return (&UserClient{config: u.config}).QueryAvatar(u)
 }
 
 // QueryResetPasswordTokens queries the "resetPasswordTokens" edge of the User entity.
@@ -131,6 +210,12 @@ func (u *User) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(u.Email)
+	builder.WriteString(", ")
+	builder.WriteString("firstName=")
+	builder.WriteString(u.FirstName)
+	builder.WriteString(", ")
+	builder.WriteString("lastName=")
+	builder.WriteString(u.LastName)
 	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(fmt.Sprintf("%v", u.Role))

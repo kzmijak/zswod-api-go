@@ -20,11 +20,9 @@ type CreateImagePayload struct {
 func (s ImageService) CreateImage(req CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Image, error) {
 	image, err := tx.Image.Create().
 		SetID(uuid.New()).
-		SetTitle(req.Title).
 		SetAlt(req.Alt).
 		SetGalleryID(galleryId).
 		SetBlobID(req.BlobId).
-		SetIsPreview(req.IsPreview).
 		Save(s.ctx)
 
 	if err != nil {

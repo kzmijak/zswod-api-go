@@ -82,6 +82,13 @@ func IDLTE(id uuid.UUID) predicate.Blob {
 	})
 }
 
+// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+func CreateTime(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
 // Blob applies equality check predicate on the "blob" field. It's identical to BlobEQ.
 func Blob(v []byte) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
@@ -110,10 +117,67 @@ func ContentType(v string) predicate.Blob {
 	})
 }
 
-// CreatedAt applies equality check predicate on the "createdAt" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.Blob {
+// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+func CreateTimeEQ(v time.Time) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+func CreateTimeNEQ(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeIn applies the In predicate on the "create_time" field.
+func CreateTimeIn(vs ...time.Time) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+func CreateTimeNotIn(vs ...time.Time) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeGT applies the GT predicate on the "create_time" field.
+func CreateTimeGT(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+func CreateTimeGTE(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLT applies the LT predicate on the "create_time" field.
+func CreateTimeLT(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+func CreateTimeLTE(v time.Time) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCreateTime), v))
 	})
 }
 
@@ -478,89 +542,53 @@ func ContentTypeContainsFold(v string) predicate.Blob {
 	})
 }
 
-// CreatedAtEQ applies the EQ predicate on the "createdAt" field.
-func CreatedAtEQ(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "createdAt" field.
-func CreatedAtNEQ(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtIn applies the In predicate on the "createdAt" field.
-func CreatedAtIn(vs ...time.Time) predicate.Blob {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCreatedAt), v...))
-	})
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "createdAt" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.Blob {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCreatedAt), v...))
-	})
-}
-
-// CreatedAtGT applies the GT predicate on the "createdAt" field.
-func CreatedAtGT(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtGTE applies the GTE predicate on the "createdAt" field.
-func CreatedAtGTE(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtLT applies the LT predicate on the "createdAt" field.
-func CreatedAtLT(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCreatedAt), v))
-	})
-}
-
-// CreatedAtLTE applies the LTE predicate on the "createdAt" field.
-func CreatedAtLTE(v time.Time) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
-	})
-}
-
-// HasArticleImages applies the HasEdge predicate on the "articleImages" edge.
-func HasArticleImages() predicate.Blob {
+// HasAttachments applies the HasEdge predicate on the "attachments" edge.
+func HasAttachments() predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleImagesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ArticleImagesTable, ArticleImagesColumn),
+			sqlgraph.To(AttachmentsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasArticleImagesWith applies the HasEdge predicate on the "articleImages" edge with a given conditions (other predicates).
-func HasArticleImagesWith(preds ...predicate.Image) predicate.Blob {
+// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
+func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleImagesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ArticleImagesTable, ArticleImagesColumn),
+			sqlgraph.To(AttachmentsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasImages applies the HasEdge predicate on the "images" edge.
+func HasImages() predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ImagesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasImagesWith applies the HasEdge predicate on the "images" edge with a given conditions (other predicates).
+func HasImagesWith(preds ...predicate.Image) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ImagesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

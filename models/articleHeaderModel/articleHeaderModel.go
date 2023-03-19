@@ -14,7 +14,7 @@ type ArticleHeaderModel struct {
 	ID              uuid.UUID        `json:"id,omitempty"`
 	Title           string           `json:"title,omitempty"`
 	Short           string           `json:"short,omitempty"`
-	UploadDate      time.Time        `json:"uploadDate,omitempty"`
+	CreateTime      time.Time        `json:"createTime,omitempty"`
 	TitleNormalized string           `json:"titleNormalized,omitempty"`
 	PreviewImage    imageModel.Image `json:"previewImage"`
 }
@@ -36,7 +36,7 @@ func FromArticleEntity(articleEntity *ent.Article) (ArticleHeaderModel, error) {
 		ID: articleEntity.ID,
 		Title: articleEntity.Title,
 		Short: articleEntity.Short,
-		UploadDate: articleEntity.UploadDate,
+		CreateTime: articleEntity.CreateTime,
 		TitleNormalized: articleEntity.TitleNormalized,
 		PreviewImage: previewImageModel,
 	}, nil

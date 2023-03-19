@@ -2,17 +2,25 @@
 
 package image
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the image type in the database.
 	Label = "image"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
 	// FieldAlt holds the string denoting the alt field in the database.
 	FieldAlt = "alt"
-	// FieldIsPreview holds the string denoting the ispreview field in the database.
-	FieldIsPreview = "is_preview"
+	// FieldOrder holds the string denoting the order field in the database.
+	FieldOrder = "order"
+	// FieldBlobId holds the string denoting the blobid field in the database.
+	FieldBlobId = "blob_id"
 	// EdgeGallery holds the string denoting the gallery edge name in mutations.
 	EdgeGallery = "gallery"
 	// EdgeBlob holds the string denoting the blob edge name in mutations.
@@ -32,21 +40,21 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "blob" package.
 	BlobInverseTable = "blobs"
 	// BlobColumn is the table column denoting the blob relation/edge.
-	BlobColumn = "blob_article_images"
+	BlobColumn = "blob_id"
 )
 
 // Columns holds all SQL columns for image fields.
 var Columns = []string{
 	FieldID,
-	FieldTitle,
+	FieldCreateTime,
 	FieldAlt,
-	FieldIsPreview,
+	FieldOrder,
+	FieldBlobId,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "images"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"blob_article_images",
 	"gallery_images",
 }
 
@@ -64,3 +72,12 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// OrderValidator is a validator for the "Order" field. It is called by the builders before save.
+	OrderValidator func(int) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

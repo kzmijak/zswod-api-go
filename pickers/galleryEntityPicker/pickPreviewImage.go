@@ -17,7 +17,8 @@ func PickPreviewImage(gallery *ent.Gallery) (*ent.Image, error) {
 
 	var previewImageEntity *ent.Image
 	for _, imageEntity := range imageEntities {
-		if imageEntity.IsPreview {
+		isPreview := previewImageEntity.Order == 0
+		if isPreview {
 			previewImageEntity = imageEntity
 		}
 	}

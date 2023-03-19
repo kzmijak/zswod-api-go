@@ -82,6 +82,20 @@ func IDLTE(id uuid.UUID) predicate.Article {
 	})
 }
 
+// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+func CreateTime(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+func UpdateTime(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUpdateTime), v))
+	})
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
@@ -110,10 +124,131 @@ func Content(v string) predicate.Article {
 	})
 }
 
-// UploadDate applies equality check predicate on the "uploadDate" field. It's identical to UploadDateEQ.
-func UploadDate(v time.Time) predicate.Article {
+// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+func CreateTimeEQ(v time.Time) predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUploadDate), v))
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+func CreateTimeNEQ(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeIn applies the In predicate on the "create_time" field.
+func CreateTimeIn(vs ...time.Time) predicate.Article {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+func CreateTimeNotIn(vs ...time.Time) predicate.Article {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeGT applies the GT predicate on the "create_time" field.
+func CreateTimeGT(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+func CreateTimeGTE(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLT applies the LT predicate on the "create_time" field.
+func CreateTimeLT(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+func CreateTimeLTE(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCreateTime), v))
+	})
+}
+
+// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+func UpdateTimeEQ(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+func UpdateTimeNEQ(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeIn applies the In predicate on the "update_time" field.
+func UpdateTimeIn(vs ...time.Time) predicate.Article {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldUpdateTime), v...))
+	})
+}
+
+// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+func UpdateTimeNotIn(vs ...time.Time) predicate.Article {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldUpdateTime), v...))
+	})
+}
+
+// UpdateTimeGT applies the GT predicate on the "update_time" field.
+func UpdateTimeGT(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+func UpdateTimeGTE(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeLT applies the LT predicate on the "update_time" field.
+func UpdateTimeLT(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+func UpdateTimeLTE(v time.Time) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldUpdateTime), v))
 	})
 }
 
@@ -513,77 +648,13 @@ func ContentContainsFold(v string) predicate.Article {
 	})
 }
 
-// UploadDateEQ applies the EQ predicate on the "uploadDate" field.
-func UploadDateEQ(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateNEQ applies the NEQ predicate on the "uploadDate" field.
-func UploadDateNEQ(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateIn applies the In predicate on the "uploadDate" field.
-func UploadDateIn(vs ...time.Time) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldUploadDate), v...))
-	})
-}
-
-// UploadDateNotIn applies the NotIn predicate on the "uploadDate" field.
-func UploadDateNotIn(vs ...time.Time) predicate.Article {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldUploadDate), v...))
-	})
-}
-
-// UploadDateGT applies the GT predicate on the "uploadDate" field.
-func UploadDateGT(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateGTE applies the GTE predicate on the "uploadDate" field.
-func UploadDateGTE(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateLT applies the LT predicate on the "uploadDate" field.
-func UploadDateLT(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldUploadDate), v))
-	})
-}
-
-// UploadDateLTE applies the LTE predicate on the "uploadDate" field.
-func UploadDateLTE(v time.Time) predicate.Article {
-	return predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldUploadDate), v))
-	})
-}
-
 // HasGallery applies the HasEdge predicate on the "gallery" edge.
 func HasGallery() predicate.Article {
 	return predicate.Article(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(GalleryTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, GalleryTable, GalleryColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -595,7 +666,63 @@ func HasGalleryWith(preds ...predicate.Gallery) predicate.Article {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(GalleryInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, GalleryTable, GalleryColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAuthor applies the HasEdge predicate on the "author" edge.
+func HasAuthor() predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AuthorTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AuthorTable, AuthorPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAuthorWith applies the HasEdge predicate on the "author" edge with a given conditions (other predicates).
+func HasAuthorWith(preds ...predicate.User) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AuthorInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, AuthorTable, AuthorPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAttachments applies the HasEdge predicate on the "attachments" edge.
+func HasAttachments() predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AttachmentsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
+func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Article {
+	return predicate.Article(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(AttachmentsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

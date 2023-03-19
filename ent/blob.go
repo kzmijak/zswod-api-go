@@ -17,6 +17,8 @@ type Blob struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
 	// Title holds the value of the "title" field.
@@ -25,8 +27,6 @@ type Blob struct {
 	Alt string `json:"alt,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
-	// CreatedAt holds the value of the "createdAt" field.
-	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the BlobQuery when eager-loading is set.
 	Edges BlobEdges `json:"edges"`
@@ -34,20 +34,31 @@ type Blob struct {
 
 // BlobEdges holds the relations/edges for other nodes in the graph.
 type BlobEdges struct {
-	// ArticleImages holds the value of the articleImages edge.
-	ArticleImages []*Image `json:"articleImages,omitempty"`
+	// Attachments holds the value of the attachments edge.
+	Attachments []*Attachment `json:"attachments,omitempty"`
+	// Images holds the value of the images edge.
+	Images []*Image `json:"images,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// ArticleImagesOrErr returns the ArticleImages value or an error if the edge
+// AttachmentsOrErr returns the Attachments value or an error if the edge
 // was not loaded in eager-loading.
-func (e BlobEdges) ArticleImagesOrErr() ([]*Image, error) {
+func (e BlobEdges) AttachmentsOrErr() ([]*Attachment, error) {
 	if e.loadedTypes[0] {
-		return e.ArticleImages, nil
+		return e.Attachments, nil
 	}
-	return nil, &NotLoadedError{edge: "articleImages"}
+	return nil, &NotLoadedError{edge: "attachments"}
+}
+
+// ImagesOrErr returns the Images value or an error if the edge
+// was not loaded in eager-loading.
+func (e BlobEdges) ImagesOrErr() ([]*Image, error) {
+	if e.loadedTypes[1] {
+		return e.Images, nil
+	}
+	return nil, &NotLoadedError{edge: "images"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -59,7 +70,7 @@ func (*Blob) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case blob.FieldTitle, blob.FieldAlt, blob.FieldContentType:
 			values[i] = new(sql.NullString)
-		case blob.FieldCreatedAt:
+		case blob.FieldCreateTime:
 			values[i] = new(sql.NullTime)
 		case blob.FieldID:
 			values[i] = new(uuid.UUID)
@@ -83,6 +94,12 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				b.ID = *value
+			}
+		case blob.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				b.CreateTime = value.Time
 			}
 		case blob.FieldBlob:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -108,20 +125,19 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.ContentType = value.String
 			}
-		case blob.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field createdAt", values[i])
-			} else if value.Valid {
-				b.CreatedAt = value.Time
-			}
 		}
 	}
 	return nil
 }
 
-// QueryArticleImages queries the "articleImages" edge of the Blob entity.
-func (b *Blob) QueryArticleImages() *ImageQuery {
-	return (&BlobClient{config: b.config}).QueryArticleImages(b)
+// QueryAttachments queries the "attachments" edge of the Blob entity.
+func (b *Blob) QueryAttachments() *AttachmentQuery {
+	return (&BlobClient{config: b.config}).QueryAttachments(b)
+}
+
+// QueryImages queries the "images" edge of the Blob entity.
+func (b *Blob) QueryImages() *ImageQuery {
+	return (&BlobClient{config: b.config}).QueryImages(b)
 }
 
 // Update returns a builder for updating this Blob.
@@ -147,6 +163,9 @@ func (b *Blob) String() string {
 	var builder strings.Builder
 	builder.WriteString("Blob(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", b.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(b.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", b.Blob))
 	builder.WriteString(", ")
@@ -158,9 +177,6 @@ func (b *Blob) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)
-	builder.WriteString(", ")
-	builder.WriteString("createdAt=")
-	builder.WriteString(b.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

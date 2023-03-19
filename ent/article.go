@@ -18,6 +18,10 @@ type Article struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// TitleNormalized holds the value of the "titleNormalized" field.
@@ -26,21 +30,22 @@ type Article struct {
 	Short string `json:"short,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
-	// UploadDate holds the value of the "uploadDate" field.
-	UploadDate time.Time `json:"uploadDate,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
-	Edges           ArticleEdges `json:"edges"`
-	gallery_article *uuid.UUID
+	Edges ArticleEdges `json:"edges"`
 }
 
 // ArticleEdges holds the relations/edges for other nodes in the graph.
 type ArticleEdges struct {
 	// Gallery holds the value of the gallery edge.
 	Gallery *Gallery `json:"gallery,omitempty"`
+	// Author holds the value of the author edge.
+	Author []*User `json:"author,omitempty"`
+	// Attachments holds the value of the attachments edge.
+	Attachments []*Attachment `json:"attachments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
 // GalleryOrErr returns the Gallery value or an error if the edge
@@ -56,6 +61,24 @@ func (e ArticleEdges) GalleryOrErr() (*Gallery, error) {
 	return nil, &NotLoadedError{edge: "gallery"}
 }
 
+// AuthorOrErr returns the Author value or an error if the edge
+// was not loaded in eager-loading.
+func (e ArticleEdges) AuthorOrErr() ([]*User, error) {
+	if e.loadedTypes[1] {
+		return e.Author, nil
+	}
+	return nil, &NotLoadedError{edge: "author"}
+}
+
+// AttachmentsOrErr returns the Attachments value or an error if the edge
+// was not loaded in eager-loading.
+func (e ArticleEdges) AttachmentsOrErr() ([]*Attachment, error) {
+	if e.loadedTypes[2] {
+		return e.Attachments, nil
+	}
+	return nil, &NotLoadedError{edge: "attachments"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Article) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -63,12 +86,10 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case article.FieldTitle, article.FieldTitleNormalized, article.FieldShort, article.FieldContent:
 			values[i] = new(sql.NullString)
-		case article.FieldUploadDate:
+		case article.FieldCreateTime, article.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case article.FieldID:
 			values[i] = new(uuid.UUID)
-		case article.ForeignKeys[0]: // gallery_article
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Article", columns[i])
 		}
@@ -89,6 +110,18 @@ func (a *Article) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				a.ID = *value
+			}
+		case article.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				a.CreateTime = value.Time
+			}
+		case article.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				a.UpdateTime = value.Time
 			}
 		case article.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -114,19 +147,6 @@ func (a *Article) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				a.Content = value.String
 			}
-		case article.FieldUploadDate:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field uploadDate", values[i])
-			} else if value.Valid {
-				a.UploadDate = value.Time
-			}
-		case article.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field gallery_article", values[i])
-			} else if value.Valid {
-				a.gallery_article = new(uuid.UUID)
-				*a.gallery_article = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
@@ -135,6 +155,16 @@ func (a *Article) assignValues(columns []string, values []any) error {
 // QueryGallery queries the "gallery" edge of the Article entity.
 func (a *Article) QueryGallery() *GalleryQuery {
 	return (&ArticleClient{config: a.config}).QueryGallery(a)
+}
+
+// QueryAuthor queries the "author" edge of the Article entity.
+func (a *Article) QueryAuthor() *UserQuery {
+	return (&ArticleClient{config: a.config}).QueryAuthor(a)
+}
+
+// QueryAttachments queries the "attachments" edge of the Article entity.
+func (a *Article) QueryAttachments() *AttachmentQuery {
+	return (&ArticleClient{config: a.config}).QueryAttachments(a)
 }
 
 // Update returns a builder for updating this Article.
@@ -160,6 +190,12 @@ func (a *Article) String() string {
 	var builder strings.Builder
 	builder.WriteString("Article(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", a.ID))
+	builder.WriteString("create_time=")
+	builder.WriteString(a.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(a.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(a.Title)
 	builder.WriteString(", ")
@@ -171,9 +207,6 @@ func (a *Article) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(a.Content)
-	builder.WriteString(", ")
-	builder.WriteString("uploadDate=")
-	builder.WriteString(a.UploadDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

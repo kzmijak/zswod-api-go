@@ -2,11 +2,19 @@
 
 package blob
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the blob type in the database.
 	Label = "blob"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -15,29 +23,36 @@ const (
 	FieldAlt = "alt"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
-	// FieldCreatedAt holds the string denoting the createdat field in the database.
-	FieldCreatedAt = "created_at"
-	// EdgeArticleImages holds the string denoting the articleimages edge name in mutations.
-	EdgeArticleImages = "articleImages"
+	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
+	EdgeAttachments = "attachments"
+	// EdgeImages holds the string denoting the images edge name in mutations.
+	EdgeImages = "images"
 	// Table holds the table name of the blob in the database.
 	Table = "blobs"
-	// ArticleImagesTable is the table that holds the articleImages relation/edge.
-	ArticleImagesTable = "images"
-	// ArticleImagesInverseTable is the table name for the Image entity.
+	// AttachmentsTable is the table that holds the attachments relation/edge.
+	AttachmentsTable = "attachments"
+	// AttachmentsInverseTable is the table name for the Attachment entity.
+	// It exists in this package in order to avoid circular dependency with the "attachment" package.
+	AttachmentsInverseTable = "attachments"
+	// AttachmentsColumn is the table column denoting the attachments relation/edge.
+	AttachmentsColumn = "blob_attachments"
+	// ImagesTable is the table that holds the images relation/edge.
+	ImagesTable = "images"
+	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
-	ArticleImagesInverseTable = "images"
-	// ArticleImagesColumn is the table column denoting the articleImages relation/edge.
-	ArticleImagesColumn = "blob_article_images"
+	ImagesInverseTable = "images"
+	// ImagesColumn is the table column denoting the images relation/edge.
+	ImagesColumn = "blob_id"
 )
 
 // Columns holds all SQL columns for blob fields.
 var Columns = []string{
 	FieldID,
+	FieldCreateTime,
 	FieldBlob,
 	FieldTitle,
 	FieldAlt,
 	FieldContentType,
-	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -49,3 +64,10 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)

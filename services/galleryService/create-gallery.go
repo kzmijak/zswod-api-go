@@ -19,7 +19,7 @@ func (s GalleryService) CreateGallery(title string, tx *ent.Tx) (*ent.Gallery, e
 	gallery, err := tx.Gallery.Create().
 		SetID(galleryId).
 		SetTitle(title).
-		SetCreatedAt(now).
+		SetCreateTime(now).
 		Save(s.ctx)
 
 	if err != nil {

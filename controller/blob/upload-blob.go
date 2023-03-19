@@ -41,7 +41,7 @@ func (c *BlobController) UploadBlob(ctx *gin.Context) {
 			Title: response.Title,
 			Id: response.ID.String(),
 			Alt: response.Alt,
-			CreatedAt: response.CreatedAt,
+			CreateTime: response.CreateTime,
 		})
 	}
 

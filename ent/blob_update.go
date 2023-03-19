@@ -6,12 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
@@ -54,25 +54,34 @@ func (bu *BlobUpdate) SetContentType(s string) *BlobUpdate {
 	return bu
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (bu *BlobUpdate) SetCreatedAt(t time.Time) *BlobUpdate {
-	bu.mutation.SetCreatedAt(t)
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (bu *BlobUpdate) AddAttachmentIDs(ids ...uuid.UUID) *BlobUpdate {
+	bu.mutation.AddAttachmentIDs(ids...)
 	return bu
 }
 
-// AddArticleImageIDs adds the "articleImages" edge to the Image entity by IDs.
-func (bu *BlobUpdate) AddArticleImageIDs(ids ...uuid.UUID) *BlobUpdate {
-	bu.mutation.AddArticleImageIDs(ids...)
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (bu *BlobUpdate) AddAttachments(a ...*Attachment) *BlobUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return bu.AddAttachmentIDs(ids...)
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (bu *BlobUpdate) AddImageIDs(ids ...uuid.UUID) *BlobUpdate {
+	bu.mutation.AddImageIDs(ids...)
 	return bu
 }
 
-// AddArticleImages adds the "articleImages" edges to the Image entity.
-func (bu *BlobUpdate) AddArticleImages(i ...*Image) *BlobUpdate {
+// AddImages adds the "images" edges to the Image entity.
+func (bu *BlobUpdate) AddImages(i ...*Image) *BlobUpdate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return bu.AddArticleImageIDs(ids...)
+	return bu.AddImageIDs(ids...)
 }
 
 // Mutation returns the BlobMutation object of the builder.
@@ -80,25 +89,46 @@ func (bu *BlobUpdate) Mutation() *BlobMutation {
 	return bu.mutation
 }
 
-// ClearArticleImages clears all "articleImages" edges to the Image entity.
-func (bu *BlobUpdate) ClearArticleImages() *BlobUpdate {
-	bu.mutation.ClearArticleImages()
+// ClearAttachments clears all "attachments" edges to the Attachment entity.
+func (bu *BlobUpdate) ClearAttachments() *BlobUpdate {
+	bu.mutation.ClearAttachments()
 	return bu
 }
 
-// RemoveArticleImageIDs removes the "articleImages" edge to Image entities by IDs.
-func (bu *BlobUpdate) RemoveArticleImageIDs(ids ...uuid.UUID) *BlobUpdate {
-	bu.mutation.RemoveArticleImageIDs(ids...)
+// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
+func (bu *BlobUpdate) RemoveAttachmentIDs(ids ...uuid.UUID) *BlobUpdate {
+	bu.mutation.RemoveAttachmentIDs(ids...)
 	return bu
 }
 
-// RemoveArticleImages removes "articleImages" edges to Image entities.
-func (bu *BlobUpdate) RemoveArticleImages(i ...*Image) *BlobUpdate {
+// RemoveAttachments removes "attachments" edges to Attachment entities.
+func (bu *BlobUpdate) RemoveAttachments(a ...*Attachment) *BlobUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return bu.RemoveAttachmentIDs(ids...)
+}
+
+// ClearImages clears all "images" edges to the Image entity.
+func (bu *BlobUpdate) ClearImages() *BlobUpdate {
+	bu.mutation.ClearImages()
+	return bu
+}
+
+// RemoveImageIDs removes the "images" edge to Image entities by IDs.
+func (bu *BlobUpdate) RemoveImageIDs(ids ...uuid.UUID) *BlobUpdate {
+	bu.mutation.RemoveImageIDs(ids...)
+	return bu
+}
+
+// RemoveImages removes "images" edges to Image entities.
+func (bu *BlobUpdate) RemoveImages(i ...*Image) *BlobUpdate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return bu.RemoveArticleImageIDs(ids...)
+	return bu.RemoveImageIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -185,15 +215,66 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 	}
-	if value, ok := bu.mutation.CreatedAt(); ok {
-		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
-	}
-	if bu.mutation.ArticleImagesCleared() {
+	if bu.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !bu.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if bu.mutation.ImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -204,12 +285,12 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.RemovedArticleImagesIDs(); len(nodes) > 0 && !bu.mutation.ArticleImagesCleared() {
+	if nodes := bu.mutation.RemovedImagesIDs(); len(nodes) > 0 && !bu.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -223,12 +304,12 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := bu.mutation.ArticleImagesIDs(); len(nodes) > 0 {
+	if nodes := bu.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -285,25 +366,34 @@ func (buo *BlobUpdateOne) SetContentType(s string) *BlobUpdateOne {
 	return buo
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (buo *BlobUpdateOne) SetCreatedAt(t time.Time) *BlobUpdateOne {
-	buo.mutation.SetCreatedAt(t)
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (buo *BlobUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *BlobUpdateOne {
+	buo.mutation.AddAttachmentIDs(ids...)
 	return buo
 }
 
-// AddArticleImageIDs adds the "articleImages" edge to the Image entity by IDs.
-func (buo *BlobUpdateOne) AddArticleImageIDs(ids ...uuid.UUID) *BlobUpdateOne {
-	buo.mutation.AddArticleImageIDs(ids...)
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (buo *BlobUpdateOne) AddAttachments(a ...*Attachment) *BlobUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return buo.AddAttachmentIDs(ids...)
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (buo *BlobUpdateOne) AddImageIDs(ids ...uuid.UUID) *BlobUpdateOne {
+	buo.mutation.AddImageIDs(ids...)
 	return buo
 }
 
-// AddArticleImages adds the "articleImages" edges to the Image entity.
-func (buo *BlobUpdateOne) AddArticleImages(i ...*Image) *BlobUpdateOne {
+// AddImages adds the "images" edges to the Image entity.
+func (buo *BlobUpdateOne) AddImages(i ...*Image) *BlobUpdateOne {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return buo.AddArticleImageIDs(ids...)
+	return buo.AddImageIDs(ids...)
 }
 
 // Mutation returns the BlobMutation object of the builder.
@@ -311,25 +401,46 @@ func (buo *BlobUpdateOne) Mutation() *BlobMutation {
 	return buo.mutation
 }
 
-// ClearArticleImages clears all "articleImages" edges to the Image entity.
-func (buo *BlobUpdateOne) ClearArticleImages() *BlobUpdateOne {
-	buo.mutation.ClearArticleImages()
+// ClearAttachments clears all "attachments" edges to the Attachment entity.
+func (buo *BlobUpdateOne) ClearAttachments() *BlobUpdateOne {
+	buo.mutation.ClearAttachments()
 	return buo
 }
 
-// RemoveArticleImageIDs removes the "articleImages" edge to Image entities by IDs.
-func (buo *BlobUpdateOne) RemoveArticleImageIDs(ids ...uuid.UUID) *BlobUpdateOne {
-	buo.mutation.RemoveArticleImageIDs(ids...)
+// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
+func (buo *BlobUpdateOne) RemoveAttachmentIDs(ids ...uuid.UUID) *BlobUpdateOne {
+	buo.mutation.RemoveAttachmentIDs(ids...)
 	return buo
 }
 
-// RemoveArticleImages removes "articleImages" edges to Image entities.
-func (buo *BlobUpdateOne) RemoveArticleImages(i ...*Image) *BlobUpdateOne {
+// RemoveAttachments removes "attachments" edges to Attachment entities.
+func (buo *BlobUpdateOne) RemoveAttachments(a ...*Attachment) *BlobUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return buo.RemoveAttachmentIDs(ids...)
+}
+
+// ClearImages clears all "images" edges to the Image entity.
+func (buo *BlobUpdateOne) ClearImages() *BlobUpdateOne {
+	buo.mutation.ClearImages()
+	return buo
+}
+
+// RemoveImageIDs removes the "images" edge to Image entities by IDs.
+func (buo *BlobUpdateOne) RemoveImageIDs(ids ...uuid.UUID) *BlobUpdateOne {
+	buo.mutation.RemoveImageIDs(ids...)
+	return buo
+}
+
+// RemoveImages removes "images" edges to Image entities.
+func (buo *BlobUpdateOne) RemoveImages(i ...*Image) *BlobUpdateOne {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return buo.RemoveArticleImageIDs(ids...)
+	return buo.RemoveImageIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -446,15 +557,66 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 	if value, ok := buo.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 	}
-	if value, ok := buo.mutation.CreatedAt(); ok {
-		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
-	}
-	if buo.mutation.ArticleImagesCleared() {
+	if buo.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !buo.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.ImagesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -465,12 +627,12 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.RemovedArticleImagesIDs(); len(nodes) > 0 && !buo.mutation.ArticleImagesCleared() {
+	if nodes := buo.mutation.RemovedImagesIDs(); len(nodes) > 0 && !buo.mutation.ImagesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -484,12 +646,12 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := buo.mutation.ArticleImagesIDs(); len(nodes) > 0 {
+	if nodes := buo.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -1,6 +1,8 @@
 package imageModel
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/pickers/imageEntityPicker"
@@ -9,9 +11,9 @@ import (
 
 type Image struct {
 	ID         uuid.UUID `json:"id,omitempty"`
-	Title      string    `json:"title,omitempty"`
+	CreateTime time.Time `json:"createTime"`
 	Alt        string    `json:"alt,omitempty"`
-	IsPreview  bool       `json:"isPreview,omitempty"`
+	Order 		 int      `json:"order,omitempty"`
 	BlobId		 uuid.UUID `json:"blobId"`
 }
 
@@ -25,9 +27,9 @@ func FromEntity(imageEntity *ent.Image) (Image, error) {
 
 	return Image{
 		ID: imageEntity.ID,
-		Title: imageEntity.Title,
 		Alt: imageEntity.Alt,
-		IsPreview: imageEntity.IsPreview,
+		Order: imageEntity.Order,
+		CreateTime: imageEntity.CreateTime,
 		BlobId: blobId,
 	}, nil
 }

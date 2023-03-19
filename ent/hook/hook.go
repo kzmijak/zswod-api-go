@@ -22,6 +22,19 @@ func (f ArticleFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The AttachmentFunc type is an adapter to allow the use of ordinary
+// function as Attachment mutator.
+type AttachmentFunc func(context.Context, *ent.AttachmentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AttachmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AttachmentMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AttachmentMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The BlobFunc type is an adapter to allow the use of ordinary
 // function as Blob mutator.
 type BlobFunc func(context.Context, *ent.BlobMutation) (ent.Value, error)
@@ -31,6 +44,19 @@ func (f BlobFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	mv, ok := m.(*ent.BlobMutation)
 	if !ok {
 		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BlobMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The CustomPageFunc type is an adapter to allow the use of ordinary
+// function as CustomPage mutator.
+type CustomPageFunc func(context.Context, *ent.CustomPageMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CustomPageFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.CustomPageMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CustomPageMutation", m)
 	}
 	return f(ctx, mv)
 }

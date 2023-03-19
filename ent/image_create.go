@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -22,9 +23,17 @@ type ImageCreate struct {
 	hooks    []Hook
 }
 
-// SetTitle sets the "title" field.
-func (ic *ImageCreate) SetTitle(s string) *ImageCreate {
-	ic.mutation.SetTitle(s)
+// SetCreateTime sets the "create_time" field.
+func (ic *ImageCreate) SetCreateTime(t time.Time) *ImageCreate {
+	ic.mutation.SetCreateTime(t)
+	return ic
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (ic *ImageCreate) SetNillableCreateTime(t *time.Time) *ImageCreate {
+	if t != nil {
+		ic.SetCreateTime(*t)
+	}
 	return ic
 }
 
@@ -34,15 +43,45 @@ func (ic *ImageCreate) SetAlt(s string) *ImageCreate {
 	return ic
 }
 
-// SetIsPreview sets the "isPreview" field.
-func (ic *ImageCreate) SetIsPreview(b bool) *ImageCreate {
-	ic.mutation.SetIsPreview(b)
+// SetNillableAlt sets the "alt" field if the given value is not nil.
+func (ic *ImageCreate) SetNillableAlt(s *string) *ImageCreate {
+	if s != nil {
+		ic.SetAlt(*s)
+	}
+	return ic
+}
+
+// SetOrder sets the "Order" field.
+func (ic *ImageCreate) SetOrder(i int) *ImageCreate {
+	ic.mutation.SetOrder(i)
+	return ic
+}
+
+// SetNillableOrder sets the "Order" field if the given value is not nil.
+func (ic *ImageCreate) SetNillableOrder(i *int) *ImageCreate {
+	if i != nil {
+		ic.SetOrder(*i)
+	}
+	return ic
+}
+
+// SetBlobId sets the "blobId" field.
+func (ic *ImageCreate) SetBlobId(u uuid.UUID) *ImageCreate {
+	ic.mutation.SetBlobId(u)
 	return ic
 }
 
 // SetID sets the "id" field.
 func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
 	ic.mutation.SetID(u)
+	return ic
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (ic *ImageCreate) SetNillableID(u *uuid.UUID) *ImageCreate {
+	if u != nil {
+		ic.SetID(*u)
+	}
 	return ic
 }
 
@@ -87,6 +126,7 @@ func (ic *ImageCreate) Save(ctx context.Context) (*Image, error) {
 		err  error
 		node *Image
 	)
+	ic.defaults()
 	if len(ic.hooks) == 0 {
 		if err = ic.check(); err != nil {
 			return nil, err
@@ -150,16 +190,30 @@ func (ic *ImageCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (ic *ImageCreate) defaults() {
+	if _, ok := ic.mutation.CreateTime(); !ok {
+		v := image.DefaultCreateTime()
+		ic.mutation.SetCreateTime(v)
+	}
+	if _, ok := ic.mutation.ID(); !ok {
+		v := image.DefaultID()
+		ic.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
-	if _, ok := ic.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Image.title"`)}
+	if _, ok := ic.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Image.create_time"`)}
 	}
-	if _, ok := ic.mutation.Alt(); !ok {
-		return &ValidationError{Name: "alt", err: errors.New(`ent: missing required field "Image.alt"`)}
+	if v, ok := ic.mutation.Order(); ok {
+		if err := image.OrderValidator(v); err != nil {
+			return &ValidationError{Name: "Order", err: fmt.Errorf(`ent: validator failed for field "Image.Order": %w`, err)}
+		}
 	}
-	if _, ok := ic.mutation.IsPreview(); !ok {
-		return &ValidationError{Name: "isPreview", err: errors.New(`ent: missing required field "Image.isPreview"`)}
+	if _, ok := ic.mutation.BlobId(); !ok {
+		return &ValidationError{Name: "blobId", err: errors.New(`ent: missing required field "Image.blobId"`)}
 	}
 	if _, ok := ic.mutation.BlobID(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required edge "Image.blob"`)}
@@ -200,17 +254,17 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ic.mutation.Title(); ok {
-		_spec.SetField(image.FieldTitle, field.TypeString, value)
-		_node.Title = value
+	if value, ok := ic.mutation.CreateTime(); ok {
+		_spec.SetField(image.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
 	}
 	if value, ok := ic.mutation.Alt(); ok {
 		_spec.SetField(image.FieldAlt, field.TypeString, value)
 		_node.Alt = value
 	}
-	if value, ok := ic.mutation.IsPreview(); ok {
-		_spec.SetField(image.FieldIsPreview, field.TypeBool, value)
-		_node.IsPreview = value
+	if value, ok := ic.mutation.Order(); ok {
+		_spec.SetField(image.FieldOrder, field.TypeInt, value)
+		_node.Order = value
 	}
 	if nodes := ic.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -249,7 +303,7 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.blob_article_images = &nodes[0]
+		_node.BlobId = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -269,6 +323,7 @@ func (icb *ImageCreateBulk) Save(ctx context.Context) ([]*Image, error) {
 	for i := range icb.builders {
 		func(i int, root context.Context) {
 			builder := icb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ImageMutation)
 				if !ok {

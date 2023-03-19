@@ -14,6 +14,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // GalleryCreate is the builder for creating a Gallery entity.
@@ -23,21 +24,51 @@ type GalleryCreate struct {
 	hooks    []Hook
 }
 
+// SetCreateTime sets the "create_time" field.
+func (gc *GalleryCreate) SetCreateTime(t time.Time) *GalleryCreate {
+	gc.mutation.SetCreateTime(t)
+	return gc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (gc *GalleryCreate) SetNillableCreateTime(t *time.Time) *GalleryCreate {
+	if t != nil {
+		gc.SetCreateTime(*t)
+	}
+	return gc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (gc *GalleryCreate) SetUpdateTime(t time.Time) *GalleryCreate {
+	gc.mutation.SetUpdateTime(t)
+	return gc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (gc *GalleryCreate) SetNillableUpdateTime(t *time.Time) *GalleryCreate {
+	if t != nil {
+		gc.SetUpdateTime(*t)
+	}
+	return gc
+}
+
 // SetTitle sets the "title" field.
 func (gc *GalleryCreate) SetTitle(s string) *GalleryCreate {
 	gc.mutation.SetTitle(s)
 	return gc
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (gc *GalleryCreate) SetCreatedAt(t time.Time) *GalleryCreate {
-	gc.mutation.SetCreatedAt(t)
-	return gc
-}
-
 // SetID sets the "id" field.
 func (gc *GalleryCreate) SetID(u uuid.UUID) *GalleryCreate {
 	gc.mutation.SetID(u)
+	return gc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (gc *GalleryCreate) SetNillableID(u *uuid.UUID) *GalleryCreate {
+	if u != nil {
+		gc.SetID(*u)
+	}
 	return gc
 }
 
@@ -56,19 +87,34 @@ func (gc *GalleryCreate) AddImages(i ...*Image) *GalleryCreate {
 	return gc.AddImageIDs(ids...)
 }
 
-// AddArticleIDs adds the "article" edge to the Article entity by IDs.
-func (gc *GalleryCreate) AddArticleIDs(ids ...uuid.UUID) *GalleryCreate {
-	gc.mutation.AddArticleIDs(ids...)
+// SetArticleID sets the "article" edge to the Article entity by ID.
+func (gc *GalleryCreate) SetArticleID(id uuid.UUID) *GalleryCreate {
+	gc.mutation.SetArticleID(id)
 	return gc
 }
 
-// AddArticle adds the "article" edges to the Article entity.
-func (gc *GalleryCreate) AddArticle(a ...*Article) *GalleryCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
+func (gc *GalleryCreate) SetNillableArticleID(id *uuid.UUID) *GalleryCreate {
+	if id != nil {
+		gc = gc.SetArticleID(*id)
 	}
-	return gc.AddArticleIDs(ids...)
+	return gc
+}
+
+// SetArticle sets the "article" edge to the Article entity.
+func (gc *GalleryCreate) SetArticle(a *Article) *GalleryCreate {
+	return gc.SetArticleID(a.ID)
+}
+
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (gc *GalleryCreate) SetAuthorID(id uuid.UUID) *GalleryCreate {
+	gc.mutation.SetAuthorID(id)
+	return gc
+}
+
+// SetAuthor sets the "author" edge to the User entity.
+func (gc *GalleryCreate) SetAuthor(u *User) *GalleryCreate {
+	return gc.SetAuthorID(u.ID)
 }
 
 // Mutation returns the GalleryMutation object of the builder.
@@ -82,6 +128,7 @@ func (gc *GalleryCreate) Save(ctx context.Context) (*Gallery, error) {
 		err  error
 		node *Gallery
 	)
+	gc.defaults()
 	if len(gc.hooks) == 0 {
 		if err = gc.check(); err != nil {
 			return nil, err
@@ -145,13 +192,38 @@ func (gc *GalleryCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (gc *GalleryCreate) defaults() {
+	if _, ok := gc.mutation.CreateTime(); !ok {
+		v := gallery.DefaultCreateTime()
+		gc.mutation.SetCreateTime(v)
+	}
+	if _, ok := gc.mutation.UpdateTime(); !ok {
+		v := gallery.DefaultUpdateTime()
+		gc.mutation.SetUpdateTime(v)
+	}
+	if _, ok := gc.mutation.ID(); !ok {
+		v := gallery.DefaultID()
+		gc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (gc *GalleryCreate) check() error {
+	if _, ok := gc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Gallery.create_time"`)}
+	}
+	if _, ok := gc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "Gallery.update_time"`)}
+	}
 	if _, ok := gc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Gallery.title"`)}
 	}
-	if _, ok := gc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "Gallery.createdAt"`)}
+	if len(gc.mutation.ImagesIDs()) == 0 {
+		return &ValidationError{Name: "images", err: errors.New(`ent: missing required edge "Gallery.images"`)}
+	}
+	if _, ok := gc.mutation.AuthorID(); !ok {
+		return &ValidationError{Name: "author", err: errors.New(`ent: missing required edge "Gallery.author"`)}
 	}
 	return nil
 }
@@ -189,13 +261,17 @@ func (gc *GalleryCreate) createSpec() (*Gallery, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := gc.mutation.CreateTime(); ok {
+		_spec.SetField(gallery.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := gc.mutation.UpdateTime(); ok {
+		_spec.SetField(gallery.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
 	if value, ok := gc.mutation.Title(); ok {
 		_spec.SetField(gallery.FieldTitle, field.TypeString, value)
 		_node.Title = value
-	}
-	if value, ok := gc.mutation.CreatedAt(); ok {
-		_spec.SetField(gallery.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := gc.mutation.ImagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -218,8 +294,8 @@ func (gc *GalleryCreate) createSpec() (*Gallery, *sqlgraph.CreateSpec) {
 	}
 	if nodes := gc.mutation.ArticleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.O2O,
+			Inverse: true,
 			Table:   gallery.ArticleTable,
 			Columns: []string{gallery.ArticleColumn},
 			Bidi:    false,
@@ -233,6 +309,27 @@ func (gc *GalleryCreate) createSpec() (*Gallery, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.article_gallery = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := gc.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   gallery.AuthorTable,
+			Columns: []string{gallery.AuthorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.user_galleries = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -252,6 +349,7 @@ func (gcb *GalleryCreateBulk) Save(ctx context.Context) ([]*Gallery, error) {
 	for i := range gcb.builders {
 		func(i int, root context.Context) {
 			builder := gcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*GalleryMutation)
 				if !ok {

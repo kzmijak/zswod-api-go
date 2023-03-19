@@ -3,6 +3,8 @@
 package image
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -80,10 +82,10 @@ func IDLTE(id uuid.UUID) predicate.Image {
 	})
 }
 
-// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
-func Title(v string) predicate.Image {
+// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+func CreateTime(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitle), v))
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
 	})
 }
 
@@ -94,109 +96,81 @@ func Alt(v string) predicate.Image {
 	})
 }
 
-// IsPreview applies equality check predicate on the "isPreview" field. It's identical to IsPreviewEQ.
-func IsPreview(v bool) predicate.Image {
+// Order applies equality check predicate on the "Order" field. It's identical to OrderEQ.
+func Order(v int) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldIsPreview), v))
+		s.Where(sql.EQ(s.C(FieldOrder), v))
 	})
 }
 
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.Image {
+// BlobId applies equality check predicate on the "blobId" field. It's identical to BlobIdEQ.
+func BlobId(v uuid.UUID) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitle), v))
+		s.Where(sql.EQ(s.C(FieldBlobId), v))
 	})
 }
 
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.Image {
+// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+func CreateTimeEQ(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldTitle), v))
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
 	})
 }
 
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.Image {
+// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+func CreateTimeNEQ(v time.Time) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeIn applies the In predicate on the "create_time" field.
+func CreateTimeIn(vs ...time.Time) predicate.Image {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldTitle), v...))
+		s.Where(sql.In(s.C(FieldCreateTime), v...))
 	})
 }
 
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.Image {
+// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+func CreateTimeNotIn(vs ...time.Time) predicate.Image {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldTitle), v...))
+		s.Where(sql.NotIn(s.C(FieldCreateTime), v...))
 	})
 }
 
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.Image {
+// CreateTimeGT applies the GT predicate on the "create_time" field.
+func CreateTimeGT(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldTitle), v))
+		s.Where(sql.GT(s.C(FieldCreateTime), v))
 	})
 }
 
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.Image {
+// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+func CreateTimeGTE(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldTitle), v))
+		s.Where(sql.GTE(s.C(FieldCreateTime), v))
 	})
 }
 
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.Image {
+// CreateTimeLT applies the LT predicate on the "create_time" field.
+func CreateTimeLT(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldTitle), v))
+		s.Where(sql.LT(s.C(FieldCreateTime), v))
 	})
 }
 
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.Image {
+// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+func CreateTimeLTE(v time.Time) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldTitle), v))
-	})
-}
-
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldTitle), v))
-	})
-}
-
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldTitle), v))
-	})
-}
-
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldTitle), v))
-	})
-}
-
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldTitle), v))
-	})
-}
-
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldTitle), v))
+		s.Where(sql.LTE(s.C(FieldCreateTime), v))
 	})
 }
 
@@ -285,6 +259,20 @@ func AltHasSuffix(v string) predicate.Image {
 	})
 }
 
+// AltIsNil applies the IsNil predicate on the "alt" field.
+func AltIsNil() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldAlt)))
+	})
+}
+
+// AltNotNil applies the NotNil predicate on the "alt" field.
+func AltNotNil() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldAlt)))
+	})
+}
+
 // AltEqualFold applies the EqualFold predicate on the "alt" field.
 func AltEqualFold(v string) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
@@ -299,17 +287,117 @@ func AltContainsFold(v string) predicate.Image {
 	})
 }
 
-// IsPreviewEQ applies the EQ predicate on the "isPreview" field.
-func IsPreviewEQ(v bool) predicate.Image {
+// OrderEQ applies the EQ predicate on the "Order" field.
+func OrderEQ(v int) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldIsPreview), v))
+		s.Where(sql.EQ(s.C(FieldOrder), v))
 	})
 }
 
-// IsPreviewNEQ applies the NEQ predicate on the "isPreview" field.
-func IsPreviewNEQ(v bool) predicate.Image {
+// OrderNEQ applies the NEQ predicate on the "Order" field.
+func OrderNEQ(v int) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldIsPreview), v))
+		s.Where(sql.NEQ(s.C(FieldOrder), v))
+	})
+}
+
+// OrderIn applies the In predicate on the "Order" field.
+func OrderIn(vs ...int) predicate.Image {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldOrder), v...))
+	})
+}
+
+// OrderNotIn applies the NotIn predicate on the "Order" field.
+func OrderNotIn(vs ...int) predicate.Image {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldOrder), v...))
+	})
+}
+
+// OrderGT applies the GT predicate on the "Order" field.
+func OrderGT(v int) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldOrder), v))
+	})
+}
+
+// OrderGTE applies the GTE predicate on the "Order" field.
+func OrderGTE(v int) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldOrder), v))
+	})
+}
+
+// OrderLT applies the LT predicate on the "Order" field.
+func OrderLT(v int) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldOrder), v))
+	})
+}
+
+// OrderLTE applies the LTE predicate on the "Order" field.
+func OrderLTE(v int) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldOrder), v))
+	})
+}
+
+// OrderIsNil applies the IsNil predicate on the "Order" field.
+func OrderIsNil() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldOrder)))
+	})
+}
+
+// OrderNotNil applies the NotNil predicate on the "Order" field.
+func OrderNotNil() predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldOrder)))
+	})
+}
+
+// BlobIdEQ applies the EQ predicate on the "blobId" field.
+func BlobIdEQ(v uuid.UUID) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldBlobId), v))
+	})
+}
+
+// BlobIdNEQ applies the NEQ predicate on the "blobId" field.
+func BlobIdNEQ(v uuid.UUID) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldBlobId), v))
+	})
+}
+
+// BlobIdIn applies the In predicate on the "blobId" field.
+func BlobIdIn(vs ...uuid.UUID) predicate.Image {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldBlobId), v...))
+	})
+}
+
+// BlobIdNotIn applies the NotIn predicate on the "blobId" field.
+func BlobIdNotIn(vs ...uuid.UUID) predicate.Image {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldBlobId), v...))
 	})
 }
 

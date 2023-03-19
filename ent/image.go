@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -18,17 +19,18 @@ type Image struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
 	// Alt holds the value of the "alt" field.
 	Alt string `json:"alt,omitempty"`
-	// IsPreview holds the value of the "isPreview" field.
-	IsPreview bool `json:"isPreview,omitempty"`
+	// Order holds the value of the "Order" field.
+	Order int `json:"Order,omitempty"`
+	// BlobId holds the value of the "blobId" field.
+	BlobId uuid.UUID `json:"blobId,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
-	Edges               ImageEdges `json:"edges"`
-	blob_article_images *uuid.UUID
-	gallery_images      *uuid.UUID
+	Edges          ImageEdges `json:"edges"`
+	gallery_images *uuid.UUID
 }
 
 // ImageEdges holds the relations/edges for other nodes in the graph.
@@ -73,15 +75,15 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case image.FieldIsPreview:
-			values[i] = new(sql.NullBool)
-		case image.FieldTitle, image.FieldAlt:
+		case image.FieldOrder:
+			values[i] = new(sql.NullInt64)
+		case image.FieldAlt:
 			values[i] = new(sql.NullString)
-		case image.FieldID:
+		case image.FieldCreateTime:
+			values[i] = new(sql.NullTime)
+		case image.FieldID, image.FieldBlobId:
 			values[i] = new(uuid.UUID)
-		case image.ForeignKeys[0]: // blob_article_images
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case image.ForeignKeys[1]: // gallery_images
+		case image.ForeignKeys[0]: // gallery_images
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Image", columns[i])
@@ -104,11 +106,11 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				i.ID = *value
 			}
-		case image.FieldTitle:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[j])
+		case image.FieldCreateTime:
+			if value, ok := values[j].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[j])
 			} else if value.Valid {
-				i.Title = value.String
+				i.CreateTime = value.Time
 			}
 		case image.FieldAlt:
 			if value, ok := values[j].(*sql.NullString); !ok {
@@ -116,20 +118,19 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				i.Alt = value.String
 			}
-		case image.FieldIsPreview:
-			if value, ok := values[j].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field isPreview", values[j])
+		case image.FieldOrder:
+			if value, ok := values[j].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field Order", values[j])
 			} else if value.Valid {
-				i.IsPreview = value.Bool
+				i.Order = int(value.Int64)
+			}
+		case image.FieldBlobId:
+			if value, ok := values[j].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field blobId", values[j])
+			} else if value != nil {
+				i.BlobId = *value
 			}
 		case image.ForeignKeys[0]:
-			if value, ok := values[j].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field blob_article_images", values[j])
-			} else if value.Valid {
-				i.blob_article_images = new(uuid.UUID)
-				*i.blob_article_images = *value.S.(*uuid.UUID)
-			}
-		case image.ForeignKeys[1]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field gallery_images", values[j])
 			} else if value.Valid {
@@ -174,14 +175,17 @@ func (i *Image) String() string {
 	var builder strings.Builder
 	builder.WriteString("Image(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
-	builder.WriteString("title=")
-	builder.WriteString(i.Title)
+	builder.WriteString("create_time=")
+	builder.WriteString(i.CreateTime.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("alt=")
 	builder.WriteString(i.Alt)
 	builder.WriteString(", ")
-	builder.WriteString("isPreview=")
-	builder.WriteString(fmt.Sprintf("%v", i.IsPreview))
+	builder.WriteString("Order=")
+	builder.WriteString(fmt.Sprintf("%v", i.Order))
+	builder.WriteString(", ")
+	builder.WriteString("blobId=")
+	builder.WriteString(fmt.Sprintf("%v", i.BlobId))
 	builder.WriteByte(')')
 	return builder.String()
 }

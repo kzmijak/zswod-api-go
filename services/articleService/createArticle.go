@@ -23,7 +23,7 @@ func (s ArticleService) CreateArticle(req articleModel.CreateArticlePayload, tx 
 	articleId := uuid.New()
 	err := tx.Article.Create().
 		SetID(articleId).
-		SetUploadDate(time.Now()).
+		SetCreateTime(time.Now()).
 		SetTitle(req.Title).
 		SetTitleNormalized(titleSanitized).
 		SetShort(req.Short).

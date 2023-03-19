@@ -13,8 +13,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // ArticleUpdate is the builder for updating Article entities.
@@ -27,6 +29,12 @@ type ArticleUpdate struct {
 // Where appends a list predicates to the ArticleUpdate builder.
 func (au *ArticleUpdate) Where(ps ...predicate.Article) *ArticleUpdate {
 	au.mutation.Where(ps...)
+	return au
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (au *ArticleUpdate) SetUpdateTime(t time.Time) *ArticleUpdate {
+	au.mutation.SetUpdateTime(t)
 	return au
 }
 
@@ -54,29 +62,45 @@ func (au *ArticleUpdate) SetContent(s string) *ArticleUpdate {
 	return au
 }
 
-// SetUploadDate sets the "uploadDate" field.
-func (au *ArticleUpdate) SetUploadDate(t time.Time) *ArticleUpdate {
-	au.mutation.SetUploadDate(t)
-	return au
-}
-
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
 func (au *ArticleUpdate) SetGalleryID(id uuid.UUID) *ArticleUpdate {
 	au.mutation.SetGalleryID(id)
 	return au
 }
 
-// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
-func (au *ArticleUpdate) SetNillableGalleryID(id *uuid.UUID) *ArticleUpdate {
-	if id != nil {
-		au = au.SetGalleryID(*id)
-	}
-	return au
-}
-
 // SetGallery sets the "gallery" edge to the Gallery entity.
 func (au *ArticleUpdate) SetGallery(g *Gallery) *ArticleUpdate {
 	return au.SetGalleryID(g.ID)
+}
+
+// AddAuthorIDs adds the "author" edge to the User entity by IDs.
+func (au *ArticleUpdate) AddAuthorIDs(ids ...uuid.UUID) *ArticleUpdate {
+	au.mutation.AddAuthorIDs(ids...)
+	return au
+}
+
+// AddAuthor adds the "author" edges to the User entity.
+func (au *ArticleUpdate) AddAuthor(u ...*User) *ArticleUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return au.AddAuthorIDs(ids...)
+}
+
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (au *ArticleUpdate) AddAttachmentIDs(ids ...uuid.UUID) *ArticleUpdate {
+	au.mutation.AddAttachmentIDs(ids...)
+	return au
+}
+
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (au *ArticleUpdate) AddAttachments(a ...*Attachment) *ArticleUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return au.AddAttachmentIDs(ids...)
 }
 
 // Mutation returns the ArticleMutation object of the builder.
@@ -90,12 +114,55 @@ func (au *ArticleUpdate) ClearGallery() *ArticleUpdate {
 	return au
 }
 
+// ClearAuthor clears all "author" edges to the User entity.
+func (au *ArticleUpdate) ClearAuthor() *ArticleUpdate {
+	au.mutation.ClearAuthor()
+	return au
+}
+
+// RemoveAuthorIDs removes the "author" edge to User entities by IDs.
+func (au *ArticleUpdate) RemoveAuthorIDs(ids ...uuid.UUID) *ArticleUpdate {
+	au.mutation.RemoveAuthorIDs(ids...)
+	return au
+}
+
+// RemoveAuthor removes "author" edges to User entities.
+func (au *ArticleUpdate) RemoveAuthor(u ...*User) *ArticleUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return au.RemoveAuthorIDs(ids...)
+}
+
+// ClearAttachments clears all "attachments" edges to the Attachment entity.
+func (au *ArticleUpdate) ClearAttachments() *ArticleUpdate {
+	au.mutation.ClearAttachments()
+	return au
+}
+
+// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
+func (au *ArticleUpdate) RemoveAttachmentIDs(ids ...uuid.UUID) *ArticleUpdate {
+	au.mutation.RemoveAttachmentIDs(ids...)
+	return au
+}
+
+// RemoveAttachments removes "attachments" edges to Attachment entities.
+func (au *ArticleUpdate) RemoveAttachments(a ...*Attachment) *ArticleUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return au.RemoveAttachmentIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (au *ArticleUpdate) Save(ctx context.Context) (int, error) {
 	var (
 		err      error
 		affected int
 	)
+	au.defaults()
 	if len(au.hooks) == 0 {
 		if err = au.check(); err != nil {
 			return 0, err
@@ -150,6 +217,14 @@ func (au *ArticleUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (au *ArticleUpdate) defaults() {
+	if _, ok := au.mutation.UpdateTime(); !ok {
+		v := article.UpdateDefaultUpdateTime()
+		au.mutation.SetUpdateTime(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (au *ArticleUpdate) check() error {
 	if v, ok := au.mutation.Title(); ok {
@@ -161,6 +236,9 @@ func (au *ArticleUpdate) check() error {
 		if err := article.ShortValidator(v); err != nil {
 			return &ValidationError{Name: "short", err: fmt.Errorf(`ent: validator failed for field "Article.short": %w`, err)}
 		}
+	}
+	if _, ok := au.mutation.GalleryID(); au.mutation.GalleryCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
 	return nil
 }
@@ -183,6 +261,9 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := au.mutation.UpdateTime(); ok {
+		_spec.SetField(article.FieldUpdateTime, field.TypeTime, value)
+	}
 	if value, ok := au.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 	}
@@ -195,13 +276,10 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.Content(); ok {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
 	}
-	if value, ok := au.mutation.UploadDate(); ok {
-		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
-	}
 	if au.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   article.GalleryTable,
 			Columns: []string{article.GalleryColumn},
 			Bidi:    false,
@@ -216,8 +294,8 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := au.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   article.GalleryTable,
 			Columns: []string{article.GalleryColumn},
 			Bidi:    false,
@@ -225,6 +303,114 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: gallery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.AuthorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedAuthorIDs(); len(nodes) > 0 && !au.mutation.AuthorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !au.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
 				},
 			},
 		}
@@ -252,6 +438,12 @@ type ArticleUpdateOne struct {
 	mutation *ArticleMutation
 }
 
+// SetUpdateTime sets the "update_time" field.
+func (auo *ArticleUpdateOne) SetUpdateTime(t time.Time) *ArticleUpdateOne {
+	auo.mutation.SetUpdateTime(t)
+	return auo
+}
+
 // SetTitle sets the "title" field.
 func (auo *ArticleUpdateOne) SetTitle(s string) *ArticleUpdateOne {
 	auo.mutation.SetTitle(s)
@@ -276,29 +468,45 @@ func (auo *ArticleUpdateOne) SetContent(s string) *ArticleUpdateOne {
 	return auo
 }
 
-// SetUploadDate sets the "uploadDate" field.
-func (auo *ArticleUpdateOne) SetUploadDate(t time.Time) *ArticleUpdateOne {
-	auo.mutation.SetUploadDate(t)
-	return auo
-}
-
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
 func (auo *ArticleUpdateOne) SetGalleryID(id uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.SetGalleryID(id)
 	return auo
 }
 
-// SetNillableGalleryID sets the "gallery" edge to the Gallery entity by ID if the given value is not nil.
-func (auo *ArticleUpdateOne) SetNillableGalleryID(id *uuid.UUID) *ArticleUpdateOne {
-	if id != nil {
-		auo = auo.SetGalleryID(*id)
-	}
-	return auo
-}
-
 // SetGallery sets the "gallery" edge to the Gallery entity.
 func (auo *ArticleUpdateOne) SetGallery(g *Gallery) *ArticleUpdateOne {
 	return auo.SetGalleryID(g.ID)
+}
+
+// AddAuthorIDs adds the "author" edge to the User entity by IDs.
+func (auo *ArticleUpdateOne) AddAuthorIDs(ids ...uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.AddAuthorIDs(ids...)
+	return auo
+}
+
+// AddAuthor adds the "author" edges to the User entity.
+func (auo *ArticleUpdateOne) AddAuthor(u ...*User) *ArticleUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return auo.AddAuthorIDs(ids...)
+}
+
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (auo *ArticleUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.AddAttachmentIDs(ids...)
+	return auo
+}
+
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (auo *ArticleUpdateOne) AddAttachments(a ...*Attachment) *ArticleUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return auo.AddAttachmentIDs(ids...)
 }
 
 // Mutation returns the ArticleMutation object of the builder.
@@ -310,6 +518,48 @@ func (auo *ArticleUpdateOne) Mutation() *ArticleMutation {
 func (auo *ArticleUpdateOne) ClearGallery() *ArticleUpdateOne {
 	auo.mutation.ClearGallery()
 	return auo
+}
+
+// ClearAuthor clears all "author" edges to the User entity.
+func (auo *ArticleUpdateOne) ClearAuthor() *ArticleUpdateOne {
+	auo.mutation.ClearAuthor()
+	return auo
+}
+
+// RemoveAuthorIDs removes the "author" edge to User entities by IDs.
+func (auo *ArticleUpdateOne) RemoveAuthorIDs(ids ...uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.RemoveAuthorIDs(ids...)
+	return auo
+}
+
+// RemoveAuthor removes "author" edges to User entities.
+func (auo *ArticleUpdateOne) RemoveAuthor(u ...*User) *ArticleUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return auo.RemoveAuthorIDs(ids...)
+}
+
+// ClearAttachments clears all "attachments" edges to the Attachment entity.
+func (auo *ArticleUpdateOne) ClearAttachments() *ArticleUpdateOne {
+	auo.mutation.ClearAttachments()
+	return auo
+}
+
+// RemoveAttachmentIDs removes the "attachments" edge to Attachment entities by IDs.
+func (auo *ArticleUpdateOne) RemoveAttachmentIDs(ids ...uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.RemoveAttachmentIDs(ids...)
+	return auo
+}
+
+// RemoveAttachments removes "attachments" edges to Attachment entities.
+func (auo *ArticleUpdateOne) RemoveAttachments(a ...*Attachment) *ArticleUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return auo.RemoveAttachmentIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -325,6 +575,7 @@ func (auo *ArticleUpdateOne) Save(ctx context.Context) (*Article, error) {
 		err  error
 		node *Article
 	)
+	auo.defaults()
 	if len(auo.hooks) == 0 {
 		if err = auo.check(); err != nil {
 			return nil, err
@@ -385,6 +636,14 @@ func (auo *ArticleUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (auo *ArticleUpdateOne) defaults() {
+	if _, ok := auo.mutation.UpdateTime(); !ok {
+		v := article.UpdateDefaultUpdateTime()
+		auo.mutation.SetUpdateTime(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (auo *ArticleUpdateOne) check() error {
 	if v, ok := auo.mutation.Title(); ok {
@@ -396,6 +655,9 @@ func (auo *ArticleUpdateOne) check() error {
 		if err := article.ShortValidator(v); err != nil {
 			return &ValidationError{Name: "short", err: fmt.Errorf(`ent: validator failed for field "Article.short": %w`, err)}
 		}
+	}
+	if _, ok := auo.mutation.GalleryID(); auo.mutation.GalleryCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
 	return nil
 }
@@ -435,6 +697,9 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 			}
 		}
 	}
+	if value, ok := auo.mutation.UpdateTime(); ok {
+		_spec.SetField(article.FieldUpdateTime, field.TypeTime, value)
+	}
 	if value, ok := auo.mutation.Title(); ok {
 		_spec.SetField(article.FieldTitle, field.TypeString, value)
 	}
@@ -447,13 +712,10 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	if value, ok := auo.mutation.Content(); ok {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
 	}
-	if value, ok := auo.mutation.UploadDate(); ok {
-		_spec.SetField(article.FieldUploadDate, field.TypeTime, value)
-	}
 	if auo.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   article.GalleryTable,
 			Columns: []string{article.GalleryColumn},
 			Bidi:    false,
@@ -468,8 +730,8 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	}
 	if nodes := auo.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
 			Table:   article.GalleryTable,
 			Columns: []string{article.GalleryColumn},
 			Bidi:    false,
@@ -477,6 +739,114 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: gallery.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.AuthorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedAuthorIDs(); len(nodes) > 0 && !auo.mutation.AuthorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.AuthorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   article.AuthorTable,
+			Columns: article.AuthorPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: user.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedAttachmentsIDs(); len(nodes) > 0 && !auo.mutation.AttachmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.AttachmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   article.AttachmentsTable,
+			Columns: []string{article.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
 				},
 			},
 		}

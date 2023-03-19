@@ -42,7 +42,7 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader, tx *ent.Tx) (*ent.Blo
 		SetContentType(contentType).
 		SetTitle(file.Filename).
 		SetAlt("").
-		SetCreatedAt(time.Now()).
+		SetCreateTime(time.Now()).
 		Save(s.ctx)
 
 	if err != nil {

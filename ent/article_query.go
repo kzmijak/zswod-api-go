@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,21 +13,24 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // ArticleQuery is the builder for querying Article entities.
 type ArticleQuery struct {
 	config
-	limit       *int
-	offset      *int
-	unique      *bool
-	order       []OrderFunc
-	fields      []string
-	predicates  []predicate.Article
-	withGallery *GalleryQuery
-	withFKs     bool
+	limit           *int
+	offset          *int
+	unique          *bool
+	order           []OrderFunc
+	fields          []string
+	predicates      []predicate.Article
+	withGallery     *GalleryQuery
+	withAuthor      *UserQuery
+	withAttachments *AttachmentQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -77,7 +81,51 @@ func (aq *ArticleQuery) QueryGallery() *GalleryQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(article.Table, article.FieldID, selector),
 			sqlgraph.To(gallery.Table, gallery.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, article.GalleryTable, article.GalleryColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, article.GalleryTable, article.GalleryColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAuthor chains the current query on the "author" edge.
+func (aq *ArticleQuery) QueryAuthor() *UserQuery {
+	query := &UserQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, article.AuthorTable, article.AuthorPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAttachments chains the current query on the "attachments" edge.
+func (aq *ArticleQuery) QueryAttachments() *AttachmentQuery {
+	query := &AttachmentQuery{config: aq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(article.Table, article.FieldID, selector),
+			sqlgraph.To(attachment.Table, attachment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, article.AttachmentsTable, article.AttachmentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -261,12 +309,14 @@ func (aq *ArticleQuery) Clone() *ArticleQuery {
 		return nil
 	}
 	return &ArticleQuery{
-		config:      aq.config,
-		limit:       aq.limit,
-		offset:      aq.offset,
-		order:       append([]OrderFunc{}, aq.order...),
-		predicates:  append([]predicate.Article{}, aq.predicates...),
-		withGallery: aq.withGallery.Clone(),
+		config:          aq.config,
+		limit:           aq.limit,
+		offset:          aq.offset,
+		order:           append([]OrderFunc{}, aq.order...),
+		predicates:      append([]predicate.Article{}, aq.predicates...),
+		withGallery:     aq.withGallery.Clone(),
+		withAuthor:      aq.withAuthor.Clone(),
+		withAttachments: aq.withAttachments.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
@@ -285,18 +335,40 @@ func (aq *ArticleQuery) WithGallery(opts ...func(*GalleryQuery)) *ArticleQuery {
 	return aq
 }
 
+// WithAuthor tells the query-builder to eager-load the nodes that are connected to
+// the "author" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ArticleQuery) WithAuthor(opts ...func(*UserQuery)) *ArticleQuery {
+	query := &UserQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withAuthor = query
+	return aq
+}
+
+// WithAttachments tells the query-builder to eager-load the nodes that are connected to
+// the "attachments" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *ArticleQuery) WithAttachments(opts ...func(*AttachmentQuery)) *ArticleQuery {
+	query := &AttachmentQuery{config: aq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withAttachments = query
+	return aq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Article.Query().
-//		GroupBy(article.FieldTitle).
+//		GroupBy(article.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (aq *ArticleQuery) GroupBy(field string, fields ...string) *ArticleGroupBy {
@@ -319,11 +391,11 @@ func (aq *ArticleQuery) GroupBy(field string, fields ...string) *ArticleGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Article.Query().
-//		Select(article.FieldTitle).
+//		Select(article.FieldCreateTime).
 //		Scan(ctx, &v)
 func (aq *ArticleQuery) Select(fields ...string) *ArticleSelect {
 	aq.fields = append(aq.fields, fields...)
@@ -357,18 +429,13 @@ func (aq *ArticleQuery) prepareQuery(ctx context.Context) error {
 func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Article, error) {
 	var (
 		nodes       = []*Article{}
-		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [3]bool{
 			aq.withGallery != nil,
+			aq.withAuthor != nil,
+			aq.withAttachments != nil,
 		}
 	)
-	if aq.withGallery != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, article.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Article).scanValues(nil, columns)
 	}
@@ -393,35 +460,137 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 			return nil, err
 		}
 	}
+	if query := aq.withAuthor; query != nil {
+		if err := aq.loadAuthor(ctx, query, nodes,
+			func(n *Article) { n.Edges.Author = []*User{} },
+			func(n *Article, e *User) { n.Edges.Author = append(n.Edges.Author, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aq.withAttachments; query != nil {
+		if err := aq.loadAttachments(ctx, query, nodes,
+			func(n *Article) { n.Edges.Attachments = []*Attachment{} },
+			func(n *Article, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (aq *ArticleQuery) loadGallery(ctx context.Context, query *GalleryQuery, nodes []*Article, init func(*Article), assign func(*Article, *Gallery)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Article)
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Article)
 	for i := range nodes {
-		if nodes[i].gallery_article == nil {
-			continue
-		}
-		fk := *nodes[i].gallery_article
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 	}
-	query.Where(gallery.IDIn(ids...))
+	query.withFKs = true
+	query.Where(predicate.Gallery(func(s *sql.Selector) {
+		s.Where(sql.InValues(article.GalleryColumn, fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.article_gallery
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "article_gallery" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "gallery_article" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "article_gallery" returned %v for node %v`, *fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *ArticleQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*Article, init func(*Article), assign func(*Article, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Article)
+	nids := make(map[uuid.UUID]map[*Article]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(article.AuthorTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(article.AuthorPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(article.AuthorPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(article.AuthorPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Article]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "author" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aq *ArticleQuery) loadAttachments(ctx context.Context, query *AttachmentQuery, nodes []*Article, init func(*Article), assign func(*Article, *Attachment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Article)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Attachment(func(s *sql.Selector) {
+		s.Where(sql.InValues(article.AttachmentsColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.article_attachments
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "article_attachments" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "article_attachments" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

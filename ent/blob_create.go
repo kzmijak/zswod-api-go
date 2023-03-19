@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
@@ -20,6 +21,20 @@ type BlobCreate struct {
 	config
 	mutation *BlobMutation
 	hooks    []Hook
+}
+
+// SetCreateTime sets the "create_time" field.
+func (bc *BlobCreate) SetCreateTime(t time.Time) *BlobCreate {
+	bc.mutation.SetCreateTime(t)
+	return bc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (bc *BlobCreate) SetNillableCreateTime(t *time.Time) *BlobCreate {
+	if t != nil {
+		bc.SetCreateTime(*t)
+	}
+	return bc
 }
 
 // SetBlob sets the "blob" field.
@@ -46,31 +61,48 @@ func (bc *BlobCreate) SetContentType(s string) *BlobCreate {
 	return bc
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (bc *BlobCreate) SetCreatedAt(t time.Time) *BlobCreate {
-	bc.mutation.SetCreatedAt(t)
-	return bc
-}
-
 // SetID sets the "id" field.
 func (bc *BlobCreate) SetID(u uuid.UUID) *BlobCreate {
 	bc.mutation.SetID(u)
 	return bc
 }
 
-// AddArticleImageIDs adds the "articleImages" edge to the Image entity by IDs.
-func (bc *BlobCreate) AddArticleImageIDs(ids ...uuid.UUID) *BlobCreate {
-	bc.mutation.AddArticleImageIDs(ids...)
+// SetNillableID sets the "id" field if the given value is not nil.
+func (bc *BlobCreate) SetNillableID(u *uuid.UUID) *BlobCreate {
+	if u != nil {
+		bc.SetID(*u)
+	}
 	return bc
 }
 
-// AddArticleImages adds the "articleImages" edges to the Image entity.
-func (bc *BlobCreate) AddArticleImages(i ...*Image) *BlobCreate {
+// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
+func (bc *BlobCreate) AddAttachmentIDs(ids ...uuid.UUID) *BlobCreate {
+	bc.mutation.AddAttachmentIDs(ids...)
+	return bc
+}
+
+// AddAttachments adds the "attachments" edges to the Attachment entity.
+func (bc *BlobCreate) AddAttachments(a ...*Attachment) *BlobCreate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return bc.AddAttachmentIDs(ids...)
+}
+
+// AddImageIDs adds the "images" edge to the Image entity by IDs.
+func (bc *BlobCreate) AddImageIDs(ids ...uuid.UUID) *BlobCreate {
+	bc.mutation.AddImageIDs(ids...)
+	return bc
+}
+
+// AddImages adds the "images" edges to the Image entity.
+func (bc *BlobCreate) AddImages(i ...*Image) *BlobCreate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return bc.AddArticleImageIDs(ids...)
+	return bc.AddImageIDs(ids...)
 }
 
 // Mutation returns the BlobMutation object of the builder.
@@ -84,6 +116,7 @@ func (bc *BlobCreate) Save(ctx context.Context) (*Blob, error) {
 		err  error
 		node *Blob
 	)
+	bc.defaults()
 	if len(bc.hooks) == 0 {
 		if err = bc.check(); err != nil {
 			return nil, err
@@ -147,8 +180,23 @@ func (bc *BlobCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (bc *BlobCreate) defaults() {
+	if _, ok := bc.mutation.CreateTime(); !ok {
+		v := blob.DefaultCreateTime()
+		bc.mutation.SetCreateTime(v)
+	}
+	if _, ok := bc.mutation.ID(); !ok {
+		v := blob.DefaultID()
+		bc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (bc *BlobCreate) check() error {
+	if _, ok := bc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "Blob.create_time"`)}
+	}
 	if _, ok := bc.mutation.Blob(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Blob.blob"`)}
 	}
@@ -160,9 +208,6 @@ func (bc *BlobCreate) check() error {
 	}
 	if _, ok := bc.mutation.ContentType(); !ok {
 		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
-	}
-	if _, ok := bc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "Blob.createdAt"`)}
 	}
 	return nil
 }
@@ -200,6 +245,10 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := bc.mutation.CreateTime(); ok {
+		_spec.SetField(blob.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
 	if value, ok := bc.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 		_node.Blob = value
@@ -216,16 +265,31 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 		_node.ContentType = value
 	}
-	if value, ok := bc.mutation.CreatedAt(); ok {
-		_spec.SetField(blob.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if nodes := bc.mutation.ArticleImagesIDs(); len(nodes) > 0 {
+	if nodes := bc.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   blob.ArticleImagesTable,
-			Columns: []string{blob.ArticleImagesColumn},
+			Table:   blob.AttachmentsTable,
+			Columns: []string{blob.AttachmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: attachment.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.ImagesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   blob.ImagesTable,
+			Columns: []string{blob.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -256,6 +320,7 @@ func (bcb *BlobCreateBulk) Save(ctx context.Context) ([]*Blob, error) {
 	for i := range bcb.builders {
 		func(i int, root context.Context) {
 			builder := bcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*BlobMutation)
 				if !ok {

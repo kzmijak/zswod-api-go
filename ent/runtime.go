@@ -3,18 +3,42 @@
 package ent
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/attachment"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
+	"github.com/kzmijak/zswod_api_go/ent/custompage"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/schema"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	articleMixin := schema.Article{}.Mixin()
+	articleMixinFields0 := articleMixin[0].Fields()
+	_ = articleMixinFields0
+	articleMixinFields1 := articleMixin[1].Fields()
+	_ = articleMixinFields1
 	articleFields := schema.Article{}.Fields()
 	_ = articleFields
+	// articleDescCreateTime is the schema descriptor for create_time field.
+	articleDescCreateTime := articleMixinFields1[0].Descriptor()
+	// article.DefaultCreateTime holds the default value on creation for the create_time field.
+	article.DefaultCreateTime = articleDescCreateTime.Default.(func() time.Time)
+	// articleDescUpdateTime is the schema descriptor for update_time field.
+	articleDescUpdateTime := articleMixinFields1[1].Descriptor()
+	// article.DefaultUpdateTime holds the default value on creation for the update_time field.
+	article.DefaultUpdateTime = articleDescUpdateTime.Default.(func() time.Time)
+	// article.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	article.UpdateDefaultUpdateTime = articleDescUpdateTime.UpdateDefault.(func() time.Time)
 	// articleDescTitle is the schema descriptor for title field.
-	articleDescTitle := articleFields[1].Descriptor()
+	articleDescTitle := articleFields[0].Descriptor()
 	// article.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	article.TitleValidator = func() func(string) error {
 		validators := articleDescTitle.Validators
@@ -32,7 +56,7 @@ func init() {
 		}
 	}()
 	// articleDescShort is the schema descriptor for short field.
-	articleDescShort := articleFields[3].Descriptor()
+	articleDescShort := articleFields[2].Descriptor()
 	// article.ShortValidator is a validator for the "short" field. It is called by the builders before save.
 	article.ShortValidator = func() func(string) error {
 		validators := articleDescShort.Validators
@@ -49,4 +73,116 @@ func init() {
 			return nil
 		}
 	}()
+	// articleDescID is the schema descriptor for id field.
+	articleDescID := articleMixinFields0[0].Descriptor()
+	// article.DefaultID holds the default value on creation for the id field.
+	article.DefaultID = articleDescID.Default.(func() uuid.UUID)
+	attachmentMixin := schema.Attachment{}.Mixin()
+	attachmentMixinFields0 := attachmentMixin[0].Fields()
+	_ = attachmentMixinFields0
+	attachmentFields := schema.Attachment{}.Fields()
+	_ = attachmentFields
+	// attachmentDescID is the schema descriptor for id field.
+	attachmentDescID := attachmentMixinFields0[0].Descriptor()
+	// attachment.DefaultID holds the default value on creation for the id field.
+	attachment.DefaultID = attachmentDescID.Default.(func() uuid.UUID)
+	blobMixin := schema.Blob{}.Mixin()
+	blobMixinFields0 := blobMixin[0].Fields()
+	_ = blobMixinFields0
+	blobMixinFields1 := blobMixin[1].Fields()
+	_ = blobMixinFields1
+	blobFields := schema.Blob{}.Fields()
+	_ = blobFields
+	// blobDescCreateTime is the schema descriptor for create_time field.
+	blobDescCreateTime := blobMixinFields1[0].Descriptor()
+	// blob.DefaultCreateTime holds the default value on creation for the create_time field.
+	blob.DefaultCreateTime = blobDescCreateTime.Default.(func() time.Time)
+	// blobDescID is the schema descriptor for id field.
+	blobDescID := blobMixinFields0[0].Descriptor()
+	// blob.DefaultID holds the default value on creation for the id field.
+	blob.DefaultID = blobDescID.Default.(func() uuid.UUID)
+	custompageMixin := schema.CustomPage{}.Mixin()
+	custompageMixinFields0 := custompageMixin[0].Fields()
+	_ = custompageMixinFields0
+	custompageMixinFields2 := custompageMixin[2].Fields()
+	_ = custompageMixinFields2
+	custompageFields := schema.CustomPage{}.Fields()
+	_ = custompageFields
+	// custompageDescUpdateTime is the schema descriptor for update_time field.
+	custompageDescUpdateTime := custompageMixinFields2[0].Descriptor()
+	// custompage.DefaultUpdateTime holds the default value on creation for the update_time field.
+	custompage.DefaultUpdateTime = custompageDescUpdateTime.Default.(func() time.Time)
+	// custompage.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	custompage.UpdateDefaultUpdateTime = custompageDescUpdateTime.UpdateDefault.(func() time.Time)
+	// custompageDescTitle is the schema descriptor for title field.
+	custompageDescTitle := custompageFields[0].Descriptor()
+	// custompage.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	custompage.TitleValidator = func() func(string) error {
+		validators := custompageDescTitle.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(title string) error {
+			for _, fn := range fns {
+				if err := fn(title); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// custompageDescID is the schema descriptor for id field.
+	custompageDescID := custompageMixinFields0[0].Descriptor()
+	// custompage.DefaultID holds the default value on creation for the id field.
+	custompage.DefaultID = custompageDescID.Default.(func() uuid.UUID)
+	galleryMixin := schema.Gallery{}.Mixin()
+	galleryMixinFields0 := galleryMixin[0].Fields()
+	_ = galleryMixinFields0
+	galleryMixinFields1 := galleryMixin[1].Fields()
+	_ = galleryMixinFields1
+	galleryFields := schema.Gallery{}.Fields()
+	_ = galleryFields
+	// galleryDescCreateTime is the schema descriptor for create_time field.
+	galleryDescCreateTime := galleryMixinFields1[0].Descriptor()
+	// gallery.DefaultCreateTime holds the default value on creation for the create_time field.
+	gallery.DefaultCreateTime = galleryDescCreateTime.Default.(func() time.Time)
+	// galleryDescUpdateTime is the schema descriptor for update_time field.
+	galleryDescUpdateTime := galleryMixinFields1[1].Descriptor()
+	// gallery.DefaultUpdateTime holds the default value on creation for the update_time field.
+	gallery.DefaultUpdateTime = galleryDescUpdateTime.Default.(func() time.Time)
+	// gallery.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	gallery.UpdateDefaultUpdateTime = galleryDescUpdateTime.UpdateDefault.(func() time.Time)
+	// galleryDescID is the schema descriptor for id field.
+	galleryDescID := galleryMixinFields0[0].Descriptor()
+	// gallery.DefaultID holds the default value on creation for the id field.
+	gallery.DefaultID = galleryDescID.Default.(func() uuid.UUID)
+	imageMixin := schema.Image{}.Mixin()
+	imageMixinFields0 := imageMixin[0].Fields()
+	_ = imageMixinFields0
+	imageMixinFields1 := imageMixin[1].Fields()
+	_ = imageMixinFields1
+	imageFields := schema.Image{}.Fields()
+	_ = imageFields
+	// imageDescCreateTime is the schema descriptor for create_time field.
+	imageDescCreateTime := imageMixinFields1[0].Descriptor()
+	// image.DefaultCreateTime holds the default value on creation for the create_time field.
+	image.DefaultCreateTime = imageDescCreateTime.Default.(func() time.Time)
+	// imageDescOrder is the schema descriptor for Order field.
+	imageDescOrder := imageFields[1].Descriptor()
+	// image.OrderValidator is a validator for the "Order" field. It is called by the builders before save.
+	image.OrderValidator = imageDescOrder.Validators[0].(func(int) error)
+	// imageDescID is the schema descriptor for id field.
+	imageDescID := imageMixinFields0[0].Descriptor()
+	// image.DefaultID holds the default value on creation for the id field.
+	image.DefaultID = imageDescID.Default.(func() uuid.UUID)
+	userMixin := schema.User{}.Mixin()
+	userMixinFields0 := userMixin[0].Fields()
+	_ = userMixinFields0
+	userFields := schema.User{}.Fields()
+	_ = userFields
+	// userDescID is the schema descriptor for id field.
+	userDescID := userMixinFields0[0].Descriptor()
+	// user.DefaultID holds the default value on creation for the id field.
+	user.DefaultID = userDescID.Default.(func() uuid.UUID)
 }

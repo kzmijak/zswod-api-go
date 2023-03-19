@@ -12,6 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/kzmijak/zswod_api_go/ent/article"
+	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/user"
@@ -26,7 +29,11 @@ type UserQuery struct {
 	order                   []OrderFunc
 	fields                  []string
 	predicates              []predicate.User
+	withGalleries           *GalleryQuery
+	withArticles            *ArticleQuery
+	withAvatar              *ImageQuery
 	withResetPasswordTokens *ResetPasswordTokenQuery
+	withFKs                 bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,6 +68,72 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...OrderFunc) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
+}
+
+// QueryGalleries chains the current query on the "galleries" edge.
+func (uq *UserQuery) QueryGalleries() *GalleryQuery {
+	query := &GalleryQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(gallery.Table, gallery.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.GalleriesTable, user.GalleriesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryArticles chains the current query on the "articles" edge.
+func (uq *UserQuery) QueryArticles() *ArticleQuery {
+	query := &ArticleQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(article.Table, article.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.ArticlesTable, user.ArticlesPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAvatar chains the current query on the "avatar" edge.
+func (uq *UserQuery) QueryAvatar() *ImageQuery {
+	query := &ImageQuery{config: uq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(image.Table, image.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.AvatarTable, user.AvatarColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryResetPasswordTokens chains the current query on the "resetPasswordTokens" edge.
@@ -266,12 +339,48 @@ func (uq *UserQuery) Clone() *UserQuery {
 		offset:                  uq.offset,
 		order:                   append([]OrderFunc{}, uq.order...),
 		predicates:              append([]predicate.User{}, uq.predicates...),
+		withGalleries:           uq.withGalleries.Clone(),
+		withArticles:            uq.withArticles.Clone(),
+		withAvatar:              uq.withAvatar.Clone(),
 		withResetPasswordTokens: uq.withResetPasswordTokens.Clone(),
 		// clone intermediate query.
 		sql:    uq.sql.Clone(),
 		path:   uq.path,
 		unique: uq.unique,
 	}
+}
+
+// WithGalleries tells the query-builder to eager-load the nodes that are connected to
+// the "galleries" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithGalleries(opts ...func(*GalleryQuery)) *UserQuery {
+	query := &GalleryQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withGalleries = query
+	return uq
+}
+
+// WithArticles tells the query-builder to eager-load the nodes that are connected to
+// the "articles" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithArticles(opts ...func(*ArticleQuery)) *UserQuery {
+	query := &ArticleQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withArticles = query
+	return uq
+}
+
+// WithAvatar tells the query-builder to eager-load the nodes that are connected to
+// the "avatar" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithAvatar(opts ...func(*ImageQuery)) *UserQuery {
+	query := &ImageQuery{config: uq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withAvatar = query
+	return uq
 }
 
 // WithResetPasswordTokens tells the query-builder to eager-load the nodes that are connected to
@@ -357,11 +466,21 @@ func (uq *UserQuery) prepareQuery(ctx context.Context) error {
 func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, error) {
 	var (
 		nodes       = []*User{}
+		withFKs     = uq.withFKs
 		_spec       = uq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [4]bool{
+			uq.withGalleries != nil,
+			uq.withArticles != nil,
+			uq.withAvatar != nil,
 			uq.withResetPasswordTokens != nil,
 		}
 	)
+	if uq.withAvatar != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, user.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*User).scanValues(nil, columns)
 	}
@@ -380,6 +499,26 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := uq.withGalleries; query != nil {
+		if err := uq.loadGalleries(ctx, query, nodes,
+			func(n *User) { n.Edges.Galleries = []*Gallery{} },
+			func(n *User, e *Gallery) { n.Edges.Galleries = append(n.Edges.Galleries, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withArticles; query != nil {
+		if err := uq.loadArticles(ctx, query, nodes,
+			func(n *User) { n.Edges.Articles = []*Article{} },
+			func(n *User, e *Article) { n.Edges.Articles = append(n.Edges.Articles, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withAvatar; query != nil {
+		if err := uq.loadAvatar(ctx, query, nodes, nil,
+			func(n *User, e *Image) { n.Edges.Avatar = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := uq.withResetPasswordTokens; query != nil {
 		if err := uq.loadResetPasswordTokens(ctx, query, nodes,
 			func(n *User) { n.Edges.ResetPasswordTokens = []*ResetPasswordToken{} },
@@ -392,6 +531,124 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	return nodes, nil
 }
 
+func (uq *UserQuery) loadGalleries(ctx context.Context, query *GalleryQuery, nodes []*User, init func(*User), assign func(*User, *Gallery)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Gallery(func(s *sql.Selector) {
+		s.Where(sql.InValues(user.GalleriesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.user_galleries
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "user_galleries" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_galleries" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (uq *UserQuery) loadArticles(ctx context.Context, query *ArticleQuery, nodes []*User, init func(*User), assign func(*User, *Article)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.ArticlesTable)
+		s.Join(joinT).On(s.C(article.FieldID), joinT.C(user.ArticlesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.ArticlesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.ArticlesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "articles" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadAvatar(ctx context.Context, query *ImageQuery, nodes []*User, init func(*User), assign func(*User, *Image)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*User)
+	for i := range nodes {
+		if nodes[i].user_avatar == nil {
+			continue
+		}
+		fk := *nodes[i].user_avatar
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(image.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_avatar" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (uq *UserQuery) loadResetPasswordTokens(ctx context.Context, query *ResetPasswordTokenQuery, nodes []*User, init func(*User), assign func(*User, *ResetPasswordToken)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)

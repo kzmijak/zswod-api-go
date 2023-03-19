@@ -9,8 +9,14 @@ import (
 // Article is the predicate function for article builders.
 type Article func(*sql.Selector)
 
+// Attachment is the predicate function for attachment builders.
+type Attachment func(*sql.Selector)
+
 // Blob is the predicate function for blob builders.
 type Blob func(*sql.Selector)
+
+// CustomPage is the predicate function for custompage builders.
+type CustomPage func(*sql.Selector)
 
 // Gallery is the predicate function for gallery builders.
 type Gallery func(*sql.Selector)

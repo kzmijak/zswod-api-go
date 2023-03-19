@@ -16,6 +16,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // GalleryQuery is the builder for querying Gallery entities.
@@ -29,6 +30,8 @@ type GalleryQuery struct {
 	predicates  []predicate.Gallery
 	withImages  *ImageQuery
 	withArticle *ArticleQuery
+	withAuthor  *UserQuery
+	withFKs     bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,7 +104,29 @@ func (gq *GalleryQuery) QueryArticle() *ArticleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(gallery.Table, gallery.FieldID, selector),
 			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, gallery.ArticleTable, gallery.ArticleColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, gallery.ArticleTable, gallery.ArticleColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(gq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAuthor chains the current query on the "author" edge.
+func (gq *GalleryQuery) QueryAuthor() *UserQuery {
+	query := &UserQuery{config: gq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := gq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := gq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(gallery.Table, gallery.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, gallery.AuthorTable, gallery.AuthorColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(gq.driver.Dialect(), step)
 		return fromU, nil
@@ -292,6 +317,7 @@ func (gq *GalleryQuery) Clone() *GalleryQuery {
 		predicates:  append([]predicate.Gallery{}, gq.predicates...),
 		withImages:  gq.withImages.Clone(),
 		withArticle: gq.withArticle.Clone(),
+		withAuthor:  gq.withAuthor.Clone(),
 		// clone intermediate query.
 		sql:    gq.sql.Clone(),
 		path:   gq.path,
@@ -321,18 +347,29 @@ func (gq *GalleryQuery) WithArticle(opts ...func(*ArticleQuery)) *GalleryQuery {
 	return gq
 }
 
+// WithAuthor tells the query-builder to eager-load the nodes that are connected to
+// the "author" edge. The optional arguments are used to configure the query builder of the edge.
+func (gq *GalleryQuery) WithAuthor(opts ...func(*UserQuery)) *GalleryQuery {
+	query := &UserQuery{config: gq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	gq.withAuthor = query
+	return gq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Gallery.Query().
-//		GroupBy(gallery.FieldTitle).
+//		GroupBy(gallery.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (gq *GalleryQuery) GroupBy(field string, fields ...string) *GalleryGroupBy {
@@ -355,11 +392,11 @@ func (gq *GalleryQuery) GroupBy(field string, fields ...string) *GalleryGroupBy 
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.Gallery.Query().
-//		Select(gallery.FieldTitle).
+//		Select(gallery.FieldCreateTime).
 //		Scan(ctx, &v)
 func (gq *GalleryQuery) Select(fields ...string) *GallerySelect {
 	gq.fields = append(gq.fields, fields...)
@@ -393,12 +430,20 @@ func (gq *GalleryQuery) prepareQuery(ctx context.Context) error {
 func (gq *GalleryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Gallery, error) {
 	var (
 		nodes       = []*Gallery{}
+		withFKs     = gq.withFKs
 		_spec       = gq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			gq.withImages != nil,
 			gq.withArticle != nil,
+			gq.withAuthor != nil,
 		}
 	)
+	if gq.withArticle != nil || gq.withAuthor != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, gallery.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Gallery).scanValues(nil, columns)
 	}
@@ -425,9 +470,14 @@ func (gq *GalleryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Gall
 		}
 	}
 	if query := gq.withArticle; query != nil {
-		if err := gq.loadArticle(ctx, query, nodes,
-			func(n *Gallery) { n.Edges.Article = []*Article{} },
-			func(n *Gallery, e *Article) { n.Edges.Article = append(n.Edges.Article, e) }); err != nil {
+		if err := gq.loadArticle(ctx, query, nodes, nil,
+			func(n *Gallery, e *Article) { n.Edges.Article = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := gq.withAuthor; query != nil {
+		if err := gq.loadAuthor(ctx, query, nodes, nil,
+			func(n *Gallery, e *User) { n.Edges.Author = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -466,33 +516,60 @@ func (gq *GalleryQuery) loadImages(ctx context.Context, query *ImageQuery, nodes
 	return nil
 }
 func (gq *GalleryQuery) loadArticle(ctx context.Context, query *ArticleQuery, nodes []*Gallery, init func(*Gallery), assign func(*Gallery, *Article)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Gallery)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Gallery)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].article_gallery == nil {
+			continue
 		}
+		fk := *nodes[i].article_gallery
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.Article(func(s *sql.Selector) {
-		s.Where(sql.InValues(gallery.ArticleColumn, fks...))
-	}))
+	query.Where(article.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.gallery_article
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "gallery_article" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "gallery_article" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "article_gallery" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (gq *GalleryQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*Gallery, init func(*Gallery), assign func(*Gallery, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Gallery)
+	for i := range nodes {
+		if nodes[i].user_galleries == nil {
+			continue
+		}
+		fk := *nodes[i].user_galleries
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_galleries" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }

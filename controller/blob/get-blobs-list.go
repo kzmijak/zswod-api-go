@@ -38,7 +38,7 @@ func (c *BlobController) GetBlobsList(ctx *gin.Context) {
 			Title: item.Title,
 			Id: item.ID.String(),
 			Alt: item.Alt,
-			CreatedAt: item.CreatedAt,
+			CreateTime: item.CreateTime,
 		}
 	})
 
