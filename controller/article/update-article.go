@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
+	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
 	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
@@ -18,7 +18,7 @@ const (
 type UpdateArticleRequest struct {
 	ArticleId string `json:"articleId"`
 	GalleryId string `json:"galleryId"`
-	Article article.UpdateArticlePayload `json:"article"`
+	Article articleModel.UpdateArticlePayload `json:"article"`
 	Images []image.CreateImagePayload `json:"images"`
 }
 

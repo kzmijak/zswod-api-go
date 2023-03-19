@@ -8,11 +8,9 @@ import (
 	articleRepo "github.com/kzmijak/zswod_api_go/repositories/article"
 )
 
-// TODO
 const (
-	ErrTODO = "ErrTODO: Definitely not ready"
+	ErrFailedToQueryArticleHeaders = "ErrFailedToQueryArticleHeaders: Failed to query for article headers"
 )
-
 
 func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([]articleHeaderModel.ArticleHeaderModel, error) {
 	articles, err := articleRepo.ArticleTx(tx).
@@ -23,7 +21,7 @@ func (s ArticleService) GetArticleHeaders(amount int, offset int, tx *ent.Tx) ([
 		All(s.ctx)
 
 	if err != nil { 
-		return nil, errors.Error(ErrTODO)
+		return nil, errors.Error(ErrFailedToQueryArticleHeaders)
 	}
 
 	return articleHeaderModel.ArrayFromEntities(articles)

@@ -8,13 +8,15 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/article"
 	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
 type CreateArticleRequest struct {
-	Article article.CreateArticlePayload `json:"article"`
+	Title     string    `json:"title"`
+	Short     string    `json:"short"`
+	Content   string    `json:"content"`
 	Images []image.CreateImagePayload `json:"images"`
 }
 
@@ -30,7 +32,12 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 		return
 	}
 
-	galleryId, err := c.createGallery(requestBody.Article.Title, tx)
+	createArticlePayload := articleModel.NewCreateArticlePayload().
+		WithTitle(requestBody.Title).
+		WithShort(requestBody.Short).
+		WithContent(requestBody.Content)
+
+	galleryId, err := c.createGallery(requestBody.Title, tx)
 	if err != nil {
 		return
 	}
@@ -40,7 +47,8 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 		return
 	}
 
-	articleId, err := c.createArticle(requestBody.Article, galleryId, tx)
+	createArticlePayload = createArticlePayload.WithGalleryId(galleryId)
+	articleId, err := c.createArticle(createArticlePayload, galleryId, tx)
 	if err != nil {
 		return
 	}
@@ -68,10 +76,10 @@ func (c ArticleController) createImages(req []image.CreateImagePayload, galleryI
 	return nil
 }
 
-func (c ArticleController) createArticle(req article.CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (string, error) {
-	articleEntity, err := c.ArticleService.CreateArticle(req, galleryId, tx)
+func (c ArticleController) createArticle(req articleModel.CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (uuid.UUID, error) {
+	articleId, err := c.ArticleService.CreateArticle(req, tx)
 	if err != nil {
-		return "", err
+		return uuid.Nil, err
 	}
-	return articleEntity.Title, nil
+	return articleId, nil
 }

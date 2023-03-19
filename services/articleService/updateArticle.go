@@ -3,6 +3,7 @@ package articleService
 import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -10,14 +11,7 @@ const (
 	ErrCouldNotUpdateArticle = "ErrCouldNotUpdateArticle: Failed to update the article"
 )
 
-type UpdateArticlePayload struct {
-	Title    string `json:"title"`
-	Short    string `json:"short"`
-	Content  string `json:"content"`
-	GalleryId uuid.UUID `json:"galleryId"`
-}
-
-func (s ArticleService) UpdateArticle(articleId uuid.UUID, payload UpdateArticlePayload, tx *ent.Tx) (*ent.Article, error) {
+func (s ArticleService) UpdateArticle(articleId uuid.UUID, payload articleModel.UpdateArticlePayload, tx *ent.Tx) (*ent.Article, error) {
 	article, err := s.selectors.SelectArticleById(tx, articleId)
 	if err != nil {
 		return nil, err

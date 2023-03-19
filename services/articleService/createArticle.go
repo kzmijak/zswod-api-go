@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"github.com/kzmijak/zswod_api_go/utils/sanitizer"
 )
@@ -15,16 +16,9 @@ const (
 	ErrCouldNotParseUuid = "ErrCouldNotParseUuid: Failed to parse image guid"
 )
 
-type CreateArticlePayload struct {
-	Title    string `json:"title"`
-	Short    string `json:"short"`
-	Content  string `json:"content"`
-}
-
 const MAX_TITLE_LENGTH = 64	
 
-
-func (s ArticleService) CreateArticle(req CreateArticlePayload, galleryId uuid.UUID, tx *ent.Tx) (uuid.UUID, error) {
+func (s ArticleService) CreateArticle(req articleModel.CreateArticlePayload, tx *ent.Tx) (uuid.UUID, error) {
 
 	titleSanitized := sanitizer.SanitizeString(req.Title)
 	if len(titleSanitized) > MAX_TITLE_LENGTH {
@@ -39,7 +33,7 @@ func (s ArticleService) CreateArticle(req CreateArticlePayload, galleryId uuid.U
 		SetShort(req.Short).
 		SetContent(req.Content).
 		SetUploadDate(time.Now()).
-		SetGalleryID(galleryId).
+		SetGalleryID(req.GalleryId).
 		Exec(s.ctx)
 
 	if err != nil {
