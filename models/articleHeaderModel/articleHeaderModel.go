@@ -37,7 +37,7 @@ func FromArticleEntity(articleEntity *ent.Article) (ArticleHeaderModel, error) {
 		Title: articleEntity.Title,
 		Short: articleEntity.Short,
 		UploadDate: articleEntity.UploadDate,
-		TitleNormalized: articleEntity.Title,
+		TitleNormalized: articleEntity.TitleNormalized,
 		PreviewImage: previewImageModel,
 	}, nil
 }
