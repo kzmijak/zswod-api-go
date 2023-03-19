@@ -18,7 +18,7 @@ func (Article) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Unique(),
 		field.String("title").MinLen(6).MaxLen(200),
-		field.String("titleNormalized"),
+		field.String("titleNormalized").Unique(),
 		field.String("short").MinLen(12).MaxLen(300),
 		field.String("content").
 			SchemaType(map[string]string{

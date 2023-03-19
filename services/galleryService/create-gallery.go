@@ -1,4 +1,4 @@
-package gallery
+package galleryService
 
 import (
 	"time"
@@ -13,7 +13,7 @@ const (
 )
 
 func (s GalleryService) CreateGallery(title string, tx *ent.Tx) (*ent.Gallery, error) {
-		galleryId := uuid.New()
+	galleryId := uuid.New()
 	now := time.Now()
 
 	gallery, err := tx.Gallery.Create().

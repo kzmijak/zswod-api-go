@@ -1,4 +1,4 @@
-package gallery
+package galleryService
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"

@@ -11,7 +11,7 @@ const (
 	ErrArticleWithGalleryAndImagesQueryFailed = "ErrArticleWithGalleryAndImagesQueryFailed: Failed to retrieve article with gallery and images"
 )
 
-func (s ArticleSelector) SelectArticleWithGalleryAndImages(tx *ent.Tx, articleId uuid.UUID) (*ent.Article, error) {
+func (s ArticleSelector) SelectFullArticleById(tx *ent.Tx, articleId uuid.UUID) (*ent.Article, error) {
 	articleEntity, err := tx.Article.Query().WithGallery(func(gq *ent.GalleryQuery) {
 		gq.WithArticle().All(s.ctx)
 	}).Where(article.ID(articleId)).Only(s.ctx)

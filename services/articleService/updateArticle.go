@@ -22,7 +22,6 @@ func (s ArticleService) UpdateArticle(articleId uuid.UUID, payload articleModel.
 		SetTitle(payload.Title).
 		SetShort(payload.Short).
 		SetContent(payload.Content).
-		SetGalleryID(payload.GalleryId).
 		Save(s.ctx)
 
 	if err != nil {

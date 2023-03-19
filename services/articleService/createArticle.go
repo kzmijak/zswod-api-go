@@ -16,23 +16,18 @@ const (
 	ErrCouldNotParseUuid = "ErrCouldNotParseUuid: Failed to parse image guid"
 )
 
-const MAX_TITLE_LENGTH = 64	
 
 func (s ArticleService) CreateArticle(req articleModel.CreateArticlePayload, tx *ent.Tx) (uuid.UUID, error) {
-
 	titleSanitized := sanitizer.SanitizeString(req.Title)
-	if len(titleSanitized) > MAX_TITLE_LENGTH {
-		titleSanitized = titleSanitized[:MAX_TITLE_LENGTH - 1]
-	}
-
+	
 	articleId := uuid.New()
 	err := tx.Article.Create().
 		SetID(articleId).
+		SetUploadDate(time.Now()).
 		SetTitle(req.Title).
 		SetTitleNormalized(titleSanitized).
 		SetShort(req.Short).
 		SetContent(req.Content).
-		SetUploadDate(time.Now()).
 		SetGalleryID(req.GalleryId).
 		Exec(s.ctx)
 

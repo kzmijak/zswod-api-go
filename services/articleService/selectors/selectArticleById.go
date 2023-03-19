@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/query/articleQuery"
 )
 
 const (
@@ -11,7 +12,11 @@ const (
 )
 
 func (s ArticleSelector) SelectArticleById(tx *ent.Tx, articleId uuid.UUID) (*ent.Article, error) {
-	articleEntity, err := tx.Article.Get(s.ctx, articleId)
+	articleEntity, err := articleQuery.FromTx(tx).
+		JoinAllImagesToArticle().
+		QueryById(articleId).
+		Only(s.ctx)
+
 	if err != nil {
 		return nil, errors.Error(ErrArticleIdNotFound)
 	}
