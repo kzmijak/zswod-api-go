@@ -30,13 +30,9 @@ func (Attachment) Fields() []ent.Field {
 // Edges of the Attachment.
 func (Attachment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("blob", Blob.Type).Ref("attachments").
+		edge.To("blob", Blob.Type).
 			Required().
 			Immutable().
-			Unique(),
-		edge.From("page", CustomPage.Type).Ref("attachments").
-			Unique(),
-		edge.From("article", Article.Type).Ref("attachments").
 			Unique(),
 	}
 }

@@ -11,9 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/ent/image"
 )
 
 // BlobCreate is the builder for creating a Blob entity.
@@ -73,36 +71,6 @@ func (bc *BlobCreate) SetNillableID(u *uuid.UUID) *BlobCreate {
 		bc.SetID(*u)
 	}
 	return bc
-}
-
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
-func (bc *BlobCreate) AddAttachmentIDs(ids ...uuid.UUID) *BlobCreate {
-	bc.mutation.AddAttachmentIDs(ids...)
-	return bc
-}
-
-// AddAttachments adds the "attachments" edges to the Attachment entity.
-func (bc *BlobCreate) AddAttachments(a ...*Attachment) *BlobCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return bc.AddAttachmentIDs(ids...)
-}
-
-// AddImageIDs adds the "images" edge to the Image entity by IDs.
-func (bc *BlobCreate) AddImageIDs(ids ...uuid.UUID) *BlobCreate {
-	bc.mutation.AddImageIDs(ids...)
-	return bc
-}
-
-// AddImages adds the "images" edges to the Image entity.
-func (bc *BlobCreate) AddImages(i ...*Image) *BlobCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return bc.AddImageIDs(ids...)
 }
 
 // Mutation returns the BlobMutation object of the builder.
@@ -264,44 +232,6 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 		_node.ContentType = value
-	}
-	if nodes := bc.mutation.AttachmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   blob.AttachmentsTable,
-			Columns: []string{blob.AttachmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: attachment.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := bc.mutation.ImagesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   blob.ImagesTable,
-			Columns: []string{blob.ImagesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

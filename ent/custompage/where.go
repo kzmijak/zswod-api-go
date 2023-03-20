@@ -117,6 +117,27 @@ func Content(v string) predicate.CustomPage {
 	})
 }
 
+// IsExternal applies equality check predicate on the "isExternal" field. It's identical to IsExternalEQ.
+func IsExternal(v bool) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsExternal), v))
+	})
+}
+
+// Link applies equality check predicate on the "link" field. It's identical to LinkEQ.
+func Link(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLink), v))
+	})
+}
+
+// Section applies equality check predicate on the "section" field. It's identical to SectionEQ.
+func Section(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSection), v))
+	})
+}
+
 // IconIdEQ applies the EQ predicate on the "iconId" field.
 func IconIdEQ(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
@@ -588,6 +609,246 @@ func ContentEqualFold(v string) predicate.CustomPage {
 func ContentContainsFold(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldContent), v))
+	})
+}
+
+// IsExternalEQ applies the EQ predicate on the "isExternal" field.
+func IsExternalEQ(v bool) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsExternal), v))
+	})
+}
+
+// IsExternalNEQ applies the NEQ predicate on the "isExternal" field.
+func IsExternalNEQ(v bool) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldIsExternal), v))
+	})
+}
+
+// IsExternalIsNil applies the IsNil predicate on the "isExternal" field.
+func IsExternalIsNil() predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldIsExternal)))
+	})
+}
+
+// IsExternalNotNil applies the NotNil predicate on the "isExternal" field.
+func IsExternalNotNil() predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldIsExternal)))
+	})
+}
+
+// LinkEQ applies the EQ predicate on the "link" field.
+func LinkEQ(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldLink), v))
+	})
+}
+
+// LinkNEQ applies the NEQ predicate on the "link" field.
+func LinkNEQ(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldLink), v))
+	})
+}
+
+// LinkIn applies the In predicate on the "link" field.
+func LinkIn(vs ...string) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldLink), v...))
+	})
+}
+
+// LinkNotIn applies the NotIn predicate on the "link" field.
+func LinkNotIn(vs ...string) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldLink), v...))
+	})
+}
+
+// LinkGT applies the GT predicate on the "link" field.
+func LinkGT(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldLink), v))
+	})
+}
+
+// LinkGTE applies the GTE predicate on the "link" field.
+func LinkGTE(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldLink), v))
+	})
+}
+
+// LinkLT applies the LT predicate on the "link" field.
+func LinkLT(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldLink), v))
+	})
+}
+
+// LinkLTE applies the LTE predicate on the "link" field.
+func LinkLTE(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldLink), v))
+	})
+}
+
+// LinkContains applies the Contains predicate on the "link" field.
+func LinkContains(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldLink), v))
+	})
+}
+
+// LinkHasPrefix applies the HasPrefix predicate on the "link" field.
+func LinkHasPrefix(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldLink), v))
+	})
+}
+
+// LinkHasSuffix applies the HasSuffix predicate on the "link" field.
+func LinkHasSuffix(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldLink), v))
+	})
+}
+
+// LinkIsNil applies the IsNil predicate on the "link" field.
+func LinkIsNil() predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldLink)))
+	})
+}
+
+// LinkNotNil applies the NotNil predicate on the "link" field.
+func LinkNotNil() predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldLink)))
+	})
+}
+
+// LinkEqualFold applies the EqualFold predicate on the "link" field.
+func LinkEqualFold(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldLink), v))
+	})
+}
+
+// LinkContainsFold applies the ContainsFold predicate on the "link" field.
+func LinkContainsFold(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldLink), v))
+	})
+}
+
+// SectionEQ applies the EQ predicate on the "section" field.
+func SectionEQ(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldSection), v))
+	})
+}
+
+// SectionNEQ applies the NEQ predicate on the "section" field.
+func SectionNEQ(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldSection), v))
+	})
+}
+
+// SectionIn applies the In predicate on the "section" field.
+func SectionIn(vs ...string) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldSection), v...))
+	})
+}
+
+// SectionNotIn applies the NotIn predicate on the "section" field.
+func SectionNotIn(vs ...string) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldSection), v...))
+	})
+}
+
+// SectionGT applies the GT predicate on the "section" field.
+func SectionGT(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSection), v))
+	})
+}
+
+// SectionGTE applies the GTE predicate on the "section" field.
+func SectionGTE(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSection), v))
+	})
+}
+
+// SectionLT applies the LT predicate on the "section" field.
+func SectionLT(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSection), v))
+	})
+}
+
+// SectionLTE applies the LTE predicate on the "section" field.
+func SectionLTE(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSection), v))
+	})
+}
+
+// SectionContains applies the Contains predicate on the "section" field.
+func SectionContains(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSection), v))
+	})
+}
+
+// SectionHasPrefix applies the HasPrefix predicate on the "section" field.
+func SectionHasPrefix(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSection), v))
+	})
+}
+
+// SectionHasSuffix applies the HasSuffix predicate on the "section" field.
+func SectionHasSuffix(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSection), v))
+	})
+}
+
+// SectionEqualFold applies the EqualFold predicate on the "section" field.
+func SectionEqualFold(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSection), v))
+	})
+}
+
+// SectionContainsFold applies the ContainsFold predicate on the "section" field.
+func SectionContainsFold(v string) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSection), v))
 	})
 }
 

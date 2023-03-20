@@ -35,7 +35,7 @@ func (Image) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("gallery", Gallery.Type).Ref("images").
 			Unique(),
-		edge.From("blob", Blob.Type).Ref("images").
+		edge.To("blob", Blob.Type).
 			Unique().
 			Field("blobId").
 			Immutable().

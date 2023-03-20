@@ -10,10 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/ent/custompage"
 )
 
 // AttachmentCreate is the builder for creating a Attachment entity.
@@ -80,44 +78,6 @@ func (ac *AttachmentCreate) SetBlobID(id uuid.UUID) *AttachmentCreate {
 // SetBlob sets the "blob" edge to the Blob entity.
 func (ac *AttachmentCreate) SetBlob(b *Blob) *AttachmentCreate {
 	return ac.SetBlobID(b.ID)
-}
-
-// SetPageID sets the "page" edge to the CustomPage entity by ID.
-func (ac *AttachmentCreate) SetPageID(id uuid.UUID) *AttachmentCreate {
-	ac.mutation.SetPageID(id)
-	return ac
-}
-
-// SetNillablePageID sets the "page" edge to the CustomPage entity by ID if the given value is not nil.
-func (ac *AttachmentCreate) SetNillablePageID(id *uuid.UUID) *AttachmentCreate {
-	if id != nil {
-		ac = ac.SetPageID(*id)
-	}
-	return ac
-}
-
-// SetPage sets the "page" edge to the CustomPage entity.
-func (ac *AttachmentCreate) SetPage(c *CustomPage) *AttachmentCreate {
-	return ac.SetPageID(c.ID)
-}
-
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (ac *AttachmentCreate) SetArticleID(id uuid.UUID) *AttachmentCreate {
-	ac.mutation.SetArticleID(id)
-	return ac
-}
-
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (ac *AttachmentCreate) SetNillableArticleID(id *uuid.UUID) *AttachmentCreate {
-	if id != nil {
-		ac = ac.SetArticleID(*id)
-	}
-	return ac
-}
-
-// SetArticle sets the "article" edge to the Article entity.
-func (ac *AttachmentCreate) SetArticle(a *Article) *AttachmentCreate {
-	return ac.SetArticleID(a.ID)
 }
 
 // Mutation returns the AttachmentMutation object of the builder.
@@ -262,7 +222,7 @@ func (ac *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 	if nodes := ac.mutation.BlobIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   attachment.BlobTable,
 			Columns: []string{attachment.BlobColumn},
 			Bidi:    false,
@@ -276,47 +236,7 @@ func (ac *AttachmentCreate) createSpec() (*Attachment, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.blob_attachments = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.PageIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.PageTable,
-			Columns: []string{attachment.PageColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: custompage.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.custom_page_attachments = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.ArticleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.ArticleTable,
-			Columns: []string{attachment.ArticleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: article.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.article_attachments = &nodes[0]
+		_node.attachment_blob = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

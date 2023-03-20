@@ -68,6 +68,40 @@ func (cpc *CustomPageCreate) SetContent(s string) *CustomPageCreate {
 	return cpc
 }
 
+// SetIsExternal sets the "isExternal" field.
+func (cpc *CustomPageCreate) SetIsExternal(b bool) *CustomPageCreate {
+	cpc.mutation.SetIsExternal(b)
+	return cpc
+}
+
+// SetNillableIsExternal sets the "isExternal" field if the given value is not nil.
+func (cpc *CustomPageCreate) SetNillableIsExternal(b *bool) *CustomPageCreate {
+	if b != nil {
+		cpc.SetIsExternal(*b)
+	}
+	return cpc
+}
+
+// SetLink sets the "link" field.
+func (cpc *CustomPageCreate) SetLink(s string) *CustomPageCreate {
+	cpc.mutation.SetLink(s)
+	return cpc
+}
+
+// SetNillableLink sets the "link" field if the given value is not nil.
+func (cpc *CustomPageCreate) SetNillableLink(s *string) *CustomPageCreate {
+	if s != nil {
+		cpc.SetLink(*s)
+	}
+	return cpc
+}
+
+// SetSection sets the "section" field.
+func (cpc *CustomPageCreate) SetSection(s string) *CustomPageCreate {
+	cpc.mutation.SetSection(s)
+	return cpc
+}
+
 // SetID sets the "id" field.
 func (cpc *CustomPageCreate) SetID(u uuid.UUID) *CustomPageCreate {
 	cpc.mutation.SetID(u)
@@ -203,6 +237,9 @@ func (cpc *CustomPageCreate) check() error {
 	if _, ok := cpc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "CustomPage.content"`)}
 	}
+	if _, ok := cpc.mutation.Section(); !ok {
+		return &ValidationError{Name: "section", err: errors.New(`ent: missing required field "CustomPage.section"`)}
+	}
 	return nil
 }
 
@@ -258,6 +295,18 @@ func (cpc *CustomPageCreate) createSpec() (*CustomPage, *sqlgraph.CreateSpec) {
 	if value, ok := cpc.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)
 		_node.Content = value
+	}
+	if value, ok := cpc.mutation.IsExternal(); ok {
+		_spec.SetField(custompage.FieldIsExternal, field.TypeBool, value)
+		_node.IsExternal = value
+	}
+	if value, ok := cpc.mutation.Link(); ok {
+		_spec.SetField(custompage.FieldLink, field.TypeString, value)
+		_node.Link = value
+	}
+	if value, ok := cpc.mutation.Section(); ok {
+		_spec.SetField(custompage.FieldSection, field.TypeString, value)
+		_node.Section = value
 	}
 	if nodes := cpc.mutation.AttachmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -867,22 +867,18 @@ func (m *ArticleMutation) ResetEdge(name string) error {
 // AttachmentMutation represents an operation that mutates the Attachment nodes in the graph.
 type AttachmentMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	iconId         *string
-	title          *string
-	description    *string
-	clearedFields  map[string]struct{}
-	blob           *uuid.UUID
-	clearedblob    bool
-	page           *uuid.UUID
-	clearedpage    bool
-	article        *uuid.UUID
-	clearedarticle bool
-	done           bool
-	oldValue       func(context.Context) (*Attachment, error)
-	predicates     []predicate.Attachment
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	iconId        *string
+	title         *string
+	description   *string
+	clearedFields map[string]struct{}
+	blob          *uuid.UUID
+	clearedblob   bool
+	done          bool
+	oldValue      func(context.Context) (*Attachment, error)
+	predicates    []predicate.Attachment
 }
 
 var _ ent.Mutation = (*AttachmentMutation)(nil)
@@ -1162,84 +1158,6 @@ func (m *AttachmentMutation) ResetBlob() {
 	m.clearedblob = false
 }
 
-// SetPageID sets the "page" edge to the CustomPage entity by id.
-func (m *AttachmentMutation) SetPageID(id uuid.UUID) {
-	m.page = &id
-}
-
-// ClearPage clears the "page" edge to the CustomPage entity.
-func (m *AttachmentMutation) ClearPage() {
-	m.clearedpage = true
-}
-
-// PageCleared reports if the "page" edge to the CustomPage entity was cleared.
-func (m *AttachmentMutation) PageCleared() bool {
-	return m.clearedpage
-}
-
-// PageID returns the "page" edge ID in the mutation.
-func (m *AttachmentMutation) PageID() (id uuid.UUID, exists bool) {
-	if m.page != nil {
-		return *m.page, true
-	}
-	return
-}
-
-// PageIDs returns the "page" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PageID instead. It exists only for internal usage by the builders.
-func (m *AttachmentMutation) PageIDs() (ids []uuid.UUID) {
-	if id := m.page; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetPage resets all changes to the "page" edge.
-func (m *AttachmentMutation) ResetPage() {
-	m.page = nil
-	m.clearedpage = false
-}
-
-// SetArticleID sets the "article" edge to the Article entity by id.
-func (m *AttachmentMutation) SetArticleID(id uuid.UUID) {
-	m.article = &id
-}
-
-// ClearArticle clears the "article" edge to the Article entity.
-func (m *AttachmentMutation) ClearArticle() {
-	m.clearedarticle = true
-}
-
-// ArticleCleared reports if the "article" edge to the Article entity was cleared.
-func (m *AttachmentMutation) ArticleCleared() bool {
-	return m.clearedarticle
-}
-
-// ArticleID returns the "article" edge ID in the mutation.
-func (m *AttachmentMutation) ArticleID() (id uuid.UUID, exists bool) {
-	if m.article != nil {
-		return *m.article, true
-	}
-	return
-}
-
-// ArticleIDs returns the "article" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ArticleID instead. It exists only for internal usage by the builders.
-func (m *AttachmentMutation) ArticleIDs() (ids []uuid.UUID) {
-	if id := m.article; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetArticle resets all changes to the "article" edge.
-func (m *AttachmentMutation) ResetArticle() {
-	m.article = nil
-	m.clearedarticle = false
-}
-
 // Where appends a list predicates to the AttachmentMutation builder.
 func (m *AttachmentMutation) Where(ps ...predicate.Attachment) {
 	m.predicates = append(m.predicates, ps...)
@@ -1407,15 +1325,9 @@ func (m *AttachmentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AttachmentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	if m.blob != nil {
 		edges = append(edges, attachment.EdgeBlob)
-	}
-	if m.page != nil {
-		edges = append(edges, attachment.EdgePage)
-	}
-	if m.article != nil {
-		edges = append(edges, attachment.EdgeArticle)
 	}
 	return edges
 }
@@ -1428,21 +1340,13 @@ func (m *AttachmentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.blob; id != nil {
 			return []ent.Value{*id}
 		}
-	case attachment.EdgePage:
-		if id := m.page; id != nil {
-			return []ent.Value{*id}
-		}
-	case attachment.EdgeArticle:
-		if id := m.article; id != nil {
-			return []ent.Value{*id}
-		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AttachmentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -1454,15 +1358,9 @@ func (m *AttachmentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AttachmentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 1)
 	if m.clearedblob {
 		edges = append(edges, attachment.EdgeBlob)
-	}
-	if m.clearedpage {
-		edges = append(edges, attachment.EdgePage)
-	}
-	if m.clearedarticle {
-		edges = append(edges, attachment.EdgeArticle)
 	}
 	return edges
 }
@@ -1473,10 +1371,6 @@ func (m *AttachmentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case attachment.EdgeBlob:
 		return m.clearedblob
-	case attachment.EdgePage:
-		return m.clearedpage
-	case attachment.EdgeArticle:
-		return m.clearedarticle
 	}
 	return false
 }
@@ -1487,12 +1381,6 @@ func (m *AttachmentMutation) ClearEdge(name string) error {
 	switch name {
 	case attachment.EdgeBlob:
 		m.ClearBlob()
-		return nil
-	case attachment.EdgePage:
-		m.ClearPage()
-		return nil
-	case attachment.EdgeArticle:
-		m.ClearArticle()
 		return nil
 	}
 	return fmt.Errorf("unknown Attachment unique edge %s", name)
@@ -1505,12 +1393,6 @@ func (m *AttachmentMutation) ResetEdge(name string) error {
 	case attachment.EdgeBlob:
 		m.ResetBlob()
 		return nil
-	case attachment.EdgePage:
-		m.ResetPage()
-		return nil
-	case attachment.EdgeArticle:
-		m.ResetArticle()
-		return nil
 	}
 	return fmt.Errorf("unknown Attachment edge %s", name)
 }
@@ -1518,24 +1400,18 @@ func (m *AttachmentMutation) ResetEdge(name string) error {
 // BlobMutation represents an operation that mutates the Blob nodes in the graph.
 type BlobMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	create_time        *time.Time
-	blob               *[]byte
-	title              *string
-	alt                *string
-	contentType        *string
-	clearedFields      map[string]struct{}
-	attachments        map[uuid.UUID]struct{}
-	removedattachments map[uuid.UUID]struct{}
-	clearedattachments bool
-	images             map[uuid.UUID]struct{}
-	removedimages      map[uuid.UUID]struct{}
-	clearedimages      bool
-	done               bool
-	oldValue           func(context.Context) (*Blob, error)
-	predicates         []predicate.Blob
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	create_time   *time.Time
+	blob          *[]byte
+	title         *string
+	alt           *string
+	contentType   *string
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Blob, error)
+	predicates    []predicate.Blob
 }
 
 var _ ent.Mutation = (*BlobMutation)(nil)
@@ -1822,114 +1698,6 @@ func (m *BlobMutation) ResetContentType() {
 	m.contentType = nil
 }
 
-// AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
-func (m *BlobMutation) AddAttachmentIDs(ids ...uuid.UUID) {
-	if m.attachments == nil {
-		m.attachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.attachments[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAttachments clears the "attachments" edge to the Attachment entity.
-func (m *BlobMutation) ClearAttachments() {
-	m.clearedattachments = true
-}
-
-// AttachmentsCleared reports if the "attachments" edge to the Attachment entity was cleared.
-func (m *BlobMutation) AttachmentsCleared() bool {
-	return m.clearedattachments
-}
-
-// RemoveAttachmentIDs removes the "attachments" edge to the Attachment entity by IDs.
-func (m *BlobMutation) RemoveAttachmentIDs(ids ...uuid.UUID) {
-	if m.removedattachments == nil {
-		m.removedattachments = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.attachments, ids[i])
-		m.removedattachments[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAttachments returns the removed IDs of the "attachments" edge to the Attachment entity.
-func (m *BlobMutation) RemovedAttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedattachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AttachmentsIDs returns the "attachments" edge IDs in the mutation.
-func (m *BlobMutation) AttachmentsIDs() (ids []uuid.UUID) {
-	for id := range m.attachments {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAttachments resets all changes to the "attachments" edge.
-func (m *BlobMutation) ResetAttachments() {
-	m.attachments = nil
-	m.clearedattachments = false
-	m.removedattachments = nil
-}
-
-// AddImageIDs adds the "images" edge to the Image entity by ids.
-func (m *BlobMutation) AddImageIDs(ids ...uuid.UUID) {
-	if m.images == nil {
-		m.images = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.images[ids[i]] = struct{}{}
-	}
-}
-
-// ClearImages clears the "images" edge to the Image entity.
-func (m *BlobMutation) ClearImages() {
-	m.clearedimages = true
-}
-
-// ImagesCleared reports if the "images" edge to the Image entity was cleared.
-func (m *BlobMutation) ImagesCleared() bool {
-	return m.clearedimages
-}
-
-// RemoveImageIDs removes the "images" edge to the Image entity by IDs.
-func (m *BlobMutation) RemoveImageIDs(ids ...uuid.UUID) {
-	if m.removedimages == nil {
-		m.removedimages = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.images, ids[i])
-		m.removedimages[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedImages returns the removed IDs of the "images" edge to the Image entity.
-func (m *BlobMutation) RemovedImagesIDs() (ids []uuid.UUID) {
-	for id := range m.removedimages {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ImagesIDs returns the "images" edge IDs in the mutation.
-func (m *BlobMutation) ImagesIDs() (ids []uuid.UUID) {
-	for id := range m.images {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetImages resets all changes to the "images" edge.
-func (m *BlobMutation) ResetImages() {
-	m.images = nil
-	m.clearedimages = false
-	m.removedimages = nil
-}
-
 // Where appends a list predicates to the BlobMutation builder.
 func (m *BlobMutation) Where(ps ...predicate.Blob) {
 	m.predicates = append(m.predicates, ps...)
@@ -2116,111 +1884,49 @@ func (m *BlobMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BlobMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.attachments != nil {
-		edges = append(edges, blob.EdgeAttachments)
-	}
-	if m.images != nil {
-		edges = append(edges, blob.EdgeImages)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *BlobMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case blob.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.attachments))
-		for id := range m.attachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case blob.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.images))
-		for id := range m.images {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BlobMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedattachments != nil {
-		edges = append(edges, blob.EdgeAttachments)
-	}
-	if m.removedimages != nil {
-		edges = append(edges, blob.EdgeImages)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *BlobMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case blob.EdgeAttachments:
-		ids := make([]ent.Value, 0, len(m.removedattachments))
-		for id := range m.removedattachments {
-			ids = append(ids, id)
-		}
-		return ids
-	case blob.EdgeImages:
-		ids := make([]ent.Value, 0, len(m.removedimages))
-		for id := range m.removedimages {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BlobMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedattachments {
-		edges = append(edges, blob.EdgeAttachments)
-	}
-	if m.clearedimages {
-		edges = append(edges, blob.EdgeImages)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *BlobMutation) EdgeCleared(name string) bool {
-	switch name {
-	case blob.EdgeAttachments:
-		return m.clearedattachments
-	case blob.EdgeImages:
-		return m.clearedimages
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *BlobMutation) ClearEdge(name string) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown Blob unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *BlobMutation) ResetEdge(name string) error {
-	switch name {
-	case blob.EdgeAttachments:
-		m.ResetAttachments()
-		return nil
-	case blob.EdgeImages:
-		m.ResetImages()
-		return nil
-	}
 	return fmt.Errorf("unknown Blob edge %s", name)
 }
 
@@ -2235,6 +1941,9 @@ type CustomPageMutation struct {
 	title              *string
 	titleNormalized    *string
 	content            *string
+	isExternal         *bool
+	link               *string
+	section            *string
 	clearedFields      map[string]struct{}
 	attachments        map[uuid.UUID]struct{}
 	removedattachments map[uuid.UUID]struct{}
@@ -2541,6 +2250,140 @@ func (m *CustomPageMutation) ResetContent() {
 	m.content = nil
 }
 
+// SetIsExternal sets the "isExternal" field.
+func (m *CustomPageMutation) SetIsExternal(b bool) {
+	m.isExternal = &b
+}
+
+// IsExternal returns the value of the "isExternal" field in the mutation.
+func (m *CustomPageMutation) IsExternal() (r bool, exists bool) {
+	v := m.isExternal
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsExternal returns the old "isExternal" field's value of the CustomPage entity.
+// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomPageMutation) OldIsExternal(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsExternal is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsExternal requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsExternal: %w", err)
+	}
+	return oldValue.IsExternal, nil
+}
+
+// ClearIsExternal clears the value of the "isExternal" field.
+func (m *CustomPageMutation) ClearIsExternal() {
+	m.isExternal = nil
+	m.clearedFields[custompage.FieldIsExternal] = struct{}{}
+}
+
+// IsExternalCleared returns if the "isExternal" field was cleared in this mutation.
+func (m *CustomPageMutation) IsExternalCleared() bool {
+	_, ok := m.clearedFields[custompage.FieldIsExternal]
+	return ok
+}
+
+// ResetIsExternal resets all changes to the "isExternal" field.
+func (m *CustomPageMutation) ResetIsExternal() {
+	m.isExternal = nil
+	delete(m.clearedFields, custompage.FieldIsExternal)
+}
+
+// SetLink sets the "link" field.
+func (m *CustomPageMutation) SetLink(s string) {
+	m.link = &s
+}
+
+// Link returns the value of the "link" field in the mutation.
+func (m *CustomPageMutation) Link() (r string, exists bool) {
+	v := m.link
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLink returns the old "link" field's value of the CustomPage entity.
+// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomPageMutation) OldLink(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLink is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLink requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLink: %w", err)
+	}
+	return oldValue.Link, nil
+}
+
+// ClearLink clears the value of the "link" field.
+func (m *CustomPageMutation) ClearLink() {
+	m.link = nil
+	m.clearedFields[custompage.FieldLink] = struct{}{}
+}
+
+// LinkCleared returns if the "link" field was cleared in this mutation.
+func (m *CustomPageMutation) LinkCleared() bool {
+	_, ok := m.clearedFields[custompage.FieldLink]
+	return ok
+}
+
+// ResetLink resets all changes to the "link" field.
+func (m *CustomPageMutation) ResetLink() {
+	m.link = nil
+	delete(m.clearedFields, custompage.FieldLink)
+}
+
+// SetSection sets the "section" field.
+func (m *CustomPageMutation) SetSection(s string) {
+	m.section = &s
+}
+
+// Section returns the value of the "section" field in the mutation.
+func (m *CustomPageMutation) Section() (r string, exists bool) {
+	v := m.section
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSection returns the old "section" field's value of the CustomPage entity.
+// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomPageMutation) OldSection(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSection is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSection requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSection: %w", err)
+	}
+	return oldValue.Section, nil
+}
+
+// ResetSection resets all changes to the "section" field.
+func (m *CustomPageMutation) ResetSection() {
+	m.section = nil
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
 func (m *CustomPageMutation) AddAttachmentIDs(ids ...uuid.UUID) {
 	if m.attachments == nil {
@@ -2614,7 +2457,7 @@ func (m *CustomPageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CustomPageMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 8)
 	if m.iconId != nil {
 		fields = append(fields, custompage.FieldIconId)
 	}
@@ -2629,6 +2472,15 @@ func (m *CustomPageMutation) Fields() []string {
 	}
 	if m.content != nil {
 		fields = append(fields, custompage.FieldContent)
+	}
+	if m.isExternal != nil {
+		fields = append(fields, custompage.FieldIsExternal)
+	}
+	if m.link != nil {
+		fields = append(fields, custompage.FieldLink)
+	}
+	if m.section != nil {
+		fields = append(fields, custompage.FieldSection)
 	}
 	return fields
 }
@@ -2648,6 +2500,12 @@ func (m *CustomPageMutation) Field(name string) (ent.Value, bool) {
 		return m.TitleNormalized()
 	case custompage.FieldContent:
 		return m.Content()
+	case custompage.FieldIsExternal:
+		return m.IsExternal()
+	case custompage.FieldLink:
+		return m.Link()
+	case custompage.FieldSection:
+		return m.Section()
 	}
 	return nil, false
 }
@@ -2667,6 +2525,12 @@ func (m *CustomPageMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldTitleNormalized(ctx)
 	case custompage.FieldContent:
 		return m.OldContent(ctx)
+	case custompage.FieldIsExternal:
+		return m.OldIsExternal(ctx)
+	case custompage.FieldLink:
+		return m.OldLink(ctx)
+	case custompage.FieldSection:
+		return m.OldSection(ctx)
 	}
 	return nil, fmt.Errorf("unknown CustomPage field %s", name)
 }
@@ -2711,6 +2575,27 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetContent(v)
 		return nil
+	case custompage.FieldIsExternal:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsExternal(v)
+		return nil
+	case custompage.FieldLink:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLink(v)
+		return nil
+	case custompage.FieldSection:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSection(v)
+		return nil
 	}
 	return fmt.Errorf("unknown CustomPage field %s", name)
 }
@@ -2744,6 +2629,12 @@ func (m *CustomPageMutation) ClearedFields() []string {
 	if m.FieldCleared(custompage.FieldIconId) {
 		fields = append(fields, custompage.FieldIconId)
 	}
+	if m.FieldCleared(custompage.FieldIsExternal) {
+		fields = append(fields, custompage.FieldIsExternal)
+	}
+	if m.FieldCleared(custompage.FieldLink) {
+		fields = append(fields, custompage.FieldLink)
+	}
 	return fields
 }
 
@@ -2760,6 +2651,12 @@ func (m *CustomPageMutation) ClearField(name string) error {
 	switch name {
 	case custompage.FieldIconId:
 		m.ClearIconId()
+		return nil
+	case custompage.FieldIsExternal:
+		m.ClearIsExternal()
+		return nil
+	case custompage.FieldLink:
+		m.ClearLink()
 		return nil
 	}
 	return fmt.Errorf("unknown CustomPage nullable field %s", name)
@@ -2783,6 +2680,15 @@ func (m *CustomPageMutation) ResetField(name string) error {
 		return nil
 	case custompage.FieldContent:
 		m.ResetContent()
+		return nil
+	case custompage.FieldIsExternal:
+		m.ResetIsExternal()
+		return nil
+	case custompage.FieldLink:
+		m.ResetLink()
+		return nil
+	case custompage.FieldSection:
+		m.ResetSection()
 		return nil
 	}
 	return fmt.Errorf("unknown CustomPage field %s", name)

@@ -27,6 +27,12 @@ type CustomPage struct {
 	TitleNormalized string `json:"titleNormalized,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
+	// IsExternal holds the value of the "isExternal" field.
+	IsExternal bool `json:"isExternal,omitempty"`
+	// Link holds the value of the "link" field.
+	Link string `json:"link,omitempty"`
+	// Section holds the value of the "section" field.
+	Section string `json:"section,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CustomPageQuery when eager-loading is set.
 	Edges CustomPageEdges `json:"edges"`
@@ -55,7 +61,9 @@ func (*CustomPage) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case custompage.FieldIconId, custompage.FieldTitle, custompage.FieldTitleNormalized, custompage.FieldContent:
+		case custompage.FieldIsExternal:
+			values[i] = new(sql.NullBool)
+		case custompage.FieldIconId, custompage.FieldTitle, custompage.FieldTitleNormalized, custompage.FieldContent, custompage.FieldLink, custompage.FieldSection:
 			values[i] = new(sql.NullString)
 		case custompage.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -112,6 +120,24 @@ func (cp *CustomPage) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				cp.Content = value.String
 			}
+		case custompage.FieldIsExternal:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field isExternal", values[i])
+			} else if value.Valid {
+				cp.IsExternal = value.Bool
+			}
+		case custompage.FieldLink:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field link", values[i])
+			} else if value.Valid {
+				cp.Link = value.String
+			}
+		case custompage.FieldSection:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field section", values[i])
+			} else if value.Valid {
+				cp.Section = value.String
+			}
 		}
 	}
 	return nil
@@ -159,6 +185,15 @@ func (cp *CustomPage) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(cp.Content)
+	builder.WriteString(", ")
+	builder.WriteString("isExternal=")
+	builder.WriteString(fmt.Sprintf("%v", cp.IsExternal))
+	builder.WriteString(", ")
+	builder.WriteString("link=")
+	builder.WriteString(cp.Link)
+	builder.WriteString(", ")
+	builder.WriteString("section=")
+	builder.WriteString(cp.Section)
 	builder.WriteByte(')')
 	return builder.String()
 }

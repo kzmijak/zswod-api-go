@@ -432,7 +432,7 @@ func HasBlob() predicate.Attachment {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BlobTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -444,63 +444,7 @@ func HasBlobWith(preds ...predicate.Blob) predicate.Attachment {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BlobInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasPage applies the HasEdge predicate on the "page" edge.
-func HasPage() predicate.Attachment {
-	return predicate.Attachment(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(PageTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PageTable, PageColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasPageWith applies the HasEdge predicate on the "page" edge with a given conditions (other predicates).
-func HasPageWith(preds ...predicate.CustomPage) predicate.Attachment {
-	return predicate.Attachment(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(PageInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PageTable, PageColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasArticle applies the HasEdge predicate on the "article" edge.
-func HasArticle() predicate.Attachment {
-	return predicate.Attachment(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasArticleWith applies the HasEdge predicate on the "article" edge with a given conditions (other predicates).
-func HasArticleWith(preds ...predicate.Article) predicate.Attachment {
-	return predicate.Attachment(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ArticleInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ArticleTable, ArticleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

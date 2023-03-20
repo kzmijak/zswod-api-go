@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
@@ -539,62 +538,6 @@ func ContentTypeEqualFold(v string) predicate.Blob {
 func ContentTypeContainsFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldContentType), v))
-	})
-}
-
-// HasAttachments applies the HasEdge predicate on the "attachments" edge.
-func HasAttachments() predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AttachmentsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAttachmentsWith applies the HasEdge predicate on the "attachments" edge with a given conditions (other predicates).
-func HasAttachmentsWith(preds ...predicate.Attachment) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AttachmentsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AttachmentsTable, AttachmentsColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasImages applies the HasEdge predicate on the "images" edge.
-func HasImages() predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ImagesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasImagesWith applies the HasEdge predicate on the "images" edge with a given conditions (other predicates).
-func HasImagesWith(preds ...predicate.Image) predicate.Blob {
-	return predicate.Blob(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ImagesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
 	})
 }
 

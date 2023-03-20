@@ -8,10 +8,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/ent/custompage"
 )
 
 // Attachment is the model entity for the Attachment schema.
@@ -29,7 +27,7 @@ type Attachment struct {
 	// The values are being populated by the AttachmentQuery when eager-loading is set.
 	Edges                   AttachmentEdges `json:"edges"`
 	article_attachments     *uuid.UUID
-	blob_attachments        *uuid.UUID
+	attachment_blob         *uuid.UUID
 	custom_page_attachments *uuid.UUID
 }
 
@@ -37,13 +35,9 @@ type Attachment struct {
 type AttachmentEdges struct {
 	// Blob holds the value of the blob edge.
 	Blob *Blob `json:"blob,omitempty"`
-	// Page holds the value of the page edge.
-	Page *CustomPage `json:"page,omitempty"`
-	// Article holds the value of the article edge.
-	Article *Article `json:"article,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [1]bool
 }
 
 // BlobOrErr returns the Blob value or an error if the edge
@@ -59,32 +53,6 @@ func (e AttachmentEdges) BlobOrErr() (*Blob, error) {
 	return nil, &NotLoadedError{edge: "blob"}
 }
 
-// PageOrErr returns the Page value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AttachmentEdges) PageOrErr() (*CustomPage, error) {
-	if e.loadedTypes[1] {
-		if e.Page == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: custompage.Label}
-		}
-		return e.Page, nil
-	}
-	return nil, &NotLoadedError{edge: "page"}
-}
-
-// ArticleOrErr returns the Article value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AttachmentEdges) ArticleOrErr() (*Article, error) {
-	if e.loadedTypes[2] {
-		if e.Article == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: article.Label}
-		}
-		return e.Article, nil
-	}
-	return nil, &NotLoadedError{edge: "article"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Attachment) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -96,7 +64,7 @@ func (*Attachment) scanValues(columns []string) ([]any, error) {
 			values[i] = new(uuid.UUID)
 		case attachment.ForeignKeys[0]: // article_attachments
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case attachment.ForeignKeys[1]: // blob_attachments
+		case attachment.ForeignKeys[1]: // attachment_blob
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case attachment.ForeignKeys[2]: // custom_page_attachments
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -148,10 +116,10 @@ func (a *Attachment) assignValues(columns []string, values []any) error {
 			}
 		case attachment.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field blob_attachments", values[i])
+				return fmt.Errorf("unexpected type %T for field attachment_blob", values[i])
 			} else if value.Valid {
-				a.blob_attachments = new(uuid.UUID)
-				*a.blob_attachments = *value.S.(*uuid.UUID)
+				a.attachment_blob = new(uuid.UUID)
+				*a.attachment_blob = *value.S.(*uuid.UUID)
 			}
 		case attachment.ForeignKeys[2]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -168,16 +136,6 @@ func (a *Attachment) assignValues(columns []string, values []any) error {
 // QueryBlob queries the "blob" edge of the Attachment entity.
 func (a *Attachment) QueryBlob() *BlobQuery {
 	return (&AttachmentClient{config: a.config}).QueryBlob(a)
-}
-
-// QueryPage queries the "page" edge of the Attachment entity.
-func (a *Attachment) QueryPage() *CustomPageQuery {
-	return (&AttachmentClient{config: a.config}).QueryPage(a)
-}
-
-// QueryArticle queries the "article" edge of the Attachment entity.
-func (a *Attachment) QueryArticle() *ArticleQuery {
-	return (&AttachmentClient{config: a.config}).QueryArticle(a)
 }
 
 // Update returns a builder for updating this Attachment.

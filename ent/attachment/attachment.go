@@ -19,10 +19,6 @@ const (
 	FieldDescription = "description"
 	// EdgeBlob holds the string denoting the blob edge name in mutations.
 	EdgeBlob = "blob"
-	// EdgePage holds the string denoting the page edge name in mutations.
-	EdgePage = "page"
-	// EdgeArticle holds the string denoting the article edge name in mutations.
-	EdgeArticle = "article"
 	// Table holds the table name of the attachment in the database.
 	Table = "attachments"
 	// BlobTable is the table that holds the blob relation/edge.
@@ -31,21 +27,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "blob" package.
 	BlobInverseTable = "blobs"
 	// BlobColumn is the table column denoting the blob relation/edge.
-	BlobColumn = "blob_attachments"
-	// PageTable is the table that holds the page relation/edge.
-	PageTable = "attachments"
-	// PageInverseTable is the table name for the CustomPage entity.
-	// It exists in this package in order to avoid circular dependency with the "custompage" package.
-	PageInverseTable = "custom_pages"
-	// PageColumn is the table column denoting the page relation/edge.
-	PageColumn = "custom_page_attachments"
-	// ArticleTable is the table that holds the article relation/edge.
-	ArticleTable = "attachments"
-	// ArticleInverseTable is the table name for the Article entity.
-	// It exists in this package in order to avoid circular dependency with the "article" package.
-	ArticleInverseTable = "articles"
-	// ArticleColumn is the table column denoting the article relation/edge.
-	ArticleColumn = "article_attachments"
+	BlobColumn = "attachment_blob"
 )
 
 // Columns holds all SQL columns for attachment fields.
@@ -60,7 +42,7 @@ var Columns = []string{
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"article_attachments",
-	"blob_attachments",
+	"attachment_blob",
 	"custom_page_attachments",
 }
 

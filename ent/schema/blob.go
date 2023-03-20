@@ -3,7 +3,6 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
 )
@@ -36,8 +35,5 @@ func (Blob) Fields() []ent.Field {
 
 // Edges of the Image.
 func (Blob) Edges() []ent.Edge {
-	return []ent.Edge {
-		edge.To("attachments", Attachment.Type),
-		edge.To("images", Image.Type),
-	}
+	return []ent.Edge {}
 }

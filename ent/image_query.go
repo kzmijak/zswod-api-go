@@ -101,7 +101,7 @@ func (iq *ImageQuery) QueryBlob() *BlobQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(image.Table, image.FieldID, selector),
 			sqlgraph.To(blob.Table, blob.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, image.BlobTable, image.BlobColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, image.BlobTable, image.BlobColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil

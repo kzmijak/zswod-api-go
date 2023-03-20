@@ -10,10 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/attachment"
-	"github.com/kzmijak/zswod_api_go/ent/custompage"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
 
@@ -76,59 +73,9 @@ func (au *AttachmentUpdate) ClearDescription() *AttachmentUpdate {
 	return au
 }
 
-// SetPageID sets the "page" edge to the CustomPage entity by ID.
-func (au *AttachmentUpdate) SetPageID(id uuid.UUID) *AttachmentUpdate {
-	au.mutation.SetPageID(id)
-	return au
-}
-
-// SetNillablePageID sets the "page" edge to the CustomPage entity by ID if the given value is not nil.
-func (au *AttachmentUpdate) SetNillablePageID(id *uuid.UUID) *AttachmentUpdate {
-	if id != nil {
-		au = au.SetPageID(*id)
-	}
-	return au
-}
-
-// SetPage sets the "page" edge to the CustomPage entity.
-func (au *AttachmentUpdate) SetPage(c *CustomPage) *AttachmentUpdate {
-	return au.SetPageID(c.ID)
-}
-
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (au *AttachmentUpdate) SetArticleID(id uuid.UUID) *AttachmentUpdate {
-	au.mutation.SetArticleID(id)
-	return au
-}
-
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (au *AttachmentUpdate) SetNillableArticleID(id *uuid.UUID) *AttachmentUpdate {
-	if id != nil {
-		au = au.SetArticleID(*id)
-	}
-	return au
-}
-
-// SetArticle sets the "article" edge to the Article entity.
-func (au *AttachmentUpdate) SetArticle(a *Article) *AttachmentUpdate {
-	return au.SetArticleID(a.ID)
-}
-
 // Mutation returns the AttachmentMutation object of the builder.
 func (au *AttachmentUpdate) Mutation() *AttachmentMutation {
 	return au.mutation
-}
-
-// ClearPage clears the "page" edge to the CustomPage entity.
-func (au *AttachmentUpdate) ClearPage() *AttachmentUpdate {
-	au.mutation.ClearPage()
-	return au
-}
-
-// ClearArticle clears the "article" edge to the Article entity.
-func (au *AttachmentUpdate) ClearArticle() *AttachmentUpdate {
-	au.mutation.ClearArticle()
-	return au
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -232,76 +179,6 @@ func (au *AttachmentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if au.mutation.DescriptionCleared() {
 		_spec.ClearField(attachment.FieldDescription, field.TypeString)
 	}
-	if au.mutation.PageCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.PageTable,
-			Columns: []string{attachment.PageColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: custompage.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.PageIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.PageTable,
-			Columns: []string{attachment.PageColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: custompage.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if au.mutation.ArticleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.ArticleTable,
-			Columns: []string{attachment.ArticleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: article.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.ArticleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.ArticleTable,
-			Columns: []string{attachment.ArticleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: article.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if n, err = sqlgraph.UpdateNodes(ctx, au.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{attachment.Label}
@@ -367,59 +244,9 @@ func (auo *AttachmentUpdateOne) ClearDescription() *AttachmentUpdateOne {
 	return auo
 }
 
-// SetPageID sets the "page" edge to the CustomPage entity by ID.
-func (auo *AttachmentUpdateOne) SetPageID(id uuid.UUID) *AttachmentUpdateOne {
-	auo.mutation.SetPageID(id)
-	return auo
-}
-
-// SetNillablePageID sets the "page" edge to the CustomPage entity by ID if the given value is not nil.
-func (auo *AttachmentUpdateOne) SetNillablePageID(id *uuid.UUID) *AttachmentUpdateOne {
-	if id != nil {
-		auo = auo.SetPageID(*id)
-	}
-	return auo
-}
-
-// SetPage sets the "page" edge to the CustomPage entity.
-func (auo *AttachmentUpdateOne) SetPage(c *CustomPage) *AttachmentUpdateOne {
-	return auo.SetPageID(c.ID)
-}
-
-// SetArticleID sets the "article" edge to the Article entity by ID.
-func (auo *AttachmentUpdateOne) SetArticleID(id uuid.UUID) *AttachmentUpdateOne {
-	auo.mutation.SetArticleID(id)
-	return auo
-}
-
-// SetNillableArticleID sets the "article" edge to the Article entity by ID if the given value is not nil.
-func (auo *AttachmentUpdateOne) SetNillableArticleID(id *uuid.UUID) *AttachmentUpdateOne {
-	if id != nil {
-		auo = auo.SetArticleID(*id)
-	}
-	return auo
-}
-
-// SetArticle sets the "article" edge to the Article entity.
-func (auo *AttachmentUpdateOne) SetArticle(a *Article) *AttachmentUpdateOne {
-	return auo.SetArticleID(a.ID)
-}
-
 // Mutation returns the AttachmentMutation object of the builder.
 func (auo *AttachmentUpdateOne) Mutation() *AttachmentMutation {
 	return auo.mutation
-}
-
-// ClearPage clears the "page" edge to the CustomPage entity.
-func (auo *AttachmentUpdateOne) ClearPage() *AttachmentUpdateOne {
-	auo.mutation.ClearPage()
-	return auo
-}
-
-// ClearArticle clears the "article" edge to the Article entity.
-func (auo *AttachmentUpdateOne) ClearArticle() *AttachmentUpdateOne {
-	auo.mutation.ClearArticle()
-	return auo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -552,76 +379,6 @@ func (auo *AttachmentUpdateOne) sqlSave(ctx context.Context) (_node *Attachment,
 	}
 	if auo.mutation.DescriptionCleared() {
 		_spec.ClearField(attachment.FieldDescription, field.TypeString)
-	}
-	if auo.mutation.PageCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.PageTable,
-			Columns: []string{attachment.PageColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: custompage.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.PageIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.PageTable,
-			Columns: []string{attachment.PageColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: custompage.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if auo.mutation.ArticleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.ArticleTable,
-			Columns: []string{attachment.ArticleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: article.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.ArticleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   attachment.ArticleTable,
-			Columns: []string{attachment.ArticleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: article.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Attachment{config: auo.config}
 	_spec.Assign = _node.assignValues

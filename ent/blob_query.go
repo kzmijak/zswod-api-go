@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,23 +11,19 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
 
 // BlobQuery is the builder for querying Blob entities.
 type BlobQuery struct {
 	config
-	limit           *int
-	offset          *int
-	unique          *bool
-	order           []OrderFunc
-	fields          []string
-	predicates      []predicate.Blob
-	withAttachments *AttachmentQuery
-	withImages      *ImageQuery
+	limit      *int
+	offset     *int
+	unique     *bool
+	order      []OrderFunc
+	fields     []string
+	predicates []predicate.Blob
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,50 +58,6 @@ func (bq *BlobQuery) Unique(unique bool) *BlobQuery {
 func (bq *BlobQuery) Order(o ...OrderFunc) *BlobQuery {
 	bq.order = append(bq.order, o...)
 	return bq
-}
-
-// QueryAttachments chains the current query on the "attachments" edge.
-func (bq *BlobQuery) QueryAttachments() *AttachmentQuery {
-	query := &AttachmentQuery{config: bq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := bq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(blob.Table, blob.FieldID, selector),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, blob.AttachmentsTable, blob.AttachmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryImages chains the current query on the "images" edge.
-func (bq *BlobQuery) QueryImages() *ImageQuery {
-	query := &ImageQuery{config: bq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := bq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := bq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(blob.Table, blob.FieldID, selector),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, blob.ImagesTable, blob.ImagesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first Blob entity from the query.
@@ -285,40 +236,16 @@ func (bq *BlobQuery) Clone() *BlobQuery {
 		return nil
 	}
 	return &BlobQuery{
-		config:          bq.config,
-		limit:           bq.limit,
-		offset:          bq.offset,
-		order:           append([]OrderFunc{}, bq.order...),
-		predicates:      append([]predicate.Blob{}, bq.predicates...),
-		withAttachments: bq.withAttachments.Clone(),
-		withImages:      bq.withImages.Clone(),
+		config:     bq.config,
+		limit:      bq.limit,
+		offset:     bq.offset,
+		order:      append([]OrderFunc{}, bq.order...),
+		predicates: append([]predicate.Blob{}, bq.predicates...),
 		// clone intermediate query.
 		sql:    bq.sql.Clone(),
 		path:   bq.path,
 		unique: bq.unique,
 	}
-}
-
-// WithAttachments tells the query-builder to eager-load the nodes that are connected to
-// the "attachments" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BlobQuery) WithAttachments(opts ...func(*AttachmentQuery)) *BlobQuery {
-	query := &AttachmentQuery{config: bq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	bq.withAttachments = query
-	return bq
-}
-
-// WithImages tells the query-builder to eager-load the nodes that are connected to
-// the "images" edge. The optional arguments are used to configure the query builder of the edge.
-func (bq *BlobQuery) WithImages(opts ...func(*ImageQuery)) *BlobQuery {
-	query := &ImageQuery{config: bq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	bq.withImages = query
-	return bq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -392,12 +319,8 @@ func (bq *BlobQuery) prepareQuery(ctx context.Context) error {
 
 func (bq *BlobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Blob, error) {
 	var (
-		nodes       = []*Blob{}
-		_spec       = bq.querySpec()
-		loadedTypes = [2]bool{
-			bq.withAttachments != nil,
-			bq.withImages != nil,
-		}
+		nodes = []*Blob{}
+		_spec = bq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Blob).scanValues(nil, columns)
@@ -405,7 +328,6 @@ func (bq *BlobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Blob, e
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Blob{config: bq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -417,81 +339,7 @@ func (bq *BlobQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Blob, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := bq.withAttachments; query != nil {
-		if err := bq.loadAttachments(ctx, query, nodes,
-			func(n *Blob) { n.Edges.Attachments = []*Attachment{} },
-			func(n *Blob, e *Attachment) { n.Edges.Attachments = append(n.Edges.Attachments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := bq.withImages; query != nil {
-		if err := bq.loadImages(ctx, query, nodes,
-			func(n *Blob) { n.Edges.Images = []*Image{} },
-			func(n *Blob, e *Image) { n.Edges.Images = append(n.Edges.Images, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (bq *BlobQuery) loadAttachments(ctx context.Context, query *AttachmentQuery, nodes []*Blob, init func(*Blob), assign func(*Blob, *Attachment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Blob)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Attachment(func(s *sql.Selector) {
-		s.Where(sql.InValues(blob.AttachmentsColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.blob_attachments
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "blob_attachments" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "blob_attachments" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (bq *BlobQuery) loadImages(ctx context.Context, query *ImageQuery, nodes []*Blob, init func(*Blob), assign func(*Blob, *Image)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Blob)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.InValues(blob.ImagesColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.BlobId
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "blobId" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
 }
 
 func (bq *BlobQuery) sqlCount(ctx context.Context) (int, error) {

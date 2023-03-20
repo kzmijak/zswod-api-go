@@ -31,6 +31,9 @@ func (CustomPage) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumtext",
 		}),
+		field.Bool("isExternal").Optional(),
+		field.String("link").Optional(),
+		field.String("section"),
 	}
 }
 

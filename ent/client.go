@@ -404,39 +404,7 @@ func (c *AttachmentClient) QueryBlob(a *Attachment) *BlobQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(attachment.Table, attachment.FieldID, id),
 			sqlgraph.To(blob.Table, blob.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.BlobTable, attachment.BlobColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryPage queries the page edge of a Attachment.
-func (c *AttachmentClient) QueryPage(a *Attachment) *CustomPageQuery {
-	query := &CustomPageQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(attachment.Table, attachment.FieldID, id),
-			sqlgraph.To(custompage.Table, custompage.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.PageTable, attachment.PageColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryArticle queries the article edge of a Attachment.
-func (c *AttachmentClient) QueryArticle(a *Attachment) *ArticleQuery {
-	query := &ArticleQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(attachment.Table, attachment.FieldID, id),
-			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.ArticleTable, attachment.ArticleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, attachment.BlobTable, attachment.BlobColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -532,38 +500,6 @@ func (c *BlobClient) GetX(ctx context.Context, id uuid.UUID) *Blob {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryAttachments queries the attachments edge of a Blob.
-func (c *BlobClient) QueryAttachments(b *Blob) *AttachmentQuery {
-	query := &AttachmentQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := b.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(blob.Table, blob.FieldID, id),
-			sqlgraph.To(attachment.Table, attachment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, blob.AttachmentsTable, blob.AttachmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryImages queries the images edge of a Blob.
-func (c *BlobClient) QueryImages(b *Blob) *ImageQuery {
-	query := &ImageQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := b.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(blob.Table, blob.FieldID, id),
-			sqlgraph.To(image.Table, image.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, blob.ImagesTable, blob.ImagesColumn),
-		)
-		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.
@@ -924,7 +860,7 @@ func (c *ImageClient) QueryBlob(i *Image) *BlobQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(image.Table, image.FieldID, id),
 			sqlgraph.To(blob.Table, blob.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, image.BlobTable, image.BlobColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, image.BlobTable, image.BlobColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil

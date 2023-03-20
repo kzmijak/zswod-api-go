@@ -11,26 +11,22 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/attachment"
 	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/ent/custompage"
 	"github.com/kzmijak/zswod_api_go/ent/predicate"
 )
 
 // AttachmentQuery is the builder for querying Attachment entities.
 type AttachmentQuery struct {
 	config
-	limit       *int
-	offset      *int
-	unique      *bool
-	order       []OrderFunc
-	fields      []string
-	predicates  []predicate.Attachment
-	withBlob    *BlobQuery
-	withPage    *CustomPageQuery
-	withArticle *ArticleQuery
-	withFKs     bool
+	limit      *int
+	offset     *int
+	unique     *bool
+	order      []OrderFunc
+	fields     []string
+	predicates []predicate.Attachment
+	withBlob   *BlobQuery
+	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -81,51 +77,7 @@ func (aq *AttachmentQuery) QueryBlob() *BlobQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(attachment.Table, attachment.FieldID, selector),
 			sqlgraph.To(blob.Table, blob.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.BlobTable, attachment.BlobColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryPage chains the current query on the "page" edge.
-func (aq *AttachmentQuery) QueryPage() *CustomPageQuery {
-	query := &CustomPageQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(attachment.Table, attachment.FieldID, selector),
-			sqlgraph.To(custompage.Table, custompage.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.PageTable, attachment.PageColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryArticle chains the current query on the "article" edge.
-func (aq *AttachmentQuery) QueryArticle() *ArticleQuery {
-	query := &ArticleQuery{config: aq.config}
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(attachment.Table, attachment.FieldID, selector),
-			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, attachment.ArticleTable, attachment.ArticleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, attachment.BlobTable, attachment.BlobColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -309,14 +261,12 @@ func (aq *AttachmentQuery) Clone() *AttachmentQuery {
 		return nil
 	}
 	return &AttachmentQuery{
-		config:      aq.config,
-		limit:       aq.limit,
-		offset:      aq.offset,
-		order:       append([]OrderFunc{}, aq.order...),
-		predicates:  append([]predicate.Attachment{}, aq.predicates...),
-		withBlob:    aq.withBlob.Clone(),
-		withPage:    aq.withPage.Clone(),
-		withArticle: aq.withArticle.Clone(),
+		config:     aq.config,
+		limit:      aq.limit,
+		offset:     aq.offset,
+		order:      append([]OrderFunc{}, aq.order...),
+		predicates: append([]predicate.Attachment{}, aq.predicates...),
+		withBlob:   aq.withBlob.Clone(),
 		// clone intermediate query.
 		sql:    aq.sql.Clone(),
 		path:   aq.path,
@@ -332,28 +282,6 @@ func (aq *AttachmentQuery) WithBlob(opts ...func(*BlobQuery)) *AttachmentQuery {
 		opt(query)
 	}
 	aq.withBlob = query
-	return aq
-}
-
-// WithPage tells the query-builder to eager-load the nodes that are connected to
-// the "page" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AttachmentQuery) WithPage(opts ...func(*CustomPageQuery)) *AttachmentQuery {
-	query := &CustomPageQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withPage = query
-	return aq
-}
-
-// WithArticle tells the query-builder to eager-load the nodes that are connected to
-// the "article" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AttachmentQuery) WithArticle(opts ...func(*ArticleQuery)) *AttachmentQuery {
-	query := &ArticleQuery{config: aq.config}
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withArticle = query
 	return aq
 }
 
@@ -431,13 +359,11 @@ func (aq *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 		nodes       = []*Attachment{}
 		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [1]bool{
 			aq.withBlob != nil,
-			aq.withPage != nil,
-			aq.withArticle != nil,
 		}
 	)
-	if aq.withBlob != nil || aq.withPage != nil || aq.withArticle != nil {
+	if aq.withBlob != nil {
 		withFKs = true
 	}
 	if withFKs {
@@ -467,18 +393,6 @@ func (aq *AttachmentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*A
 			return nil, err
 		}
 	}
-	if query := aq.withPage; query != nil {
-		if err := aq.loadPage(ctx, query, nodes, nil,
-			func(n *Attachment, e *CustomPage) { n.Edges.Page = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := aq.withArticle; query != nil {
-		if err := aq.loadArticle(ctx, query, nodes, nil,
-			func(n *Attachment, e *Article) { n.Edges.Article = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
 }
 
@@ -486,10 +400,10 @@ func (aq *AttachmentQuery) loadBlob(ctx context.Context, query *BlobQuery, nodes
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Attachment)
 	for i := range nodes {
-		if nodes[i].blob_attachments == nil {
+		if nodes[i].attachment_blob == nil {
 			continue
 		}
-		fk := *nodes[i].blob_attachments
+		fk := *nodes[i].attachment_blob
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -503,65 +417,7 @@ func (aq *AttachmentQuery) loadBlob(ctx context.Context, query *BlobQuery, nodes
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "blob_attachments" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AttachmentQuery) loadPage(ctx context.Context, query *CustomPageQuery, nodes []*Attachment, init func(*Attachment), assign func(*Attachment, *CustomPage)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Attachment)
-	for i := range nodes {
-		if nodes[i].custom_page_attachments == nil {
-			continue
-		}
-		fk := *nodes[i].custom_page_attachments
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(custompage.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "custom_page_attachments" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (aq *AttachmentQuery) loadArticle(ctx context.Context, query *ArticleQuery, nodes []*Attachment, init func(*Attachment), assign func(*Attachment, *Article)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Attachment)
-	for i := range nodes {
-		if nodes[i].article_attachments == nil {
-			continue
-		}
-		fk := *nodes[i].article_attachments
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	query.Where(article.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "article_attachments" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "attachment_blob" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

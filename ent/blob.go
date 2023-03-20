@@ -27,38 +27,6 @@ type Blob struct {
 	Alt string `json:"alt,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the BlobQuery when eager-loading is set.
-	Edges BlobEdges `json:"edges"`
-}
-
-// BlobEdges holds the relations/edges for other nodes in the graph.
-type BlobEdges struct {
-	// Attachments holds the value of the attachments edge.
-	Attachments []*Attachment `json:"attachments,omitempty"`
-	// Images holds the value of the images edge.
-	Images []*Image `json:"images,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// AttachmentsOrErr returns the Attachments value or an error if the edge
-// was not loaded in eager-loading.
-func (e BlobEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[0] {
-		return e.Attachments, nil
-	}
-	return nil, &NotLoadedError{edge: "attachments"}
-}
-
-// ImagesOrErr returns the Images value or an error if the edge
-// was not loaded in eager-loading.
-func (e BlobEdges) ImagesOrErr() ([]*Image, error) {
-	if e.loadedTypes[1] {
-		return e.Images, nil
-	}
-	return nil, &NotLoadedError{edge: "images"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -128,16 +96,6 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
-}
-
-// QueryAttachments queries the "attachments" edge of the Blob entity.
-func (b *Blob) QueryAttachments() *AttachmentQuery {
-	return (&BlobClient{config: b.config}).QueryAttachments(b)
-}
-
-// QueryImages queries the "images" edge of the Blob entity.
-func (b *Blob) QueryImages() *ImageQuery {
-	return (&BlobClient{config: b.config}).QueryImages(b)
 }
 
 // Update returns a builder for updating this Blob.

@@ -74,6 +74,52 @@ func (cpu *CustomPageUpdate) SetContent(s string) *CustomPageUpdate {
 	return cpu
 }
 
+// SetIsExternal sets the "isExternal" field.
+func (cpu *CustomPageUpdate) SetIsExternal(b bool) *CustomPageUpdate {
+	cpu.mutation.SetIsExternal(b)
+	return cpu
+}
+
+// SetNillableIsExternal sets the "isExternal" field if the given value is not nil.
+func (cpu *CustomPageUpdate) SetNillableIsExternal(b *bool) *CustomPageUpdate {
+	if b != nil {
+		cpu.SetIsExternal(*b)
+	}
+	return cpu
+}
+
+// ClearIsExternal clears the value of the "isExternal" field.
+func (cpu *CustomPageUpdate) ClearIsExternal() *CustomPageUpdate {
+	cpu.mutation.ClearIsExternal()
+	return cpu
+}
+
+// SetLink sets the "link" field.
+func (cpu *CustomPageUpdate) SetLink(s string) *CustomPageUpdate {
+	cpu.mutation.SetLink(s)
+	return cpu
+}
+
+// SetNillableLink sets the "link" field if the given value is not nil.
+func (cpu *CustomPageUpdate) SetNillableLink(s *string) *CustomPageUpdate {
+	if s != nil {
+		cpu.SetLink(*s)
+	}
+	return cpu
+}
+
+// ClearLink clears the value of the "link" field.
+func (cpu *CustomPageUpdate) ClearLink() *CustomPageUpdate {
+	cpu.mutation.ClearLink()
+	return cpu
+}
+
+// SetSection sets the "section" field.
+func (cpu *CustomPageUpdate) SetSection(s string) *CustomPageUpdate {
+	cpu.mutation.SetSection(s)
+	return cpu
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (cpu *CustomPageUpdate) AddAttachmentIDs(ids ...uuid.UUID) *CustomPageUpdate {
 	cpu.mutation.AddAttachmentIDs(ids...)
@@ -230,6 +276,21 @@ func (cpu *CustomPageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cpu.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)
 	}
+	if value, ok := cpu.mutation.IsExternal(); ok {
+		_spec.SetField(custompage.FieldIsExternal, field.TypeBool, value)
+	}
+	if cpu.mutation.IsExternalCleared() {
+		_spec.ClearField(custompage.FieldIsExternal, field.TypeBool)
+	}
+	if value, ok := cpu.mutation.Link(); ok {
+		_spec.SetField(custompage.FieldLink, field.TypeString, value)
+	}
+	if cpu.mutation.LinkCleared() {
+		_spec.ClearField(custompage.FieldLink, field.TypeString)
+	}
+	if value, ok := cpu.mutation.Section(); ok {
+		_spec.SetField(custompage.FieldSection, field.TypeString, value)
+	}
 	if cpu.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -344,6 +405,52 @@ func (cpuo *CustomPageUpdateOne) SetTitleNormalized(s string) *CustomPageUpdateO
 // SetContent sets the "content" field.
 func (cpuo *CustomPageUpdateOne) SetContent(s string) *CustomPageUpdateOne {
 	cpuo.mutation.SetContent(s)
+	return cpuo
+}
+
+// SetIsExternal sets the "isExternal" field.
+func (cpuo *CustomPageUpdateOne) SetIsExternal(b bool) *CustomPageUpdateOne {
+	cpuo.mutation.SetIsExternal(b)
+	return cpuo
+}
+
+// SetNillableIsExternal sets the "isExternal" field if the given value is not nil.
+func (cpuo *CustomPageUpdateOne) SetNillableIsExternal(b *bool) *CustomPageUpdateOne {
+	if b != nil {
+		cpuo.SetIsExternal(*b)
+	}
+	return cpuo
+}
+
+// ClearIsExternal clears the value of the "isExternal" field.
+func (cpuo *CustomPageUpdateOne) ClearIsExternal() *CustomPageUpdateOne {
+	cpuo.mutation.ClearIsExternal()
+	return cpuo
+}
+
+// SetLink sets the "link" field.
+func (cpuo *CustomPageUpdateOne) SetLink(s string) *CustomPageUpdateOne {
+	cpuo.mutation.SetLink(s)
+	return cpuo
+}
+
+// SetNillableLink sets the "link" field if the given value is not nil.
+func (cpuo *CustomPageUpdateOne) SetNillableLink(s *string) *CustomPageUpdateOne {
+	if s != nil {
+		cpuo.SetLink(*s)
+	}
+	return cpuo
+}
+
+// ClearLink clears the value of the "link" field.
+func (cpuo *CustomPageUpdateOne) ClearLink() *CustomPageUpdateOne {
+	cpuo.mutation.ClearLink()
+	return cpuo
+}
+
+// SetSection sets the "section" field.
+func (cpuo *CustomPageUpdateOne) SetSection(s string) *CustomPageUpdateOne {
+	cpuo.mutation.SetSection(s)
 	return cpuo
 }
 
@@ -532,6 +639,21 @@ func (cpuo *CustomPageUpdateOne) sqlSave(ctx context.Context) (_node *CustomPage
 	}
 	if value, ok := cpuo.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)
+	}
+	if value, ok := cpuo.mutation.IsExternal(); ok {
+		_spec.SetField(custompage.FieldIsExternal, field.TypeBool, value)
+	}
+	if cpuo.mutation.IsExternalCleared() {
+		_spec.ClearField(custompage.FieldIsExternal, field.TypeBool)
+	}
+	if value, ok := cpuo.mutation.Link(); ok {
+		_spec.SetField(custompage.FieldLink, field.TypeString, value)
+	}
+	if cpuo.mutation.LinkCleared() {
+		_spec.ClearField(custompage.FieldLink, field.TypeString)
+	}
+	if value, ok := cpuo.mutation.Section(); ok {
+		_spec.SetField(custompage.FieldSection, field.TypeString, value)
 	}
 	if cpuo.mutation.AttachmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -31,7 +31,7 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "article_attachments", Type: field.TypeUUID, Nullable: true},
-		{Name: "blob_attachments", Type: field.TypeUUID},
+		{Name: "attachment_blob", Type: field.TypeUUID},
 		{Name: "custom_page_attachments", Type: field.TypeUUID, Nullable: true},
 	}
 	// AttachmentsTable holds the schema information for the "attachments" table.
@@ -47,7 +47,7 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "attachments_blobs_attachments",
+				Symbol:     "attachments_blobs_blob",
 				Columns:    []*schema.Column{AttachmentsColumns[5]},
 				RefColumns: []*schema.Column{BlobsColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -83,6 +83,9 @@ var (
 		{Name: "title", Type: field.TypeString, Size: 200},
 		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
+		{Name: "is_external", Type: field.TypeBool, Nullable: true},
+		{Name: "link", Type: field.TypeString, Nullable: true},
+		{Name: "section", Type: field.TypeString},
 	}
 	// CustomPagesTable holds the schema information for the "custom_pages" table.
 	CustomPagesTable = &schema.Table{
@@ -125,8 +128,8 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "alt", Type: field.TypeString, Nullable: true},
 		{Name: "order", Type: field.TypeInt, Nullable: true},
-		{Name: "blob_id", Type: field.TypeUUID},
 		{Name: "gallery_images", Type: field.TypeUUID, Nullable: true},
+		{Name: "blob_id", Type: field.TypeUUID},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -135,16 +138,16 @@ var (
 		PrimaryKey: []*schema.Column{ImagesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "images_blobs_images",
-				Columns:    []*schema.Column{ImagesColumns[4]},
-				RefColumns: []*schema.Column{BlobsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
 				Symbol:     "images_galleries_images",
-				Columns:    []*schema.Column{ImagesColumns[5]},
+				Columns:    []*schema.Column{ImagesColumns[4]},
 				RefColumns: []*schema.Column{GalleriesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "images_blobs_blob",
+				Columns:    []*schema.Column{ImagesColumns[5]},
+				RefColumns: []*schema.Column{BlobsColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -237,8 +240,8 @@ func init() {
 	AttachmentsTable.ForeignKeys[2].RefTable = CustomPagesTable
 	GalleriesTable.ForeignKeys[0].RefTable = ArticlesTable
 	GalleriesTable.ForeignKeys[1].RefTable = UsersTable
-	ImagesTable.ForeignKeys[0].RefTable = BlobsTable
-	ImagesTable.ForeignKeys[1].RefTable = GalleriesTable
+	ImagesTable.ForeignKeys[0].RefTable = GalleriesTable
+	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = ImagesTable
 	UserArticlesTable.ForeignKeys[0].RefTable = UsersTable

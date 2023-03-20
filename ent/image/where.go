@@ -435,7 +435,7 @@ func HasBlob() predicate.Image {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BlobTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -447,7 +447,7 @@ func HasBlobWith(preds ...predicate.Blob) predicate.Image {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(BlobInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, BlobTable, BlobColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

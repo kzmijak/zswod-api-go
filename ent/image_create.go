@@ -289,7 +289,7 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   image.BlobTable,
 			Columns: []string{image.BlobColumn},
 			Bidi:    false,

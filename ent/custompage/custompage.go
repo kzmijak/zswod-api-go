@@ -23,6 +23,12 @@ const (
 	FieldTitleNormalized = "title_normalized"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// FieldIsExternal holds the string denoting the isexternal field in the database.
+	FieldIsExternal = "is_external"
+	// FieldLink holds the string denoting the link field in the database.
+	FieldLink = "link"
+	// FieldSection holds the string denoting the section field in the database.
+	FieldSection = "section"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
 	// Table holds the table name of the custompage in the database.
@@ -44,6 +50,9 @@ var Columns = []string{
 	FieldTitle,
 	FieldTitleNormalized,
 	FieldContent,
+	FieldIsExternal,
+	FieldLink,
+	FieldSection,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

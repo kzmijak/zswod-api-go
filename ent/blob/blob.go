@@ -23,26 +23,8 @@ const (
 	FieldAlt = "alt"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
-	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
-	EdgeAttachments = "attachments"
-	// EdgeImages holds the string denoting the images edge name in mutations.
-	EdgeImages = "images"
 	// Table holds the table name of the blob in the database.
 	Table = "blobs"
-	// AttachmentsTable is the table that holds the attachments relation/edge.
-	AttachmentsTable = "attachments"
-	// AttachmentsInverseTable is the table name for the Attachment entity.
-	// It exists in this package in order to avoid circular dependency with the "attachment" package.
-	AttachmentsInverseTable = "attachments"
-	// AttachmentsColumn is the table column denoting the attachments relation/edge.
-	AttachmentsColumn = "blob_attachments"
-	// ImagesTable is the table that holds the images relation/edge.
-	ImagesTable = "images"
-	// ImagesInverseTable is the table name for the Image entity.
-	// It exists in this package in order to avoid circular dependency with the "image" package.
-	ImagesInverseTable = "images"
-	// ImagesColumn is the table column denoting the images relation/edge.
-	ImagesColumn = "blob_id"
 )
 
 // Columns holds all SQL columns for blob fields.
