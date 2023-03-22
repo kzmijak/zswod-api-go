@@ -33,7 +33,7 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.To("galleries", Gallery.Type),
-		edge.To("articles", Article.Type),
+		edge.To("articles", Article.Type).Unique(),
 		edge.To("avatar", Image.Type).Unique(),
 		edge.To("resetPasswordTokens", ResetPasswordToken.Type),
 	}

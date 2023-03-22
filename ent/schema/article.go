@@ -38,7 +38,7 @@ func (Article) Fields() []ent.Field {
 func (Article) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("gallery", Gallery.Type).Required().Unique(),
-		edge.From("author", User.Type).Ref("articles").Required(),
+		edge.From("author", User.Type).Ref("articles").Required().Unique(),
 		edge.To("attachments", Attachment.Type),
 	}
 }

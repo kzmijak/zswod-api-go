@@ -219,9 +219,6 @@ func (gc *GalleryCreate) check() error {
 	if _, ok := gc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Gallery.title"`)}
 	}
-	if len(gc.mutation.ImagesIDs()) == 0 {
-		return &ValidationError{Name: "images", err: errors.New(`ent: missing required edge "Gallery.images"`)}
-	}
 	if _, ok := gc.mutation.AuthorID(); !ok {
 		return &ValidationError{Name: "author", err: errors.New(`ent: missing required edge "Gallery.author"`)}
 	}

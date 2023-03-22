@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
+	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
 // Article is the model entity for the Article schema.
@@ -32,7 +33,8 @@ type Article struct {
 	Content string `json:"content,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
-	Edges ArticleEdges `json:"edges"`
+	Edges         ArticleEdges `json:"edges"`
+	user_articles *uuid.UUID
 }
 
 // ArticleEdges holds the relations/edges for other nodes in the graph.
@@ -40,7 +42,7 @@ type ArticleEdges struct {
 	// Gallery holds the value of the gallery edge.
 	Gallery *Gallery `json:"gallery,omitempty"`
 	// Author holds the value of the author edge.
-	Author []*User `json:"author,omitempty"`
+	Author *User `json:"author,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -62,9 +64,13 @@ func (e ArticleEdges) GalleryOrErr() (*Gallery, error) {
 }
 
 // AuthorOrErr returns the Author value or an error if the edge
-// was not loaded in eager-loading.
-func (e ArticleEdges) AuthorOrErr() ([]*User, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ArticleEdges) AuthorOrErr() (*User, error) {
 	if e.loadedTypes[1] {
+		if e.Author == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: user.Label}
+		}
 		return e.Author, nil
 	}
 	return nil, &NotLoadedError{edge: "author"}
@@ -90,6 +96,8 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case article.FieldID:
 			values[i] = new(uuid.UUID)
+		case article.ForeignKeys[0]: // user_articles
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Article", columns[i])
 		}
@@ -146,6 +154,13 @@ func (a *Article) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
 				a.Content = value.String
+			}
+		case article.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field user_articles", values[i])
+			} else if value.Valid {
+				a.user_articles = new(uuid.UUID)
+				*a.user_articles = *value.S.(*uuid.UUID)
 			}
 		}
 	}

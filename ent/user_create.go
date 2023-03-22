@@ -99,19 +99,23 @@ func (uc *UserCreate) AddGalleries(g ...*Gallery) *UserCreate {
 	return uc.AddGalleryIDs(ids...)
 }
 
-// AddArticleIDs adds the "articles" edge to the Article entity by IDs.
-func (uc *UserCreate) AddArticleIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddArticleIDs(ids...)
+// SetArticlesID sets the "articles" edge to the Article entity by ID.
+func (uc *UserCreate) SetArticlesID(id uuid.UUID) *UserCreate {
+	uc.mutation.SetArticlesID(id)
 	return uc
 }
 
-// AddArticles adds the "articles" edges to the Article entity.
-func (uc *UserCreate) AddArticles(a ...*Article) *UserCreate {
-	ids := make([]uuid.UUID, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
+// SetNillableArticlesID sets the "articles" edge to the Article entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableArticlesID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		uc = uc.SetArticlesID(*id)
 	}
-	return uc.AddArticleIDs(ids...)
+	return uc
+}
+
+// SetArticles sets the "articles" edge to the Article entity.
+func (uc *UserCreate) SetArticles(a *Article) *UserCreate {
+	return uc.SetArticlesID(a.ID)
 }
 
 // SetAvatarID sets the "avatar" edge to the Image entity by ID.
@@ -324,10 +328,10 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	}
 	if nodes := uc.mutation.ArticlesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   user.ArticlesTable,
-			Columns: user.ArticlesPrimaryKey,
+			Columns: []string{user.ArticlesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

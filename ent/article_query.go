@@ -31,6 +31,7 @@ type ArticleQuery struct {
 	withGallery     *GalleryQuery
 	withAuthor      *UserQuery
 	withAttachments *AttachmentQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -103,7 +104,7 @@ func (aq *ArticleQuery) QueryAuthor() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(article.Table, article.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, article.AuthorTable, article.AuthorPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2O, true, article.AuthorTable, article.AuthorColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -429,6 +430,7 @@ func (aq *ArticleQuery) prepareQuery(ctx context.Context) error {
 func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Article, error) {
 	var (
 		nodes       = []*Article{}
+		withFKs     = aq.withFKs
 		_spec       = aq.querySpec()
 		loadedTypes = [3]bool{
 			aq.withGallery != nil,
@@ -436,6 +438,12 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 			aq.withAttachments != nil,
 		}
 	)
+	if aq.withAuthor != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, article.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Article).scanValues(nil, columns)
 	}
@@ -461,9 +469,8 @@ func (aq *ArticleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Arti
 		}
 	}
 	if query := aq.withAuthor; query != nil {
-		if err := aq.loadAuthor(ctx, query, nodes,
-			func(n *Article) { n.Edges.Author = []*User{} },
-			func(n *Article, e *User) { n.Edges.Author = append(n.Edges.Author, e) }); err != nil {
+		if err := aq.loadAuthor(ctx, query, nodes, nil,
+			func(n *Article, e *User) { n.Edges.Author = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -506,59 +513,30 @@ func (aq *ArticleQuery) loadGallery(ctx context.Context, query *GalleryQuery, no
 	return nil
 }
 func (aq *ArticleQuery) loadAuthor(ctx context.Context, query *UserQuery, nodes []*Article, init func(*Article), assign func(*Article, *User)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Article)
-	nids := make(map[uuid.UUID]map[*Article]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Article)
+	for i := range nodes {
+		if nodes[i].user_articles == nil {
+			continue
 		}
+		fk := *nodes[i].user_articles
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(article.AuthorTable)
-		s.Join(joinT).On(s.C(user.FieldID), joinT.C(article.AuthorPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(article.AuthorPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(article.AuthorPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
-			}
-			return append([]any{new(uuid.UUID)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := *values[0].(*uuid.UUID)
-			inValue := *values[1].(*uuid.UUID)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Article]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
-			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
-	})
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "author" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_articles" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil

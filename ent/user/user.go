@@ -40,11 +40,13 @@ const (
 	GalleriesInverseTable = "galleries"
 	// GalleriesColumn is the table column denoting the galleries relation/edge.
 	GalleriesColumn = "user_galleries"
-	// ArticlesTable is the table that holds the articles relation/edge. The primary key declared below.
-	ArticlesTable = "user_articles"
+	// ArticlesTable is the table that holds the articles relation/edge.
+	ArticlesTable = "articles"
 	// ArticlesInverseTable is the table name for the Article entity.
 	// It exists in this package in order to avoid circular dependency with the "article" package.
 	ArticlesInverseTable = "articles"
+	// ArticlesColumn is the table column denoting the articles relation/edge.
+	ArticlesColumn = "user_articles"
 	// AvatarTable is the table that holds the avatar relation/edge.
 	AvatarTable = "users"
 	// AvatarInverseTable is the table name for the Image entity.
@@ -76,12 +78,6 @@ var Columns = []string{
 var ForeignKeys = []string{
 	"user_avatar",
 }
-
-var (
-	// ArticlesPrimaryKey and ArticlesColumn2 are the table columns denoting the
-	// primary key for the articles relation (M2M).
-	ArticlesPrimaryKey = []string{"user_id", "article_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

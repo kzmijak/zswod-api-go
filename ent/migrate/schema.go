@@ -17,12 +17,21 @@ var (
 		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "short", Type: field.TypeString, Size: 300},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
+		{Name: "user_articles", Type: field.TypeUUID, Unique: true},
 	}
 	// ArticlesTable holds the schema information for the "articles" table.
 	ArticlesTable = &schema.Table{
 		Name:       "articles",
 		Columns:    ArticlesColumns,
 		PrimaryKey: []*schema.Column{ArticlesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "articles_users_articles",
+				Columns:    []*schema.Column{ArticlesColumns[7]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// AttachmentsColumns holds the columns for the "attachments" table.
 	AttachmentsColumns = []*schema.Column{
@@ -196,31 +205,6 @@ var (
 			},
 		},
 	}
-	// UserArticlesColumns holds the columns for the "user_articles" table.
-	UserArticlesColumns = []*schema.Column{
-		{Name: "user_id", Type: field.TypeUUID},
-		{Name: "article_id", Type: field.TypeUUID},
-	}
-	// UserArticlesTable holds the schema information for the "user_articles" table.
-	UserArticlesTable = &schema.Table{
-		Name:       "user_articles",
-		Columns:    UserArticlesColumns,
-		PrimaryKey: []*schema.Column{UserArticlesColumns[0], UserArticlesColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "user_articles_user_id",
-				Columns:    []*schema.Column{UserArticlesColumns[0]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "user_articles_article_id",
-				Columns:    []*schema.Column{UserArticlesColumns[1]},
-				RefColumns: []*schema.Column{ArticlesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ArticlesTable,
@@ -231,11 +215,11 @@ var (
 		ImagesTable,
 		ResetPasswordTokensTable,
 		UsersTable,
-		UserArticlesTable,
 	}
 )
 
 func init() {
+	ArticlesTable.ForeignKeys[0].RefTable = UsersTable
 	AttachmentsTable.ForeignKeys[0].RefTable = ArticlesTable
 	AttachmentsTable.ForeignKeys[1].RefTable = BlobsTable
 	AttachmentsTable.ForeignKeys[2].RefTable = CustomPagesTable
@@ -245,6 +229,4 @@ func init() {
 	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = ImagesTable
-	UserArticlesTable.ForeignKeys[0].RefTable = UsersTable
-	UserArticlesTable.ForeignKeys[1].RefTable = ArticlesTable
 }

@@ -4,18 +4,18 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s JwtService) ExtractTokenID(tokenString string) (*uuid.UUID, error) {
+func (s JwtService) ExtractTokenID(tokenString string) (uuid.UUID, error) {
 	uuidString, err := s.extractClaim(CLAIM_GUID, tokenString)
 	
 	if err != nil {
-		return nil, err
+		return uuid.Nil, err
 	}
 
-	uuid, err := uuid.Parse(uuidString)
+	uuidParsed, err := uuid.Parse(uuidString)
 
 	if err != nil {
-		return nil, err
+		return uuid.Nil, err
 	}
 
-	return &uuid, nil
+	return uuidParsed, nil
 }

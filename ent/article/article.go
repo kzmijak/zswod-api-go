@@ -40,11 +40,13 @@ const (
 	GalleryInverseTable = "galleries"
 	// GalleryColumn is the table column denoting the gallery relation/edge.
 	GalleryColumn = "article_gallery"
-	// AuthorTable is the table that holds the author relation/edge. The primary key declared below.
-	AuthorTable = "user_articles"
+	// AuthorTable is the table that holds the author relation/edge.
+	AuthorTable = "articles"
 	// AuthorInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	AuthorInverseTable = "users"
+	// AuthorColumn is the table column denoting the author relation/edge.
+	AuthorColumn = "user_articles"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
 	AttachmentsTable = "attachments"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
@@ -65,16 +67,21 @@ var Columns = []string{
 	FieldContent,
 }
 
-var (
-	// AuthorPrimaryKey and AuthorColumn2 are the table columns denoting the
-	// primary key for the author relation (M2M).
-	AuthorPrimaryKey = []string{"user_id", "article_id"}
-)
+// ForeignKeys holds the SQL foreign-keys that are owned by the "articles"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"user_articles",
+}
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}

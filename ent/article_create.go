@@ -101,19 +101,15 @@ func (ac *ArticleCreate) SetGallery(g *Gallery) *ArticleCreate {
 	return ac.SetGalleryID(g.ID)
 }
 
-// AddAuthorIDs adds the "author" edge to the User entity by IDs.
-func (ac *ArticleCreate) AddAuthorIDs(ids ...uuid.UUID) *ArticleCreate {
-	ac.mutation.AddAuthorIDs(ids...)
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (ac *ArticleCreate) SetAuthorID(id uuid.UUID) *ArticleCreate {
+	ac.mutation.SetAuthorID(id)
 	return ac
 }
 
-// AddAuthor adds the "author" edges to the User entity.
-func (ac *ArticleCreate) AddAuthor(u ...*User) *ArticleCreate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return ac.AddAuthorIDs(ids...)
+// SetAuthor sets the "author" edge to the User entity.
+func (ac *ArticleCreate) SetAuthor(u *User) *ArticleCreate {
+	return ac.SetAuthorID(u.ID)
 }
 
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
@@ -255,7 +251,7 @@ func (ac *ArticleCreate) check() error {
 	if _, ok := ac.mutation.GalleryID(); !ok {
 		return &ValidationError{Name: "gallery", err: errors.New(`ent: missing required edge "Article.gallery"`)}
 	}
-	if len(ac.mutation.AuthorIDs()) == 0 {
+	if _, ok := ac.mutation.AuthorID(); !ok {
 		return &ValidationError{Name: "author", err: errors.New(`ent: missing required edge "Article.author"`)}
 	}
 	return nil
@@ -339,10 +335,10 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 	}
 	if nodes := ac.mutation.AuthorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
+			Columns: []string{article.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -354,6 +350,7 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.user_articles = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.AttachmentsIDs(); len(nodes) > 0 {

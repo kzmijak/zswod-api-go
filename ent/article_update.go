@@ -73,19 +73,15 @@ func (au *ArticleUpdate) SetGallery(g *Gallery) *ArticleUpdate {
 	return au.SetGalleryID(g.ID)
 }
 
-// AddAuthorIDs adds the "author" edge to the User entity by IDs.
-func (au *ArticleUpdate) AddAuthorIDs(ids ...uuid.UUID) *ArticleUpdate {
-	au.mutation.AddAuthorIDs(ids...)
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (au *ArticleUpdate) SetAuthorID(id uuid.UUID) *ArticleUpdate {
+	au.mutation.SetAuthorID(id)
 	return au
 }
 
-// AddAuthor adds the "author" edges to the User entity.
-func (au *ArticleUpdate) AddAuthor(u ...*User) *ArticleUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return au.AddAuthorIDs(ids...)
+// SetAuthor sets the "author" edge to the User entity.
+func (au *ArticleUpdate) SetAuthor(u *User) *ArticleUpdate {
+	return au.SetAuthorID(u.ID)
 }
 
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
@@ -114,25 +110,10 @@ func (au *ArticleUpdate) ClearGallery() *ArticleUpdate {
 	return au
 }
 
-// ClearAuthor clears all "author" edges to the User entity.
+// ClearAuthor clears the "author" edge to the User entity.
 func (au *ArticleUpdate) ClearAuthor() *ArticleUpdate {
 	au.mutation.ClearAuthor()
 	return au
-}
-
-// RemoveAuthorIDs removes the "author" edge to User entities by IDs.
-func (au *ArticleUpdate) RemoveAuthorIDs(ids ...uuid.UUID) *ArticleUpdate {
-	au.mutation.RemoveAuthorIDs(ids...)
-	return au
-}
-
-// RemoveAuthor removes "author" edges to User entities.
-func (au *ArticleUpdate) RemoveAuthor(u ...*User) *ArticleUpdate {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return au.RemoveAuthorIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -240,6 +221,9 @@ func (au *ArticleUpdate) check() error {
 	if _, ok := au.mutation.GalleryID(); au.mutation.GalleryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
+	if _, ok := au.mutation.AuthorID(); au.mutation.AuthorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Article.author"`)
+	}
 	return nil
 }
 
@@ -313,10 +297,10 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if au.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
+			Columns: []string{article.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -324,34 +308,15 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: user.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := au.mutation.RemovedAuthorIDs(); len(nodes) > 0 && !au.mutation.AuthorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := au.mutation.AuthorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
+			Columns: []string{article.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -479,19 +444,15 @@ func (auo *ArticleUpdateOne) SetGallery(g *Gallery) *ArticleUpdateOne {
 	return auo.SetGalleryID(g.ID)
 }
 
-// AddAuthorIDs adds the "author" edge to the User entity by IDs.
-func (auo *ArticleUpdateOne) AddAuthorIDs(ids ...uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.AddAuthorIDs(ids...)
+// SetAuthorID sets the "author" edge to the User entity by ID.
+func (auo *ArticleUpdateOne) SetAuthorID(id uuid.UUID) *ArticleUpdateOne {
+	auo.mutation.SetAuthorID(id)
 	return auo
 }
 
-// AddAuthor adds the "author" edges to the User entity.
-func (auo *ArticleUpdateOne) AddAuthor(u ...*User) *ArticleUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return auo.AddAuthorIDs(ids...)
+// SetAuthor sets the "author" edge to the User entity.
+func (auo *ArticleUpdateOne) SetAuthor(u *User) *ArticleUpdateOne {
+	return auo.SetAuthorID(u.ID)
 }
 
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
@@ -520,25 +481,10 @@ func (auo *ArticleUpdateOne) ClearGallery() *ArticleUpdateOne {
 	return auo
 }
 
-// ClearAuthor clears all "author" edges to the User entity.
+// ClearAuthor clears the "author" edge to the User entity.
 func (auo *ArticleUpdateOne) ClearAuthor() *ArticleUpdateOne {
 	auo.mutation.ClearAuthor()
 	return auo
-}
-
-// RemoveAuthorIDs removes the "author" edge to User entities by IDs.
-func (auo *ArticleUpdateOne) RemoveAuthorIDs(ids ...uuid.UUID) *ArticleUpdateOne {
-	auo.mutation.RemoveAuthorIDs(ids...)
-	return auo
-}
-
-// RemoveAuthor removes "author" edges to User entities.
-func (auo *ArticleUpdateOne) RemoveAuthor(u ...*User) *ArticleUpdateOne {
-	ids := make([]uuid.UUID, len(u))
-	for i := range u {
-		ids[i] = u[i].ID
-	}
-	return auo.RemoveAuthorIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -659,6 +605,9 @@ func (auo *ArticleUpdateOne) check() error {
 	if _, ok := auo.mutation.GalleryID(); auo.mutation.GalleryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
+	if _, ok := auo.mutation.AuthorID(); auo.mutation.AuthorCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Article.author"`)
+	}
 	return nil
 }
 
@@ -749,10 +698,10 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	}
 	if auo.mutation.AuthorCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
+			Columns: []string{article.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -760,34 +709,15 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 					Column: user.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := auo.mutation.RemovedAuthorIDs(); len(nodes) > 0 && !auo.mutation.AuthorCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: user.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := auo.mutation.AuthorIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   article.AuthorTable,
-			Columns: article.AuthorPrimaryKey,
+			Columns: []string{article.AuthorColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

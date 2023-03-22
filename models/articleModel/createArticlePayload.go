@@ -8,6 +8,7 @@ type CreateArticlePayload struct {
 	Short     string    `json:"short"`
 	Content   string    `json:"content"`
 	GalleryId uuid.UUID `json:"galleryId"`
+	AuthorId uuid.UUID `json:"authorId"`
 }
 
 func NewCreateArticlePayload () CreateArticlePayload {
@@ -36,5 +37,10 @@ func (model CreateArticlePayload) WithContent(content string) CreateArticlePaylo
 
 func (model CreateArticlePayload) WithGalleryId(galleryId uuid.UUID) CreateArticlePayload {
 	model.GalleryId = galleryId
+	return model
+} 
+
+func (model CreateArticlePayload) WithAuthorId(authorId uuid.UUID) CreateArticlePayload {
+	model.AuthorId = authorId
 	return model
 } 

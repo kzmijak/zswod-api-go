@@ -28,6 +28,7 @@ func (s ArticleService) CreateArticle(req articleModel.CreateArticlePayload, tx 
 		SetTitleNormalized(titleSanitized).
 		SetShort(req.Short).
 		SetContent(req.Content).
+		SetAuthorID(req.AuthorId).
 		SetGalleryID(req.GalleryId).
 		Exec(s.ctx)
 

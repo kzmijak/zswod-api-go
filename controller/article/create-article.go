@@ -9,6 +9,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/models/articleModel"
+	"github.com/kzmijak/zswod_api_go/models/galleryModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/image"
 )
@@ -24,6 +25,7 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleRequest
 	var err error
 	defer utils.HandleError(&err, ctx)
+	token := utils.ExtractToken(ctx)
 
 	tx, _ := database.Client.Tx(c.Ctx)
 	defer tx.Rollback()
@@ -32,12 +34,18 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 		return
 	}
 
+	authorId, err := c.JwtService.ExtractTokenID(token)
+	if err != nil {
+		return
+	}
+
 	createArticlePayload := articleModel.NewCreateArticlePayload().
 		WithTitle(requestBody.Title).
 		WithShort(requestBody.Short).
-		WithContent(requestBody.Content)
+		WithContent(requestBody.Content).
+		WithAuthorId(authorId)
 
-	galleryId, err := c.createGallery(requestBody.Title, tx)
+	galleryId, err := c.createGallery(requestBody.Title, authorId, tx)
 	if err != nil {
 		return
 	}
@@ -57,9 +65,14 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, articleId)
 }
 
-func (c ArticleController) createGallery(title string, tx *ent.Tx) (uuid.UUID, error) {
-	galleryName := fmt.Sprintf("Galeria artykułu \"%v\"", title)
-	galleryEntity, err := c.GalleryService.CreateGallery(galleryName, tx)
+func (c ArticleController) createGallery(title string, authorId uuid.UUID, tx *ent.Tx) (uuid.UUID, error) {
+	galleryName := fmt.Sprintf(`Galeria artykułu "%v"`, title)
+
+	payload := galleryModel.NewCreateGalleryPayload().
+		WithAuthorId(authorId).
+		WithTitle(galleryName)
+
+	galleryEntity, err := c.GalleryService.CreateGallery(payload, tx)
 	if err != nil {
 		return uuid.Nil, err
 	}
