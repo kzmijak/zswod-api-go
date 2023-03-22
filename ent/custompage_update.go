@@ -56,6 +56,19 @@ func (cpu *CustomPageUpdate) SetUpdateTime(t time.Time) *CustomPageUpdate {
 	return cpu
 }
 
+// SetOrder sets the "order" field.
+func (cpu *CustomPageUpdate) SetOrder(i int) *CustomPageUpdate {
+	cpu.mutation.ResetOrder()
+	cpu.mutation.SetOrder(i)
+	return cpu
+}
+
+// AddOrder adds i to the "order" field.
+func (cpu *CustomPageUpdate) AddOrder(i int) *CustomPageUpdate {
+	cpu.mutation.AddOrder(i)
+	return cpu
+}
+
 // SetTitle sets the "title" field.
 func (cpu *CustomPageUpdate) SetTitle(s string) *CustomPageUpdate {
 	cpu.mutation.SetTitle(s)
@@ -267,6 +280,12 @@ func (cpu *CustomPageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cpu.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
 	}
+	if value, ok := cpu.mutation.Order(); ok {
+		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := cpu.mutation.AddedOrder(); ok {
+		_spec.AddField(custompage.FieldOrder, field.TypeInt, value)
+	}
 	if value, ok := cpu.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)
 	}
@@ -387,6 +406,19 @@ func (cpuo *CustomPageUpdateOne) ClearIconId() *CustomPageUpdateOne {
 // SetUpdateTime sets the "update_time" field.
 func (cpuo *CustomPageUpdateOne) SetUpdateTime(t time.Time) *CustomPageUpdateOne {
 	cpuo.mutation.SetUpdateTime(t)
+	return cpuo
+}
+
+// SetOrder sets the "order" field.
+func (cpuo *CustomPageUpdateOne) SetOrder(i int) *CustomPageUpdateOne {
+	cpuo.mutation.ResetOrder()
+	cpuo.mutation.SetOrder(i)
+	return cpuo
+}
+
+// AddOrder adds i to the "order" field.
+func (cpuo *CustomPageUpdateOne) AddOrder(i int) *CustomPageUpdateOne {
+	cpuo.mutation.AddOrder(i)
 	return cpuo
 }
 
@@ -630,6 +662,12 @@ func (cpuo *CustomPageUpdateOne) sqlSave(ctx context.Context) (_node *CustomPage
 	}
 	if value, ok := cpuo.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
+	}
+	if value, ok := cpuo.mutation.Order(); ok {
+		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
+	}
+	if value, ok := cpuo.mutation.AddedOrder(); ok {
+		_spec.AddField(custompage.FieldOrder, field.TypeInt, value)
 	}
 	if value, ok := cpuo.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)

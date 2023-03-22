@@ -22,9 +22,12 @@ func (CustomPage) Mixin() []ent.Mixin {
 	}
 }
 
+var incrementalEnabled = true
+
 // Fields of the CustomPage.
 func (CustomPage) Fields() []ent.Field {
 	return []ent.Field{
+		field.Int("order"),
 		field.String("title").MinLen(6).MaxLen(200),
 		field.String("titleNormalized").Unique(),
 		field.String("content").

@@ -115,7 +115,7 @@ func init() {
 	// custompage.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	custompage.UpdateDefaultUpdateTime = custompageDescUpdateTime.UpdateDefault.(func() time.Time)
 	// custompageDescTitle is the schema descriptor for title field.
-	custompageDescTitle := custompageFields[0].Descriptor()
+	custompageDescTitle := custompageFields[1].Descriptor()
 	// custompage.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	custompage.TitleValidator = func() func(string) error {
 		validators := custompageDescTitle.Validators

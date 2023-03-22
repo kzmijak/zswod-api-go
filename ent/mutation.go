@@ -1938,6 +1938,8 @@ type CustomPageMutation struct {
 	id                 *uuid.UUID
 	iconId             *string
 	update_time        *time.Time
+	_order             *int
+	add_order          *int
 	title              *string
 	titleNormalized    *string
 	content            *string
@@ -2140,6 +2142,62 @@ func (m *CustomPageMutation) OldUpdateTime(ctx context.Context) (v time.Time, er
 // ResetUpdateTime resets all changes to the "update_time" field.
 func (m *CustomPageMutation) ResetUpdateTime() {
 	m.update_time = nil
+}
+
+// SetOrder sets the "order" field.
+func (m *CustomPageMutation) SetOrder(i int) {
+	m._order = &i
+	m.add_order = nil
+}
+
+// Order returns the value of the "order" field in the mutation.
+func (m *CustomPageMutation) Order() (r int, exists bool) {
+	v := m._order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOrder returns the old "order" field's value of the CustomPage entity.
+// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomPageMutation) OldOrder(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOrder requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
+	}
+	return oldValue.Order, nil
+}
+
+// AddOrder adds i to the "order" field.
+func (m *CustomPageMutation) AddOrder(i int) {
+	if m.add_order != nil {
+		*m.add_order += i
+	} else {
+		m.add_order = &i
+	}
+}
+
+// AddedOrder returns the value that was added to the "order" field in this mutation.
+func (m *CustomPageMutation) AddedOrder() (r int, exists bool) {
+	v := m.add_order
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetOrder resets all changes to the "order" field.
+func (m *CustomPageMutation) ResetOrder() {
+	m._order = nil
+	m.add_order = nil
 }
 
 // SetTitle sets the "title" field.
@@ -2457,12 +2515,15 @@ func (m *CustomPageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CustomPageMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.iconId != nil {
 		fields = append(fields, custompage.FieldIconId)
 	}
 	if m.update_time != nil {
 		fields = append(fields, custompage.FieldUpdateTime)
+	}
+	if m._order != nil {
+		fields = append(fields, custompage.FieldOrder)
 	}
 	if m.title != nil {
 		fields = append(fields, custompage.FieldTitle)
@@ -2494,6 +2555,8 @@ func (m *CustomPageMutation) Field(name string) (ent.Value, bool) {
 		return m.IconId()
 	case custompage.FieldUpdateTime:
 		return m.UpdateTime()
+	case custompage.FieldOrder:
+		return m.Order()
 	case custompage.FieldTitle:
 		return m.Title()
 	case custompage.FieldTitleNormalized:
@@ -2519,6 +2582,8 @@ func (m *CustomPageMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldIconId(ctx)
 	case custompage.FieldUpdateTime:
 		return m.OldUpdateTime(ctx)
+	case custompage.FieldOrder:
+		return m.OldOrder(ctx)
 	case custompage.FieldTitle:
 		return m.OldTitle(ctx)
 	case custompage.FieldTitleNormalized:
@@ -2553,6 +2618,13 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdateTime(v)
+		return nil
+	case custompage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOrder(v)
 		return nil
 	case custompage.FieldTitle:
 		v, ok := value.(string)
@@ -2603,13 +2675,21 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *CustomPageMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.add_order != nil {
+		fields = append(fields, custompage.FieldOrder)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *CustomPageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case custompage.FieldOrder:
+		return m.AddedOrder()
+	}
 	return nil, false
 }
 
@@ -2618,6 +2698,13 @@ func (m *CustomPageMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *CustomPageMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case custompage.FieldOrder:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddOrder(v)
+		return nil
 	}
 	return fmt.Errorf("unknown CustomPage numeric field %s", name)
 }
@@ -2671,6 +2758,9 @@ func (m *CustomPageMutation) ResetField(name string) error {
 		return nil
 	case custompage.FieldUpdateTime:
 		m.ResetUpdateTime()
+		return nil
+	case custompage.FieldOrder:
+		m.ResetOrder()
 		return nil
 	case custompage.FieldTitle:
 		m.ResetTitle()

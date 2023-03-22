@@ -21,6 +21,8 @@ type CustomPage struct {
 	IconId string `json:"iconId,omitempty"`
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
+	// Order holds the value of the "order" field.
+	Order int `json:"order,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// TitleNormalized holds the value of the "titleNormalized" field.
@@ -63,6 +65,8 @@ func (*CustomPage) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case custompage.FieldIsExternal:
 			values[i] = new(sql.NullBool)
+		case custompage.FieldOrder:
+			values[i] = new(sql.NullInt64)
 		case custompage.FieldIconId, custompage.FieldTitle, custompage.FieldTitleNormalized, custompage.FieldContent, custompage.FieldLink, custompage.FieldSection:
 			values[i] = new(sql.NullString)
 		case custompage.FieldUpdateTime:
@@ -101,6 +105,12 @@ func (cp *CustomPage) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field update_time", values[i])
 			} else if value.Valid {
 				cp.UpdateTime = value.Time
+			}
+		case custompage.FieldOrder:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field order", values[i])
+			} else if value.Valid {
+				cp.Order = int(value.Int64)
 			}
 		case custompage.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -176,6 +186,9 @@ func (cp *CustomPage) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("update_time=")
 	builder.WriteString(cp.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("order=")
+	builder.WriteString(fmt.Sprintf("%v", cp.Order))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(cp.Title)

@@ -50,6 +50,12 @@ func (cpc *CustomPageCreate) SetNillableUpdateTime(t *time.Time) *CustomPageCrea
 	return cpc
 }
 
+// SetOrder sets the "order" field.
+func (cpc *CustomPageCreate) SetOrder(i int) *CustomPageCreate {
+	cpc.mutation.SetOrder(i)
+	return cpc
+}
+
 // SetTitle sets the "title" field.
 func (cpc *CustomPageCreate) SetTitle(s string) *CustomPageCreate {
 	cpc.mutation.SetTitle(s)
@@ -223,6 +229,9 @@ func (cpc *CustomPageCreate) check() error {
 	if _, ok := cpc.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "CustomPage.update_time"`)}
 	}
+	if _, ok := cpc.mutation.Order(); !ok {
+		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "CustomPage.order"`)}
+	}
 	if _, ok := cpc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "CustomPage.title"`)}
 	}
@@ -283,6 +292,10 @@ func (cpc *CustomPageCreate) createSpec() (*CustomPage, *sqlgraph.CreateSpec) {
 	if value, ok := cpc.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
 		_node.UpdateTime = value
+	}
+	if value, ok := cpc.mutation.Order(); ok {
+		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
+		_node.Order = value
 	}
 	if value, ok := cpc.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)

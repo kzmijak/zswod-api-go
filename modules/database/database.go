@@ -74,29 +74,30 @@ func seedPaths(ctx context.Context) error {
 		section string
 		title string
 		link string
+		order int
 	}
 
 	pages := []CustomPageHead{
-		{ section: "O Szkole", icon: "Enlist", title: "Rekrutacja", },
-		{ section: "O Szkole", icon: "Documents", title: "Szkolne dokumenty", },
-		{ section: "O Szkole", icon: "Chronicle", title: "Kronika szkoły", },
-		{ section: "O Szkole", icon: "Library", title: "Biblioteka", },
-		{ section: "O Szkole", icon: "Contests", title: "Konkursy", },
-		{ section: "O Szkole", icon: "Projects", title: "Projekty", },
-		{ section: "O Szkole", icon: "Talentowisko", title: "Talentowisko", link: "https://www.talentowisko.pl/podstawowa/szkola/szkola-podstawowa-im-jana-pawla-ii-w-orlowie-drewnianym" },
-		{ section: "Dla Rodziców", icon: "Meeting", title: "Harmonogram zebrań", },
-		{ section: "Dla Rodziców", icon: "Consult", title: "Konsultacje dla Rodziców", },
-		{ section: "Dla Rodziców", icon: "Counsil", title: "Rada Rodziców", },
-		{ section: "Dla Rodziców", icon: "Staff", title: "Grono pedagogiczne", },
-		{ section: "Dla Rodziców", icon: "Lessons", title: "Kalendarz roku szkolnego", },
-		{ section: "Dla Rodziców", icon: "Help", title: "Pomoc psychologiczno-pedagogiczna", },
-		{ section: "Dla Ucznia", icon: "Lessons", title: "Tygodniowy Plan Zajęć", },
-		{ section: "Dla Ucznia", icon: "Grades", title: "Dziennik elektroniczny", },
-		{ section: "Dla Ucznia", icon: "StudentCounsil", title: "Samorząd Uczniowski", },
-		{ section: "Dla Ucznia", icon: "Extracurricular", title: "Zajęcia pozalekcyjne", },
-		{ section: "Dla Ucznia", icon: "Pedagogue", title: "Pedagog szkolny", },
-		{ section: "Dla Ucznia", icon: "Volunteer", title: "Szkolne Koło Wolontariatu", },
-		{ section: "Dla Ucznia", icon: "Mentors", title: "Wychowawcy", },
+		{ order: 0, section: "O Szkole", icon: "Enlist", title: "Rekrutacja" },
+		{ order: 1, section: "O Szkole", icon: "Documents", title: "Szkolne dokumenty", },
+		{ order: 2, section: "O Szkole", icon: "Chronicle", title: "Kronika szkoły", },
+		{ order: 3, section: "O Szkole", icon: "Library", title: "Biblioteka", },
+		{ order: 4, section: "O Szkole", icon: "Contests", title: "Konkursy", },
+		{ order: 5, section: "O Szkole", icon: "Projects", title: "Projekty", },
+		{ order: 6, section: "O Szkole", icon: "Talentowisko", title: "Talentowisko", link: "https://www.talentowisko.pl/podstawowa/szkola/szkola-podstawowa-im-jana-pawla-ii-w-orlowie-drewnianym" },
+		{ order: 7, section: "Dla Rodziców", icon: "Meeting", title: "Harmonogram zebrań", },
+		{ order: 8, section: "Dla Rodziców", icon: "Consult", title: "Konsultacje dla Rodziców", },
+		{ order: 9, section: "Dla Rodziców", icon: "Counsil", title: "Rada Rodziców", },
+		{ order: 10, section: "Dla Rodziców", icon: "Staff", title: "Grono pedagogiczne", },
+		{ order: 11, section: "Dla Rodziców", icon: "Lessons", title: "Kalendarz roku szkolnego", },
+		{ order: 12, section: "Dla Rodziców", icon: "Help", title: "Pomoc psychologiczno-pedagogiczna", },
+		{ order: 13, section: "Dla Ucznia", icon: "Lessons", title: "Tygodniowy Plan Zajęć", },
+		{ order: 14, section: "Dla Ucznia", icon: "Grades", title: "Dziennik elektroniczny", },
+		{ order: 15, section: "Dla Ucznia", icon: "StudentCounsil", title: "Samorząd Uczniowski", },
+		{ order: 16, section: "Dla Ucznia", icon: "Extracurricular", title: "Zajęcia pozalekcyjne", },
+		{ order: 17, section: "Dla Ucznia", icon: "Pedagogue", title: "Pedagog szkolny", },
+		{ order: 18, section: "Dla Ucznia", icon: "Volunteer", title: "Szkolne Koło Wolontariatu", },
+		{ order: 19, section: "Dla Ucznia", icon: "Mentors", title: "Wychowawcy", },
 	}
 
 	bulk := make([]*ent.CustomPageCreate, len(pages))
@@ -105,6 +106,7 @@ func seedPaths(ctx context.Context) error {
 		titleSanitized := sanitizer.SanitizeString(page.title)
 
 		bulk[i] = Client.CustomPage.Create().
+			SetOrder(page.order).
 			SetSection(page.section).
 			SetIconId(page.icon).
 			SetTitle(page.title).
@@ -113,7 +115,6 @@ func seedPaths(ctx context.Context) error {
 
 		if (page.link != "") {
 			bulk[i] = bulk[i].
-				SetIsExternal(true).
 				SetLink(page.link)
 		}
 	}

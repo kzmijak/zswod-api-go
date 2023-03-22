@@ -1,5 +1,5 @@
-{"level":"fatal","msg":"Failed to initialize databaseent: missing required field \"CustomPage.titleNormalized\"","time":"2023-03-19T20:08:40+01:00"}
-+01:00"}
+{"level":"trace","msg":"Creating user","time":"2023-03-22T21:11:23+01:00"}
+{"level":"trace","msg":"Creating user success","time":"2023-03-22T21:11:23+01:00"}
 {"level":"trace","msg":"Uploading blob","time":"2023-03-13T19:20:18+01:00"}
 {"level":"trace","msg":"Uploading blob","time":"2023-03-13T19:20:23+01:00"}
 :00"}

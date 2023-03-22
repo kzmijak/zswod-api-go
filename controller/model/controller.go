@@ -8,6 +8,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/articleService"
 	"github.com/kzmijak/zswod_api_go/services/blob"
+	"github.com/kzmijak/zswod_api_go/services/customPageService"
 	"github.com/kzmijak/zswod_api_go/services/galleryService"
 	"github.com/kzmijak/zswod_api_go/services/image"
 	"github.com/kzmijak/zswod_api_go/services/jwt"
@@ -26,4 +27,5 @@ type Controller struct {
 	ArticleService articleService.ArticleService
 	ImageService   image.ImageService
 	GalleryService galleryService.GalleryService
+	CustomPageService customPageService.CustomPageService
 }

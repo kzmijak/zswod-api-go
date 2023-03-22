@@ -17,6 +17,8 @@ const (
 	FieldIconId = "icon_id"
 	// FieldUpdateTime holds the string denoting the update_time field in the database.
 	FieldUpdateTime = "update_time"
+	// FieldOrder holds the string denoting the order field in the database.
+	FieldOrder = "order"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldTitleNormalized holds the string denoting the titlenormalized field in the database.
@@ -47,6 +49,7 @@ var Columns = []string{
 	FieldID,
 	FieldIconId,
 	FieldUpdateTime,
+	FieldOrder,
 	FieldTitle,
 	FieldTitleNormalized,
 	FieldContent,

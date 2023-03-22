@@ -80,6 +80,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "icon_id", Type: field.TypeString, Nullable: true},
 		{Name: "update_time", Type: field.TypeTime},
+		{Name: "order", Type: field.TypeInt},
 		{Name: "title", Type: field.TypeString, Size: 200},
 		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},

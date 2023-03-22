@@ -8,6 +8,7 @@ import (
 	articleController "github.com/kzmijak/zswod_api_go/controller/article"
 	authController "github.com/kzmijak/zswod_api_go/controller/auth"
 	blobController "github.com/kzmijak/zswod_api_go/controller/blob"
+	"github.com/kzmijak/zswod_api_go/controller/customPageController"
 	galleryController "github.com/kzmijak/zswod_api_go/controller/gallery"
 	jwtController "github.com/kzmijak/zswod_api_go/controller/jwt"
 	model "github.com/kzmijak/zswod_api_go/controller/model"
@@ -17,6 +18,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/modules/mailer"
 	"github.com/kzmijak/zswod_api_go/services/articleService"
 	"github.com/kzmijak/zswod_api_go/services/blob"
+	"github.com/kzmijak/zswod_api_go/services/customPageService"
 	"github.com/kzmijak/zswod_api_go/services/galleryService"
 	"github.com/kzmijak/zswod_api_go/services/image"
 	"github.com/kzmijak/zswod_api_go/services/jwt"
@@ -68,6 +70,7 @@ func (c Controller) Run() {
 	c.ImageService = image.New().WithContext(c.Ctx)
 	c.ArticleService = articleService.New(c.Ctx)
 	c.GalleryService = galleryService.New().WithContext(c.Ctx)
+	c.CustomPageService = customPageService.New(c.Ctx)
 	
 	jwtController.New(c.Controller)
 	jc := jwtController.New(c.Controller)
@@ -113,6 +116,12 @@ func (c Controller) Run() {
 		gallery := v1.Group("/gallery")
 		{
 			gallery.GET("", gc.GetGalleryHeadersList)
+		}
+
+		cpc := customPageController.New(c.Controller)
+		customPage := v1.Group("/customPages")
+		{
+			customPage.GET("", cpc.GetCustomPageHeaders)
 		}
 	}
 
