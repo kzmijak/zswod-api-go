@@ -106,7 +106,7 @@ func (uq *UserQuery) QueryArticles() *ArticleQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(article.Table, article.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, user.ArticlesTable, user.ArticlesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ArticlesTable, user.ArticlesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -507,8 +507,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		}
 	}
 	if query := uq.withArticles; query != nil {
-		if err := uq.loadArticles(ctx, query, nodes, nil,
-			func(n *User, e *Article) { n.Edges.Articles = e }); err != nil {
+		if err := uq.loadArticles(ctx, query, nodes,
+			func(n *User) { n.Edges.Articles = []*Article{} },
+			func(n *User, e *Article) { n.Edges.Articles = append(n.Edges.Articles, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -567,6 +568,9 @@ func (uq *UserQuery) loadArticles(ctx context.Context, query *ArticleQuery, node
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
 	}
 	query.withFKs = true
 	query.Where(predicate.Article(func(s *sql.Selector) {

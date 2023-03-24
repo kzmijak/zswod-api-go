@@ -8,7 +8,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
@@ -39,7 +38,7 @@ type UserEdges struct {
 	// Galleries holds the value of the galleries edge.
 	Galleries []*Gallery `json:"galleries,omitempty"`
 	// Articles holds the value of the articles edge.
-	Articles *Article `json:"articles,omitempty"`
+	Articles []*Article `json:"articles,omitempty"`
 	// Avatar holds the value of the avatar edge.
 	Avatar *Image `json:"avatar,omitempty"`
 	// ResetPasswordTokens holds the value of the resetPasswordTokens edge.
@@ -59,13 +58,9 @@ func (e UserEdges) GalleriesOrErr() ([]*Gallery, error) {
 }
 
 // ArticlesOrErr returns the Articles value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e UserEdges) ArticlesOrErr() (*Article, error) {
+// was not loaded in eager-loading.
+func (e UserEdges) ArticlesOrErr() ([]*Article, error) {
 	if e.loadedTypes[1] {
-		if e.Articles == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: article.Label}
-		}
 		return e.Articles, nil
 	}
 	return nil, &NotLoadedError{edge: "articles"}

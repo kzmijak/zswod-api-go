@@ -17,7 +17,7 @@ var (
 		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "short", Type: field.TypeString, Size: 300},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
-		{Name: "user_articles", Type: field.TypeUUID, Unique: true},
+		{Name: "user_articles", Type: field.TypeUUID},
 	}
 	// ArticlesTable holds the schema information for the "articles" table.
 	ArticlesTable = &schema.Table{

@@ -4561,7 +4561,8 @@ type UserMutation struct {
 	galleries                  map[uuid.UUID]struct{}
 	removedgalleries           map[uuid.UUID]struct{}
 	clearedgalleries           bool
-	articles                   *uuid.UUID
+	articles                   map[uuid.UUID]struct{}
+	removedarticles            map[uuid.UUID]struct{}
 	clearedarticles            bool
 	avatar                     *uuid.UUID
 	clearedavatar              bool
@@ -4937,9 +4938,14 @@ func (m *UserMutation) ResetGalleries() {
 	m.removedgalleries = nil
 }
 
-// SetArticlesID sets the "articles" edge to the Article entity by id.
-func (m *UserMutation) SetArticlesID(id uuid.UUID) {
-	m.articles = &id
+// AddArticleIDs adds the "articles" edge to the Article entity by ids.
+func (m *UserMutation) AddArticleIDs(ids ...uuid.UUID) {
+	if m.articles == nil {
+		m.articles = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.articles[ids[i]] = struct{}{}
+	}
 }
 
 // ClearArticles clears the "articles" edge to the Article entity.
@@ -4952,20 +4958,29 @@ func (m *UserMutation) ArticlesCleared() bool {
 	return m.clearedarticles
 }
 
-// ArticlesID returns the "articles" edge ID in the mutation.
-func (m *UserMutation) ArticlesID() (id uuid.UUID, exists bool) {
-	if m.articles != nil {
-		return *m.articles, true
+// RemoveArticleIDs removes the "articles" edge to the Article entity by IDs.
+func (m *UserMutation) RemoveArticleIDs(ids ...uuid.UUID) {
+	if m.removedarticles == nil {
+		m.removedarticles = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.articles, ids[i])
+		m.removedarticles[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedArticles returns the removed IDs of the "articles" edge to the Article entity.
+func (m *UserMutation) RemovedArticlesIDs() (ids []uuid.UUID) {
+	for id := range m.removedarticles {
+		ids = append(ids, id)
 	}
 	return
 }
 
 // ArticlesIDs returns the "articles" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ArticlesID instead. It exists only for internal usage by the builders.
 func (m *UserMutation) ArticlesIDs() (ids []uuid.UUID) {
-	if id := m.articles; id != nil {
-		ids = append(ids, *id)
+	for id := range m.articles {
+		ids = append(ids, id)
 	}
 	return
 }
@@ -4974,6 +4989,7 @@ func (m *UserMutation) ArticlesIDs() (ids []uuid.UUID) {
 func (m *UserMutation) ResetArticles() {
 	m.articles = nil
 	m.clearedarticles = false
+	m.removedarticles = nil
 }
 
 // SetAvatarID sets the "avatar" edge to the Image entity by id.
@@ -5297,9 +5313,11 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case user.EdgeArticles:
-		if id := m.articles; id != nil {
-			return []ent.Value{*id}
+		ids := make([]ent.Value, 0, len(m.articles))
+		for id := range m.articles {
+			ids = append(ids, id)
 		}
+		return ids
 	case user.EdgeAvatar:
 		if id := m.avatar; id != nil {
 			return []ent.Value{*id}
@@ -5320,6 +5338,9 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedgalleries != nil {
 		edges = append(edges, user.EdgeGalleries)
 	}
+	if m.removedarticles != nil {
+		edges = append(edges, user.EdgeArticles)
+	}
 	if m.removedresetPasswordTokens != nil {
 		edges = append(edges, user.EdgeResetPasswordTokens)
 	}
@@ -5333,6 +5354,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeGalleries:
 		ids := make([]ent.Value, 0, len(m.removedgalleries))
 		for id := range m.removedgalleries {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeArticles:
+		ids := make([]ent.Value, 0, len(m.removedarticles))
+		for id := range m.removedarticles {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5384,9 +5411,6 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
-	case user.EdgeArticles:
-		m.ClearArticles()
-		return nil
 	case user.EdgeAvatar:
 		m.ClearAvatar()
 		return nil

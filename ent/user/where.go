@@ -602,7 +602,7 @@ func HasArticles() predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ArticlesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ArticlesTable, ArticlesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArticlesTable, ArticlesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -614,7 +614,7 @@ func HasArticlesWith(preds ...predicate.Article) predicate.User {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(ArticlesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, ArticlesTable, ArticlesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, ArticlesTable, ArticlesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

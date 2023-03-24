@@ -105,23 +105,19 @@ func (uu *UserUpdate) AddGalleries(g ...*Gallery) *UserUpdate {
 	return uu.AddGalleryIDs(ids...)
 }
 
-// SetArticlesID sets the "articles" edge to the Article entity by ID.
-func (uu *UserUpdate) SetArticlesID(id uuid.UUID) *UserUpdate {
-	uu.mutation.SetArticlesID(id)
+// AddArticleIDs adds the "articles" edge to the Article entity by IDs.
+func (uu *UserUpdate) AddArticleIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddArticleIDs(ids...)
 	return uu
 }
 
-// SetNillableArticlesID sets the "articles" edge to the Article entity by ID if the given value is not nil.
-func (uu *UserUpdate) SetNillableArticlesID(id *uuid.UUID) *UserUpdate {
-	if id != nil {
-		uu = uu.SetArticlesID(*id)
+// AddArticles adds the "articles" edges to the Article entity.
+func (uu *UserUpdate) AddArticles(a ...*Article) *UserUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
 	}
-	return uu
-}
-
-// SetArticles sets the "articles" edge to the Article entity.
-func (uu *UserUpdate) SetArticles(a *Article) *UserUpdate {
-	return uu.SetArticlesID(a.ID)
+	return uu.AddArticleIDs(ids...)
 }
 
 // SetAvatarID sets the "avatar" edge to the Image entity by ID.
@@ -184,10 +180,25 @@ func (uu *UserUpdate) RemoveGalleries(g ...*Gallery) *UserUpdate {
 	return uu.RemoveGalleryIDs(ids...)
 }
 
-// ClearArticles clears the "articles" edge to the Article entity.
+// ClearArticles clears all "articles" edges to the Article entity.
 func (uu *UserUpdate) ClearArticles() *UserUpdate {
 	uu.mutation.ClearArticles()
 	return uu
+}
+
+// RemoveArticleIDs removes the "articles" edge to Article entities by IDs.
+func (uu *UserUpdate) RemoveArticleIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveArticleIDs(ids...)
+	return uu
+}
+
+// RemoveArticles removes "articles" edges to Article entities.
+func (uu *UserUpdate) RemoveArticles(a ...*Article) *UserUpdate {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uu.RemoveArticleIDs(ids...)
 }
 
 // ClearAvatar clears the "avatar" edge to the Image entity.
@@ -382,7 +393,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if uu.mutation.ArticlesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   user.ArticlesTable,
 			Columns: []string{user.ArticlesColumn},
@@ -396,9 +407,28 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := uu.mutation.RemovedArticlesIDs(); len(nodes) > 0 && !uu.mutation.ArticlesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ArticlesTable,
+			Columns: []string{user.ArticlesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: article.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := uu.mutation.ArticlesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   user.ArticlesTable,
 			Columns: []string{user.ArticlesColumn},
@@ -596,23 +626,19 @@ func (uuo *UserUpdateOne) AddGalleries(g ...*Gallery) *UserUpdateOne {
 	return uuo.AddGalleryIDs(ids...)
 }
 
-// SetArticlesID sets the "articles" edge to the Article entity by ID.
-func (uuo *UserUpdateOne) SetArticlesID(id uuid.UUID) *UserUpdateOne {
-	uuo.mutation.SetArticlesID(id)
+// AddArticleIDs adds the "articles" edge to the Article entity by IDs.
+func (uuo *UserUpdateOne) AddArticleIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddArticleIDs(ids...)
 	return uuo
 }
 
-// SetNillableArticlesID sets the "articles" edge to the Article entity by ID if the given value is not nil.
-func (uuo *UserUpdateOne) SetNillableArticlesID(id *uuid.UUID) *UserUpdateOne {
-	if id != nil {
-		uuo = uuo.SetArticlesID(*id)
+// AddArticles adds the "articles" edges to the Article entity.
+func (uuo *UserUpdateOne) AddArticles(a ...*Article) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
 	}
-	return uuo
-}
-
-// SetArticles sets the "articles" edge to the Article entity.
-func (uuo *UserUpdateOne) SetArticles(a *Article) *UserUpdateOne {
-	return uuo.SetArticlesID(a.ID)
+	return uuo.AddArticleIDs(ids...)
 }
 
 // SetAvatarID sets the "avatar" edge to the Image entity by ID.
@@ -675,10 +701,25 @@ func (uuo *UserUpdateOne) RemoveGalleries(g ...*Gallery) *UserUpdateOne {
 	return uuo.RemoveGalleryIDs(ids...)
 }
 
-// ClearArticles clears the "articles" edge to the Article entity.
+// ClearArticles clears all "articles" edges to the Article entity.
 func (uuo *UserUpdateOne) ClearArticles() *UserUpdateOne {
 	uuo.mutation.ClearArticles()
 	return uuo
+}
+
+// RemoveArticleIDs removes the "articles" edge to Article entities by IDs.
+func (uuo *UserUpdateOne) RemoveArticleIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveArticleIDs(ids...)
+	return uuo
+}
+
+// RemoveArticles removes "articles" edges to Article entities.
+func (uuo *UserUpdateOne) RemoveArticles(a ...*Article) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return uuo.RemoveArticleIDs(ids...)
 }
 
 // ClearAvatar clears the "avatar" edge to the Image entity.
@@ -903,7 +944,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 	}
 	if uuo.mutation.ArticlesCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   user.ArticlesTable,
 			Columns: []string{user.ArticlesColumn},
@@ -917,9 +958,28 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := uuo.mutation.RemovedArticlesIDs(); len(nodes) > 0 && !uuo.mutation.ArticlesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   user.ArticlesTable,
+			Columns: []string{user.ArticlesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: article.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := uuo.mutation.ArticlesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   user.ArticlesTable,
 			Columns: []string{user.ArticlesColumn},
