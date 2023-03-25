@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/mixin"
-	"github.com/google/uuid"
 )
 
 // Image holds the schema definition for the Image entity.
@@ -26,7 +25,7 @@ func (Image) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("alt").Optional(),
 		field.Int("Order").Optional().Min(0),
-		field.UUID("blobId", uuid.Nil).Immutable(),
+		field.String("src").Immutable(),
 	}
 }
 
@@ -35,10 +34,5 @@ func (Image) Edges() []ent.Edge {
 	return []ent.Edge {
 		edge.From("gallery", Gallery.Type).Ref("images").
 			Unique(),
-		edge.To("blob", Blob.Type).
-			Unique().
-			Field("blobId").
-			Immutable().
-			Required(),
 	}
 }

@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
@@ -65,9 +64,9 @@ func (ic *ImageCreate) SetNillableOrder(i *int) *ImageCreate {
 	return ic
 }
 
-// SetBlobId sets the "blobId" field.
-func (ic *ImageCreate) SetBlobId(u uuid.UUID) *ImageCreate {
-	ic.mutation.SetBlobId(u)
+// SetSrc sets the "src" field.
+func (ic *ImageCreate) SetSrc(s string) *ImageCreate {
+	ic.mutation.SetSrc(s)
 	return ic
 }
 
@@ -102,17 +101,6 @@ func (ic *ImageCreate) SetNillableGalleryID(id *uuid.UUID) *ImageCreate {
 // SetGallery sets the "gallery" edge to the Gallery entity.
 func (ic *ImageCreate) SetGallery(g *Gallery) *ImageCreate {
 	return ic.SetGalleryID(g.ID)
-}
-
-// SetBlobID sets the "blob" edge to the Blob entity by ID.
-func (ic *ImageCreate) SetBlobID(id uuid.UUID) *ImageCreate {
-	ic.mutation.SetBlobID(id)
-	return ic
-}
-
-// SetBlob sets the "blob" edge to the Blob entity.
-func (ic *ImageCreate) SetBlob(b *Blob) *ImageCreate {
-	return ic.SetBlobID(b.ID)
 }
 
 // Mutation returns the ImageMutation object of the builder.
@@ -212,11 +200,8 @@ func (ic *ImageCreate) check() error {
 			return &ValidationError{Name: "Order", err: fmt.Errorf(`ent: validator failed for field "Image.Order": %w`, err)}
 		}
 	}
-	if _, ok := ic.mutation.BlobId(); !ok {
-		return &ValidationError{Name: "blobId", err: errors.New(`ent: missing required field "Image.blobId"`)}
-	}
-	if _, ok := ic.mutation.BlobID(); !ok {
-		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required edge "Image.blob"`)}
+	if _, ok := ic.mutation.Src(); !ok {
+		return &ValidationError{Name: "src", err: errors.New(`ent: missing required field "Image.src"`)}
 	}
 	return nil
 }
@@ -266,6 +251,10 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_spec.SetField(image.FieldOrder, field.TypeInt, value)
 		_node.Order = value
 	}
+	if value, ok := ic.mutation.Src(); ok {
+		_spec.SetField(image.FieldSrc, field.TypeString, value)
+		_node.Src = value
+	}
 	if nodes := ic.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -284,26 +273,6 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.gallery_images = &nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.BlobIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   image.BlobTable,
-			Columns: []string{image.BlobColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: blob.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.BlobId = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

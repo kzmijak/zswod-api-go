@@ -22,7 +22,7 @@ func (c *BlobController) GetBlobByUuid(ctx *gin.Context) {
 		return
 	}
 
-	blob, err := c.BlobService.GetBlob(uuidParsed, tx)
+	blob, err := c.BlobService.GetBlobById(uuidParsed, tx)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return

@@ -33,18 +33,6 @@ func (bu *BlobUpdate) SetBlob(b []byte) *BlobUpdate {
 	return bu
 }
 
-// SetTitle sets the "title" field.
-func (bu *BlobUpdate) SetTitle(s string) *BlobUpdate {
-	bu.mutation.SetTitle(s)
-	return bu
-}
-
-// SetAlt sets the "alt" field.
-func (bu *BlobUpdate) SetAlt(s string) *BlobUpdate {
-	bu.mutation.SetAlt(s)
-	return bu
-}
-
 // SetContentType sets the "contentType" field.
 func (bu *BlobUpdate) SetContentType(s string) *BlobUpdate {
 	bu.mutation.SetContentType(s)
@@ -131,12 +119,6 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 	}
-	if value, ok := bu.mutation.Title(); ok {
-		_spec.SetField(blob.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := bu.mutation.Alt(); ok {
-		_spec.SetField(blob.FieldAlt, field.TypeString, value)
-	}
 	if value, ok := bu.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 	}
@@ -162,18 +144,6 @@ type BlobUpdateOne struct {
 // SetBlob sets the "blob" field.
 func (buo *BlobUpdateOne) SetBlob(b []byte) *BlobUpdateOne {
 	buo.mutation.SetBlob(b)
-	return buo
-}
-
-// SetTitle sets the "title" field.
-func (buo *BlobUpdateOne) SetTitle(s string) *BlobUpdateOne {
-	buo.mutation.SetTitle(s)
-	return buo
-}
-
-// SetAlt sets the "alt" field.
-func (buo *BlobUpdateOne) SetAlt(s string) *BlobUpdateOne {
-	buo.mutation.SetAlt(s)
 	return buo
 }
 
@@ -292,12 +262,6 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 	}
 	if value, ok := buo.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
-	}
-	if value, ok := buo.mutation.Title(); ok {
-		_spec.SetField(blob.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := buo.mutation.Alt(); ok {
-		_spec.SetField(blob.FieldAlt, field.TypeString, value)
 	}
 	if value, ok := buo.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)

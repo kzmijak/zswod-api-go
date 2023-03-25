@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
 )
@@ -25,8 +24,8 @@ type Image struct {
 	Alt string `json:"alt,omitempty"`
 	// Order holds the value of the "Order" field.
 	Order int `json:"Order,omitempty"`
-	// BlobId holds the value of the "blobId" field.
-	BlobId uuid.UUID `json:"blobId,omitempty"`
+	// Src holds the value of the "src" field.
+	Src string `json:"src,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges          ImageEdges `json:"edges"`
@@ -37,11 +36,9 @@ type Image struct {
 type ImageEdges struct {
 	// Gallery holds the value of the gallery edge.
 	Gallery *Gallery `json:"gallery,omitempty"`
-	// Blob holds the value of the blob edge.
-	Blob *Blob `json:"blob,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // GalleryOrErr returns the Gallery value or an error if the edge
@@ -57,19 +54,6 @@ func (e ImageEdges) GalleryOrErr() (*Gallery, error) {
 	return nil, &NotLoadedError{edge: "gallery"}
 }
 
-// BlobOrErr returns the Blob value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ImageEdges) BlobOrErr() (*Blob, error) {
-	if e.loadedTypes[1] {
-		if e.Blob == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: blob.Label}
-		}
-		return e.Blob, nil
-	}
-	return nil, &NotLoadedError{edge: "blob"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -77,11 +61,11 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case image.FieldOrder:
 			values[i] = new(sql.NullInt64)
-		case image.FieldAlt:
+		case image.FieldAlt, image.FieldSrc:
 			values[i] = new(sql.NullString)
 		case image.FieldCreateTime:
 			values[i] = new(sql.NullTime)
-		case image.FieldID, image.FieldBlobId:
+		case image.FieldID:
 			values[i] = new(uuid.UUID)
 		case image.ForeignKeys[0]: // gallery_images
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -124,11 +108,11 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				i.Order = int(value.Int64)
 			}
-		case image.FieldBlobId:
-			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field blobId", values[j])
-			} else if value != nil {
-				i.BlobId = *value
+		case image.FieldSrc:
+			if value, ok := values[j].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field src", values[j])
+			} else if value.Valid {
+				i.Src = value.String
 			}
 		case image.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -145,11 +129,6 @@ func (i *Image) assignValues(columns []string, values []any) error {
 // QueryGallery queries the "gallery" edge of the Image entity.
 func (i *Image) QueryGallery() *GalleryQuery {
 	return (&ImageClient{config: i.config}).QueryGallery(i)
-}
-
-// QueryBlob queries the "blob" edge of the Image entity.
-func (i *Image) QueryBlob() *BlobQuery {
-	return (&ImageClient{config: i.config}).QueryBlob(i)
 }
 
 // Update returns a builder for updating this Image.
@@ -184,8 +163,8 @@ func (i *Image) String() string {
 	builder.WriteString("Order=")
 	builder.WriteString(fmt.Sprintf("%v", i.Order))
 	builder.WriteString(", ")
-	builder.WriteString("blobId=")
-	builder.WriteString(fmt.Sprintf("%v", i.BlobId))
+	builder.WriteString("src=")
+	builder.WriteString(i.Src)
 	builder.WriteByte(')')
 	return builder.String()
 }

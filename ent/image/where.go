@@ -103,10 +103,10 @@ func Order(v int) predicate.Image {
 	})
 }
 
-// BlobId applies equality check predicate on the "blobId" field. It's identical to BlobIdEQ.
-func BlobId(v uuid.UUID) predicate.Image {
+// Src applies equality check predicate on the "src" field. It's identical to SrcEQ.
+func Src(v string) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBlobId), v))
+		s.Where(sql.EQ(s.C(FieldSrc), v))
 	})
 }
 
@@ -365,39 +365,102 @@ func OrderNotNil() predicate.Image {
 	})
 }
 
-// BlobIdEQ applies the EQ predicate on the "blobId" field.
-func BlobIdEQ(v uuid.UUID) predicate.Image {
+// SrcEQ applies the EQ predicate on the "src" field.
+func SrcEQ(v string) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldBlobId), v))
+		s.Where(sql.EQ(s.C(FieldSrc), v))
 	})
 }
 
-// BlobIdNEQ applies the NEQ predicate on the "blobId" field.
-func BlobIdNEQ(v uuid.UUID) predicate.Image {
+// SrcNEQ applies the NEQ predicate on the "src" field.
+func SrcNEQ(v string) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldBlobId), v))
+		s.Where(sql.NEQ(s.C(FieldSrc), v))
 	})
 }
 
-// BlobIdIn applies the In predicate on the "blobId" field.
-func BlobIdIn(vs ...uuid.UUID) predicate.Image {
+// SrcIn applies the In predicate on the "src" field.
+func SrcIn(vs ...string) predicate.Image {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldBlobId), v...))
+		s.Where(sql.In(s.C(FieldSrc), v...))
 	})
 }
 
-// BlobIdNotIn applies the NotIn predicate on the "blobId" field.
-func BlobIdNotIn(vs ...uuid.UUID) predicate.Image {
+// SrcNotIn applies the NotIn predicate on the "src" field.
+func SrcNotIn(vs ...string) predicate.Image {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldBlobId), v...))
+		s.Where(sql.NotIn(s.C(FieldSrc), v...))
+	})
+}
+
+// SrcGT applies the GT predicate on the "src" field.
+func SrcGT(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldSrc), v))
+	})
+}
+
+// SrcGTE applies the GTE predicate on the "src" field.
+func SrcGTE(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldSrc), v))
+	})
+}
+
+// SrcLT applies the LT predicate on the "src" field.
+func SrcLT(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldSrc), v))
+	})
+}
+
+// SrcLTE applies the LTE predicate on the "src" field.
+func SrcLTE(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldSrc), v))
+	})
+}
+
+// SrcContains applies the Contains predicate on the "src" field.
+func SrcContains(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldSrc), v))
+	})
+}
+
+// SrcHasPrefix applies the HasPrefix predicate on the "src" field.
+func SrcHasPrefix(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldSrc), v))
+	})
+}
+
+// SrcHasSuffix applies the HasSuffix predicate on the "src" field.
+func SrcHasSuffix(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldSrc), v))
+	})
+}
+
+// SrcEqualFold applies the EqualFold predicate on the "src" field.
+func SrcEqualFold(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldSrc), v))
+	})
+}
+
+// SrcContainsFold applies the ContainsFold predicate on the "src" field.
+func SrcContainsFold(v string) predicate.Image {
+	return predicate.Image(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldSrc), v))
 	})
 }
 
@@ -420,34 +483,6 @@ func HasGalleryWith(preds ...predicate.Gallery) predicate.Image {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(GalleryInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, GalleryTable, GalleryColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasBlob applies the HasEdge predicate on the "blob" edge.
-func HasBlob() predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(BlobTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasBlobWith applies the HasEdge predicate on the "blob" edge with a given conditions (other predicates).
-func HasBlobWith(preds ...predicate.Blob) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(BlobInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, BlobTable, BlobColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

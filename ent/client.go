@@ -852,22 +852,6 @@ func (c *ImageClient) QueryGallery(i *Image) *GalleryQuery {
 	return query
 }
 
-// QueryBlob queries the blob edge of a Image.
-func (c *ImageClient) QueryBlob(i *Image) *BlobQuery {
-	query := &BlobQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(image.Table, image.FieldID, id),
-			sqlgraph.To(blob.Table, blob.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, image.BlobTable, image.BlobColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *ImageClient) Hooks() []Hook {
 	return c.hooks.Image

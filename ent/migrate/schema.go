@@ -74,8 +74,6 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "blob", Type: field.TypeBytes, SchemaType: map[string]string{"mysql": "mediumblob"}},
-		{Name: "title", Type: field.TypeString},
-		{Name: "alt", Type: field.TypeString},
 		{Name: "content_type", Type: field.TypeString},
 	}
 	// BlobsTable holds the schema information for the "blobs" table.
@@ -138,8 +136,8 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "alt", Type: field.TypeString, Nullable: true},
 		{Name: "order", Type: field.TypeInt, Nullable: true},
+		{Name: "src", Type: field.TypeString},
 		{Name: "gallery_images", Type: field.TypeUUID, Nullable: true},
-		{Name: "blob_id", Type: field.TypeUUID},
 	}
 	// ImagesTable holds the schema information for the "images" table.
 	ImagesTable = &schema.Table{
@@ -149,15 +147,9 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "images_galleries_images",
-				Columns:    []*schema.Column{ImagesColumns[4]},
+				Columns:    []*schema.Column{ImagesColumns[5]},
 				RefColumns: []*schema.Column{GalleriesColumns[0]},
 				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "images_blobs_blob",
-				Columns:    []*schema.Column{ImagesColumns[5]},
-				RefColumns: []*schema.Column{BlobsColumns[0]},
-				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -226,7 +218,6 @@ func init() {
 	GalleriesTable.ForeignKeys[0].RefTable = ArticlesTable
 	GalleriesTable.ForeignKeys[1].RefTable = UsersTable
 	ImagesTable.ForeignKeys[0].RefTable = GalleriesTable
-	ImagesTable.ForeignKeys[1].RefTable = BlobsTable
 	ResetPasswordTokensTable.ForeignKeys[0].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = ImagesTable
 }

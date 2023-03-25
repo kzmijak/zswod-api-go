@@ -17,10 +17,6 @@ const (
 	FieldCreateTime = "create_time"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
-	// FieldAlt holds the string denoting the alt field in the database.
-	FieldAlt = "alt"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
 	// Table holds the table name of the blob in the database.
@@ -32,8 +28,6 @@ var Columns = []string{
 	FieldID,
 	FieldCreateTime,
 	FieldBlob,
-	FieldTitle,
-	FieldAlt,
 	FieldContentType,
 }
 

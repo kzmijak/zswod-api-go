@@ -1,4 +1,4 @@
-package blob
+package blobService
 
 import (
 	"io"
@@ -40,8 +40,6 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader, tx *ent.Tx) (*ent.Blo
 		SetID(uuid.New()).
 		SetBlob(byteContainer).
 		SetContentType(contentType).
-		SetTitle(file.Filename).
-		SetAlt("").
 		SetCreateTime(time.Now()).
 		Save(s.ctx)
 

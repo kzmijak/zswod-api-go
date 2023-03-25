@@ -1,4 +1,4 @@
-package blob
+package blobService
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"

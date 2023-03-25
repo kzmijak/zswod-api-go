@@ -8,7 +8,7 @@ import (
 func (query ArticleQuery) JoinAllImagesToArticle() ArticleQuery {
 	query.WithGallery(func(gq *ent.GalleryQuery) {
 		gq.WithImages(func(iq *ent.ImageQuery) {
-		imageQuery.FromQuery(iq).QueryOrderedWithBlobId()
+		imageQuery.FromQuery(iq).QueryOrdered()
 	})})
 
 	return query

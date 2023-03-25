@@ -173,9 +173,6 @@ func (iu *ImageUpdate) check() error {
 			return &ValidationError{Name: "Order", err: fmt.Errorf(`ent: validator failed for field "Image.Order": %w`, err)}
 		}
 	}
-	if _, ok := iu.mutation.BlobID(); iu.mutation.BlobCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Image.blob"`)
-	}
 	return nil
 }
 
@@ -422,9 +419,6 @@ func (iuo *ImageUpdateOne) check() error {
 		if err := image.OrderValidator(v); err != nil {
 			return &ValidationError{Name: "Order", err: fmt.Errorf(`ent: validator failed for field "Image.Order": %w`, err)}
 		}
-	}
-	if _, ok := iuo.mutation.BlobID(); iuo.mutation.BlobCleared() && !ok {
-		return errors.New(`ent: clearing a required unique edge "Image.blob"`)
 	}
 	return nil
 }

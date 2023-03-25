@@ -1,8 +1,9 @@
-package image
+package imageService
 
 import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/imageModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
@@ -10,19 +11,13 @@ const (
 	ErrFailedCreatingImage = "ErrFailedCreatingImage: Failed to create image"
 )
 
-type CreateImagePayload struct {
-	Title     string    `json:"title"`
-	Alt       string    `json:"alt"`
-	BlobId    uuid.UUID `json:"blobId"`
-	IsPreview bool      `json:"isPreview"`
-}
-
-func (s ImageService) CreateImage(req CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Image, error) {
+func (s ImageService) CreateImage(req imageModel.CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) (*ent.Image, error) {
 	image, err := tx.Image.Create().
 		SetID(uuid.New()).
 		SetAlt(req.Alt).
 		SetGalleryID(galleryId).
-		SetBlobID(req.BlobId).
+		SetOrder(req.Order).
+		SetSrc(req.Src).
 		Save(s.ctx)
 
 	if err != nil {

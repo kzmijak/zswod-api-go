@@ -19,12 +19,10 @@ const (
 	FieldAlt = "alt"
 	// FieldOrder holds the string denoting the order field in the database.
 	FieldOrder = "order"
-	// FieldBlobId holds the string denoting the blobid field in the database.
-	FieldBlobId = "blob_id"
+	// FieldSrc holds the string denoting the src field in the database.
+	FieldSrc = "src"
 	// EdgeGallery holds the string denoting the gallery edge name in mutations.
 	EdgeGallery = "gallery"
-	// EdgeBlob holds the string denoting the blob edge name in mutations.
-	EdgeBlob = "blob"
 	// Table holds the table name of the image in the database.
 	Table = "images"
 	// GalleryTable is the table that holds the gallery relation/edge.
@@ -34,13 +32,6 @@ const (
 	GalleryInverseTable = "galleries"
 	// GalleryColumn is the table column denoting the gallery relation/edge.
 	GalleryColumn = "gallery_images"
-	// BlobTable is the table that holds the blob relation/edge.
-	BlobTable = "images"
-	// BlobInverseTable is the table name for the Blob entity.
-	// It exists in this package in order to avoid circular dependency with the "blob" package.
-	BlobInverseTable = "blobs"
-	// BlobColumn is the table column denoting the blob relation/edge.
-	BlobColumn = "blob_id"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -49,7 +40,7 @@ var Columns = []string{
 	FieldCreateTime,
 	FieldAlt,
 	FieldOrder,
-	FieldBlobId,
+	FieldSrc,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "images"

@@ -1,4 +1,4 @@
-package image
+package imageService
 
 import (
 	"github.com/google/uuid"

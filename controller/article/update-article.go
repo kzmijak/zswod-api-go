@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/models/articleModel"
+	"github.com/kzmijak/zswod_api_go/models/imageModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/image"
 	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
 
@@ -19,10 +19,10 @@ type UpdateArticleRequest struct {
 	ArticleId string `json:"articleId"`
 	GalleryId string `json:"galleryId"`
 	Article articleModel.UpdateArticlePayload `json:"article"`
-	Images []image.CreateImagePayload `json:"images"`
+	Images []imageModel.CreateImagePayload `json:"images"`
 }
 
-func (c *ArticleController) UpdateArticle(ctx *gin.Context) {
+func (c ArticleController) UpdateArticle(ctx *gin.Context) {
 	var requestBody UpdateArticleRequest
 	var err error
 	var status = http.StatusBadRequest
@@ -53,11 +53,6 @@ func (c *ArticleController) UpdateArticle(ctx *gin.Context) {
 
 	
 	for _, imageRequest := range requestBody.Images {
-		err = c.BlobService.FillBlobAlt(imageRequest.BlobId, imageRequest.Alt, tx)
-		if err != nil {
-			return
-		}
-
 		_, err := c.ImageService.CreateImage(imageRequest, gallery.ID, tx)
 		if err != nil {
 			return

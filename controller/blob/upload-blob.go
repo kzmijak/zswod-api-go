@@ -38,9 +38,7 @@ func (c *BlobController) UploadBlob(ctx *gin.Context) {
 		}
 
 		blobs = append(blobs, BlobResponse{
-			Title: response.Title,
 			Id: response.ID.String(),
-			Alt: response.Alt,
 			CreateTime: response.CreateTime,
 		})
 	}

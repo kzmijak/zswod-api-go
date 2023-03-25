@@ -27,8 +27,6 @@ func (Blob) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumblob",
 		}),
-		field.String("title"),
-		field.String("alt"),
 		field.String("contentType"),
 	}
 }

@@ -10,15 +10,15 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/models/galleryModel"
+	"github.com/kzmijak/zswod_api_go/models/imageModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/image"
 )
 
 type CreateArticleRequest struct {
 	Title     string    `json:"title"`
 	Short     string    `json:"short"`
 	Content   string    `json:"content"`
-	Images []image.CreateImagePayload `json:"images"`
+	Images []imageModel.CreateImagePayload `json:"images"`
 }
 
 func (c ArticleController) CreateArticle(ctx *gin.Context) {
@@ -79,7 +79,7 @@ func (c ArticleController) createGallery(title string, authorId uuid.UUID, tx *e
 	return galleryEntity.ID, nil
 }
 
-func (c ArticleController) createImages(req []image.CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) error {
+func (c ArticleController) createImages(req []imageModel.CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) error {
 	for _, img := range req {
 		_, err := c.ImageService.CreateImage(img, galleryId, tx)
 		if err != nil {

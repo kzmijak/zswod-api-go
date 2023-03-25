@@ -21,10 +21,6 @@ type Blob struct {
 	CreateTime time.Time `json:"create_time,omitempty"`
 	// Blob holds the value of the "blob" field.
 	Blob []byte `json:"blob,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
-	// Alt holds the value of the "alt" field.
-	Alt string `json:"alt,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
 }
@@ -36,7 +32,7 @@ func (*Blob) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case blob.FieldBlob:
 			values[i] = new([]byte)
-		case blob.FieldTitle, blob.FieldAlt, blob.FieldContentType:
+		case blob.FieldContentType:
 			values[i] = new(sql.NullString)
 		case blob.FieldCreateTime:
 			values[i] = new(sql.NullTime)
@@ -74,18 +70,6 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field blob", values[i])
 			} else if value != nil {
 				b.Blob = *value
-			}
-		case blob.FieldTitle:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
-			} else if value.Valid {
-				b.Title = value.String
-			}
-		case blob.FieldAlt:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field alt", values[i])
-			} else if value.Valid {
-				b.Alt = value.String
 			}
 		case blob.FieldContentType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -126,12 +110,6 @@ func (b *Blob) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("blob=")
 	builder.WriteString(fmt.Sprintf("%v", b.Blob))
-	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(b.Title)
-	builder.WriteString(", ")
-	builder.WriteString("alt=")
-	builder.WriteString(b.Alt)
 	builder.WriteString(", ")
 	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)

@@ -1,4 +1,4 @@
-package blob
+package blobService
 
 import (
 	"github.com/google/uuid"
@@ -10,7 +10,7 @@ const (
 	ErrBlobDoesNotExist = "ErrBlobDoesNotExist: Requested blob does not exist"
 )
 
-func (s BlobService) GetBlob(uuid uuid.UUID, tx *ent.Tx) (*ent.Blob, error) {
+func (s BlobService) GetBlobById(uuid uuid.UUID, tx *ent.Tx) (*ent.Blob, error) {
 	blob, err := tx.Blob.Get(s.ctx, uuid)
 	if err != nil {
 		return nil, errors.Error(ErrBlobDoesNotExist)

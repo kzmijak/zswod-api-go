@@ -1,4 +1,4 @@
-package blob
+package blobService
 
 import "context"
 

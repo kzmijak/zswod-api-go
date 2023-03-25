@@ -8,7 +8,7 @@ import (
 
 func (query GalleryQuery) JoinPreviewImage() GalleryQuery {
 	query.WithImages(func(iq *ent.ImageQuery) {
-		imageQuery.FromQuery(iq).QueryOrderedWithBlobId().Where(image.Order(0))
+		imageQuery.FromQuery(iq).QueryOrdered().Where(image.Order(0))
 	})
 
 	return query
