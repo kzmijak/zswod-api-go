@@ -3,7 +3,6 @@ package articleModel
 import "github.com/google/uuid"
 
 type CreateArticlePayload struct {
-	ID				uuid.UUID `json:"id,omitempty"`
 	Title     string    `json:"title"`
 	Short     string    `json:"short"`
 	Content   string    `json:"content"`
@@ -14,11 +13,6 @@ type CreateArticlePayload struct {
 func NewCreateArticlePayload () CreateArticlePayload {
 	return CreateArticlePayload{}
 }
-
-func (model CreateArticlePayload) WithId(id uuid.UUID) CreateArticlePayload {
-	model.ID = id
-	return model
-} 
 
 func (model CreateArticlePayload) WithTitle(title string) CreateArticlePayload {
 	model.Title = title

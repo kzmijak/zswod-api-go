@@ -1,16 +1,20 @@
 package galleryService
 
-import "context"
+import (
+	"context"
+
+	"github.com/kzmijak/zswod_api_go/services/galleryService/selectors"
+)
 
 type GalleryService struct {
+	selectors selectors.GallerySelector
 	ctx context.Context
 }
 
-func New() GalleryService {
-	return GalleryService{}
+func New(ctx context.Context) GalleryService {
+	return GalleryService{
+		selectors: selectors.Initialize(ctx),
+		ctx: ctx,
+	}
 }
 
-func (s GalleryService) WithContext(ctx context.Context) GalleryService {
-	s.ctx = ctx
-	return s
-}

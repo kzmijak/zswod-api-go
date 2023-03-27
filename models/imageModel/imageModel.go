@@ -12,7 +12,7 @@ type Image struct {
 	ID         uuid.UUID `json:"id,omitempty"`
 	CreateTime time.Time `json:"createTime"`
 	Alt        string    `json:"alt,omitempty"`
-	Order 		 int      `json:"order,omitempty"`
+	Order 		 int      `json:"order"`
 	Src		 string `json:"src"`
 }
 

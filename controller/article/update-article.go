@@ -17,7 +17,6 @@ const (
 
 type UpdateArticleRequest struct {
 	ArticleId string `json:"articleId"`
-	GalleryId string `json:"galleryId"`
 	Article articleModel.UpdateArticlePayload `json:"article"`
 	Images []imageModel.CreateImagePayload `json:"images"`
 }
@@ -45,12 +44,15 @@ func (c ArticleController) UpdateArticle(ctx *gin.Context) {
 		return
 	}
 
-	galleryId := requestBody.GalleryId
-	gallery, err := c.GalleryService.FlushGalleryImages(galleryId, tx)
+	relatedGallery, err := c.GalleryService.GetGalleryByArticleId(article.ID, tx)
+	if err != nil {
+		return
+	}
+
+	gallery, err := c.GalleryService.FlushGalleryImages(relatedGallery.ID, tx)
 	if err != nil {
 		return 
 	}
-
 	
 	for _, imageRequest := range requestBody.Images {
 		_, err := c.ImageService.CreateImage(imageRequest, gallery.ID, tx)

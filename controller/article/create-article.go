@@ -1,7 +1,6 @@
 package articleController
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,6 +17,7 @@ type CreateArticleRequest struct {
 	Title     string    `json:"title"`
 	Short     string    `json:"short"`
 	Content   string    `json:"content"`
+	GalleryTitle string `json:"galleryTitle"`
 	Images []imageModel.CreateImagePayload `json:"images"`
 }
 
@@ -45,7 +45,7 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 		WithContent(requestBody.Content).
 		WithAuthorId(authorId)
 
-	galleryId, err := c.createGallery(requestBody.Title, authorId, tx)
+	galleryId, err := c.createGallery(requestBody.GalleryTitle, authorId, tx)
 	if err != nil {
 		return
 	}
@@ -66,11 +66,9 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 }
 
 func (c ArticleController) createGallery(title string, authorId uuid.UUID, tx *ent.Tx) (uuid.UUID, error) {
-	galleryName := fmt.Sprintf(`Galeria artykułu "%v"`, title)
-
 	payload := galleryModel.NewCreateGalleryPayload().
 		WithAuthorId(authorId).
-		WithTitle(galleryName)
+		WithTitle(title)
 
 	galleryEntity, err := c.GalleryService.CreateGallery(payload, tx)
 	if err != nil {

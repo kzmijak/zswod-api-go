@@ -69,7 +69,7 @@ func (c Controller) Run() {
 	c.BlobService = blobService.New().WithContext(c.Ctx)
 	c.ImageService = imageService.New().WithContext(c.Ctx)
 	c.ArticleService = articleService.New(c.Ctx)
-	c.GalleryService = galleryService.New().WithContext(c.Ctx)
+	c.GalleryService = galleryService.New(c.Ctx)
 	c.CustomPageService = customPageService.New(c.Ctx)
 	
 	jwtController.New(c.Controller)
