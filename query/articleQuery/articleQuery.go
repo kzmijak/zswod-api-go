@@ -6,10 +6,13 @@ type ArticleQuery struct {
 	*ent.ArticleQuery
 }
 
+
 func FromQuery (query *ent.ArticleQuery) ArticleQuery {
-	return ArticleQuery{
+	aq :=  ArticleQuery{
 		query,
 	}
+	
+	return aq;
 }
 
 func FromTx(tx *ent.Tx) ArticleQuery {

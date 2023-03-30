@@ -3,6 +3,7 @@
 package article
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,6 +26,8 @@ const (
 	FieldShort = "short"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// EdgeGallery holds the string denoting the gallery edge name in mutations.
 	EdgeGallery = "gallery"
 	// EdgeAuthor holds the string denoting the author edge name in mutations.
@@ -65,6 +68,7 @@ var Columns = []string{
 	FieldTitleNormalized,
 	FieldShort,
 	FieldContent,
+	FieldStatus,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "articles"
@@ -102,3 +106,29 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// Status values.
+const (
+	StatusDraft     Status = "Draft"
+	StatusReview    Status = "Review"
+	StatusPublished Status = "Published"
+	StatusRemoved   Status = "Removed"
+	StatusUnknown   Status = "Unknown"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusDraft, StatusReview, StatusPublished, StatusRemoved, StatusUnknown:
+		return nil
+	default:
+		return fmt.Errorf("article: invalid enum value for status field: %q", s)
+	}
+}

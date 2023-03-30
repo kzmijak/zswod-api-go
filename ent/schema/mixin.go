@@ -10,7 +10,6 @@ import (
 type UuidMixin struct {
 	mixin.Schema
 }
-
 func (UuidMixin) Fields() []ent.Field {
 	return []ent.Field {
 			field.UUID("id", uuid.UUID{}).
@@ -23,9 +22,17 @@ func (UuidMixin) Fields() []ent.Field {
 type IconMixin struct {
 	mixin.Schema
 }
-
 func (IconMixin) Fields() []ent.Field {
 	return []ent.Field {
 			field.String("iconId").Optional(),
+	}
+}
+
+type SoftDeleteMixin struct {
+	mixin.Schema
+}
+func (SoftDeleteMixin) Fields() []ent.Field {
+	return []ent.Field {
+		field.Bool("isDeleted").Default(false),
 	}
 }

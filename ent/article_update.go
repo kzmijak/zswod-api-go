@@ -62,6 +62,12 @@ func (au *ArticleUpdate) SetContent(s string) *ArticleUpdate {
 	return au
 }
 
+// SetStatus sets the "status" field.
+func (au *ArticleUpdate) SetStatus(a article.Status) *ArticleUpdate {
+	au.mutation.SetStatus(a)
+	return au
+}
+
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
 func (au *ArticleUpdate) SetGalleryID(id uuid.UUID) *ArticleUpdate {
 	au.mutation.SetGalleryID(id)
@@ -218,6 +224,11 @@ func (au *ArticleUpdate) check() error {
 			return &ValidationError{Name: "short", err: fmt.Errorf(`ent: validator failed for field "Article.short": %w`, err)}
 		}
 	}
+	if v, ok := au.mutation.Status(); ok {
+		if err := article.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Article.status": %w`, err)}
+		}
+	}
 	if _, ok := au.mutation.GalleryID(); au.mutation.GalleryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
@@ -259,6 +270,9 @@ func (au *ArticleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.Content(); ok {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
+	}
+	if value, ok := au.mutation.Status(); ok {
+		_spec.SetField(article.FieldStatus, field.TypeEnum, value)
 	}
 	if au.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -433,6 +447,12 @@ func (auo *ArticleUpdateOne) SetContent(s string) *ArticleUpdateOne {
 	return auo
 }
 
+// SetStatus sets the "status" field.
+func (auo *ArticleUpdateOne) SetStatus(a article.Status) *ArticleUpdateOne {
+	auo.mutation.SetStatus(a)
+	return auo
+}
+
 // SetGalleryID sets the "gallery" edge to the Gallery entity by ID.
 func (auo *ArticleUpdateOne) SetGalleryID(id uuid.UUID) *ArticleUpdateOne {
 	auo.mutation.SetGalleryID(id)
@@ -602,6 +622,11 @@ func (auo *ArticleUpdateOne) check() error {
 			return &ValidationError{Name: "short", err: fmt.Errorf(`ent: validator failed for field "Article.short": %w`, err)}
 		}
 	}
+	if v, ok := auo.mutation.Status(); ok {
+		if err := article.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Article.status": %w`, err)}
+		}
+	}
 	if _, ok := auo.mutation.GalleryID(); auo.mutation.GalleryCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Article.gallery"`)
 	}
@@ -660,6 +685,9 @@ func (auo *ArticleUpdateOne) sqlSave(ctx context.Context) (_node *Article, err e
 	}
 	if value, ok := auo.mutation.Content(); ok {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
+	}
+	if value, ok := auo.mutation.Status(); ok {
+		_spec.SetField(article.FieldStatus, field.TypeEnum, value)
 	}
 	if auo.mutation.GalleryCleared() {
 		edge := &sqlgraph.EdgeSpec{

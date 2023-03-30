@@ -22,8 +22,6 @@ func (CustomPage) Mixin() []ent.Mixin {
 	}
 }
 
-var incrementalEnabled = true
-
 // Fields of the CustomPage.
 func (CustomPage) Fields() []ent.Field {
 	return []ent.Field{

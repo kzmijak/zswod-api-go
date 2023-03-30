@@ -14,6 +14,7 @@ type ArticleModel struct {
 	CreateTime time.Time                 `json:"createTime,omitempty"`
 	UpdateTime time.Time                 `json:"updateTime,omitempty"`
 	Title      string                    `json:"title,omitempty"`
+	TitleNormalized string `json:"titleNormalized"`
 	Short      string                    `json:"short,omitempty"`
 	Content    string                    `json:"content,omitempty"`
 	Gallery    galleryModel.GalleryModel `json:"gallery"`
@@ -39,6 +40,7 @@ func FromEntity(articleEntity *ent.Article) (ArticleModel, error) {
 		Content:    articleEntity.Content,
 		CreateTime: articleEntity.CreateTime,
 		UpdateTime: articleEntity.UpdateTime,
+		TitleNormalized: articleEntity.TitleNormalized,
 		Gallery:    galleryModel,
 	}, nil
 }

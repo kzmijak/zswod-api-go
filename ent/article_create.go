@@ -76,6 +76,12 @@ func (ac *ArticleCreate) SetContent(s string) *ArticleCreate {
 	return ac
 }
 
+// SetStatus sets the "status" field.
+func (ac *ArticleCreate) SetStatus(a article.Status) *ArticleCreate {
+	ac.mutation.SetStatus(a)
+	return ac
+}
+
 // SetID sets the "id" field.
 func (ac *ArticleCreate) SetID(u uuid.UUID) *ArticleCreate {
 	ac.mutation.SetID(u)
@@ -248,6 +254,14 @@ func (ac *ArticleCreate) check() error {
 	if _, ok := ac.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Article.content"`)}
 	}
+	if _, ok := ac.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Article.status"`)}
+	}
+	if v, ok := ac.mutation.Status(); ok {
+		if err := article.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Article.status": %w`, err)}
+		}
+	}
 	if _, ok := ac.mutation.GalleryID(); !ok {
 		return &ValidationError{Name: "gallery", err: errors.New(`ent: missing required edge "Article.gallery"`)}
 	}
@@ -313,6 +327,10 @@ func (ac *ArticleCreate) createSpec() (*Article, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.Content(); ok {
 		_spec.SetField(article.FieldContent, field.TypeString, value)
 		_node.Content = value
+	}
+	if value, ok := ac.mutation.Status(); ok {
+		_spec.SetField(article.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
 	}
 	if nodes := ac.mutation.GalleryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

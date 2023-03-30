@@ -109,7 +109,8 @@ func (c Controller) Run() {
 			article.GET("/:title", ac.GetArticleByTitle)
 			article.GET("", ac.GetArticleHeadersList)
 			article.POST("/create", ac.CreateArticle).Use(jc.RequireTeacher)
-			article.PATCH("/update", ac.UpdateArticle).Use(jc.RequireTeacher)
+			article.PUT("/update", ac.UpdateArticle).Use(jc.RequireTeacher)
+			article.DELETE("/:articleId", ac.RemoveArticle).Use(jc.RequireTeacher)
 		}
 
 		gc := galleryController.New(c.Controller)

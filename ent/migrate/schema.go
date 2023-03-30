@@ -17,6 +17,7 @@ var (
 		{Name: "title_normalized", Type: field.TypeString, Unique: true},
 		{Name: "short", Type: field.TypeString, Size: 300},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"Draft", "Review", "Published", "Removed", "Unknown"}},
 		{Name: "user_articles", Type: field.TypeUUID},
 	}
 	// ArticlesTable holds the schema information for the "articles" table.
@@ -27,7 +28,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "articles_users_articles",
-				Columns:    []*schema.Column{ArticlesColumns[7]},
+				Columns:    []*schema.Column{ArticlesColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

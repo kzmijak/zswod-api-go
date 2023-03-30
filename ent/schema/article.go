@@ -31,6 +31,8 @@ func (Article) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumtext",
 		}),
+		field.Enum("status").Values("Draft", "Review", "Published", "Removed", "Unknown"),
+
 	}
 }
 

@@ -54,6 +54,7 @@ type ArticleMutation struct {
 	titleNormalized    *string
 	short              *string
 	content            *string
+	status             *article.Status
 	clearedFields      map[string]struct{}
 	gallery            *uuid.UUID
 	clearedgallery     bool
@@ -387,6 +388,42 @@ func (m *ArticleMutation) ResetContent() {
 	m.content = nil
 }
 
+// SetStatus sets the "status" field.
+func (m *ArticleMutation) SetStatus(a article.Status) {
+	m.status = &a
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ArticleMutation) Status() (r article.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the Article entity.
+// If the Article object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ArticleMutation) OldStatus(ctx context.Context) (v article.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ArticleMutation) ResetStatus() {
+	m.status = nil
+}
+
 // SetGalleryID sets the "gallery" edge to the Gallery entity by id.
 func (m *ArticleMutation) SetGalleryID(id uuid.UUID) {
 	m.gallery = &id
@@ -538,7 +575,7 @@ func (m *ArticleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ArticleMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.create_time != nil {
 		fields = append(fields, article.FieldCreateTime)
 	}
@@ -556,6 +593,9 @@ func (m *ArticleMutation) Fields() []string {
 	}
 	if m.content != nil {
 		fields = append(fields, article.FieldContent)
+	}
+	if m.status != nil {
+		fields = append(fields, article.FieldStatus)
 	}
 	return fields
 }
@@ -577,6 +617,8 @@ func (m *ArticleMutation) Field(name string) (ent.Value, bool) {
 		return m.Short()
 	case article.FieldContent:
 		return m.Content()
+	case article.FieldStatus:
+		return m.Status()
 	}
 	return nil, false
 }
@@ -598,6 +640,8 @@ func (m *ArticleMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldShort(ctx)
 	case article.FieldContent:
 		return m.OldContent(ctx)
+	case article.FieldStatus:
+		return m.OldStatus(ctx)
 	}
 	return nil, fmt.Errorf("unknown Article field %s", name)
 }
@@ -648,6 +692,13 @@ func (m *ArticleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
+		return nil
+	case article.FieldStatus:
+		v, ok := value.(article.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Article field %s", name)
@@ -715,6 +766,9 @@ func (m *ArticleMutation) ResetField(name string) error {
 		return nil
 	case article.FieldContent:
 		m.ResetContent()
+		return nil
+	case article.FieldStatus:
+		m.ResetStatus()
 		return nil
 	}
 	return fmt.Errorf("unknown Article field %s", name)

@@ -21,6 +21,7 @@ type CreateArticleRequest struct {
 	Images []imageModel.CreateImagePayload `json:"images"`
 }
 
+
 func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleRequest
 	var err error
@@ -65,16 +66,17 @@ func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, articleId)
 }
 
+
 func (c ArticleController) createGallery(title string, authorId uuid.UUID, tx *ent.Tx) (uuid.UUID, error) {
 	payload := galleryModel.NewCreateGalleryPayload().
 		WithAuthorId(authorId).
 		WithTitle(title)
 
-	galleryEntity, err := c.GalleryService.CreateGallery(payload, tx)
+	galleryModel, err := c.GalleryService.CreateGallery(payload, tx)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	return galleryEntity.ID, nil
+	return galleryModel.ID, nil
 }
 
 func (c ArticleController) createImages(req []imageModel.CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) error {

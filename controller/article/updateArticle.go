@@ -8,15 +8,10 @@ import (
 	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/models/imageModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/utils/parser"
-)
-
-const (
-	ErrCouldNotParseArticleId = "ErrCouldNotParseArticleId: Could not parse Article Guid"
 )
 
 type UpdateArticleRequest struct {
-	ArticleId string `json:"articleId"`
+	TitleNormalized string `json:"titleNormalized"`
 	Article articleModel.UpdateArticlePayload `json:"article"`
 	Images []imageModel.CreateImagePayload `json:"images"`
 }
@@ -34,33 +29,33 @@ func (c ArticleController) UpdateArticle(ctx *gin.Context) {
 		return
 	}
 
-	articleUuid, err := parser.ParseUuid(requestBody.ArticleId)
+	article, err := c.ArticleService.GetArticleByTitle(requestBody.TitleNormalized, tx)
 	if err != nil {
 		return
 	}
 
-	article, err := c.ArticleService.UpdateArticle(articleUuid, requestBody.Article, tx)
+	articleUpdated, err := c.ArticleService.UpdateArticle(article.ID, requestBody.Article, tx)
 	if err != nil {
 		return
 	}
 
-	relatedGallery, err := c.GalleryService.GetGalleryByArticleId(article.ID, tx)
+	relatedGallery, err := c.GalleryService.GetGalleryByArticleId(articleUpdated.ID, tx)
 	if err != nil {
 		return
 	}
 
-	gallery, err := c.GalleryService.FlushGalleryImages(relatedGallery.ID, tx)
+	err = c.GalleryService.FlushGalleryImages(relatedGallery.ID, tx)
 	if err != nil {
 		return 
 	}
 	
 	for _, imageRequest := range requestBody.Images {
-		_, err := c.ImageService.CreateImage(imageRequest, gallery.ID, tx)
+		_, err := c.ImageService.CreateImage(imageRequest, relatedGallery.ID, tx)
 		if err != nil {
 			return
 		}
 	}
 
 	tx.Commit()
-	ctx.IndentedJSON(http.StatusOK, article.ID)
+	ctx.IndentedJSON(http.StatusOK, articleUpdated.ID)
 }

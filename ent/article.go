@@ -31,6 +31,8 @@ type Article struct {
 	Short string `json:"short,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
+	// Status holds the value of the "status" field.
+	Status article.Status `json:"status,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ArticleQuery when eager-loading is set.
 	Edges         ArticleEdges `json:"edges"`
@@ -90,7 +92,7 @@ func (*Article) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case article.FieldTitle, article.FieldTitleNormalized, article.FieldShort, article.FieldContent:
+		case article.FieldTitle, article.FieldTitleNormalized, article.FieldShort, article.FieldContent, article.FieldStatus:
 			values[i] = new(sql.NullString)
 		case article.FieldCreateTime, article.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
@@ -154,6 +156,12 @@ func (a *Article) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
 			} else if value.Valid {
 				a.Content = value.String
+			}
+		case article.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				a.Status = article.Status(value.String)
 			}
 		case article.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -222,6 +230,9 @@ func (a *Article) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(a.Content)
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", a.Status))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/ent/article"
 	"github.com/kzmijak/zswod_api_go/models/articleModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"github.com/kzmijak/zswod_api_go/utils/sanitizer"
@@ -26,6 +27,7 @@ func (s ArticleService) CreateArticle(req articleModel.CreateArticlePayload, tx 
 		SetCreateTime(time.Now()).
 		SetTitle(req.Title).
 		SetTitleNormalized(titleSanitized).
+		SetStatus(article.StatusPublished).
 		SetShort(req.Short).
 		SetContent(req.Content).
 		SetAuthorID(req.AuthorId).
