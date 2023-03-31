@@ -39,6 +39,34 @@ func (bu *BlobUpdate) SetContentType(s string) *BlobUpdate {
 	return bu
 }
 
+// SetType sets the "type" field.
+func (bu *BlobUpdate) SetType(b blob.Type) *BlobUpdate {
+	bu.mutation.SetType(b)
+	return bu
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (bu *BlobUpdate) SetNillableType(b *blob.Type) *BlobUpdate {
+	if b != nil {
+		bu.SetType(*b)
+	}
+	return bu
+}
+
+// SetIsPublic sets the "isPublic" field.
+func (bu *BlobUpdate) SetIsPublic(b bool) *BlobUpdate {
+	bu.mutation.SetIsPublic(b)
+	return bu
+}
+
+// SetNillableIsPublic sets the "isPublic" field if the given value is not nil.
+func (bu *BlobUpdate) SetNillableIsPublic(b *bool) *BlobUpdate {
+	if b != nil {
+		bu.SetIsPublic(*b)
+	}
+	return bu
+}
+
 // Mutation returns the BlobMutation object of the builder.
 func (bu *BlobUpdate) Mutation() *BlobMutation {
 	return bu.mutation
@@ -51,12 +79,18 @@ func (bu *BlobUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(bu.hooks) == 0 {
+		if err = bu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = bu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BlobMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = bu.check(); err != nil {
+				return 0, err
 			}
 			bu.mutation = mutation
 			affected, err = bu.sqlSave(ctx)
@@ -98,6 +132,16 @@ func (bu *BlobUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (bu *BlobUpdate) check() error {
+	if v, ok := bu.mutation.GetType(); ok {
+		if err := blob.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Blob.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -121,6 +165,12 @@ func (bu *BlobUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := bu.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
+	}
+	if value, ok := bu.mutation.GetType(); ok {
+		_spec.SetField(blob.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := bu.mutation.IsPublic(); ok {
+		_spec.SetField(blob.FieldIsPublic, field.TypeBool, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -153,6 +203,34 @@ func (buo *BlobUpdateOne) SetContentType(s string) *BlobUpdateOne {
 	return buo
 }
 
+// SetType sets the "type" field.
+func (buo *BlobUpdateOne) SetType(b blob.Type) *BlobUpdateOne {
+	buo.mutation.SetType(b)
+	return buo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (buo *BlobUpdateOne) SetNillableType(b *blob.Type) *BlobUpdateOne {
+	if b != nil {
+		buo.SetType(*b)
+	}
+	return buo
+}
+
+// SetIsPublic sets the "isPublic" field.
+func (buo *BlobUpdateOne) SetIsPublic(b bool) *BlobUpdateOne {
+	buo.mutation.SetIsPublic(b)
+	return buo
+}
+
+// SetNillableIsPublic sets the "isPublic" field if the given value is not nil.
+func (buo *BlobUpdateOne) SetNillableIsPublic(b *bool) *BlobUpdateOne {
+	if b != nil {
+		buo.SetIsPublic(*b)
+	}
+	return buo
+}
+
 // Mutation returns the BlobMutation object of the builder.
 func (buo *BlobUpdateOne) Mutation() *BlobMutation {
 	return buo.mutation
@@ -172,12 +250,18 @@ func (buo *BlobUpdateOne) Save(ctx context.Context) (*Blob, error) {
 		node *Blob
 	)
 	if len(buo.hooks) == 0 {
+		if err = buo.check(); err != nil {
+			return nil, err
+		}
 		node, err = buo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*BlobMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = buo.check(); err != nil {
+				return nil, err
 			}
 			buo.mutation = mutation
 			node, err = buo.sqlSave(ctx)
@@ -225,6 +309,16 @@ func (buo *BlobUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (buo *BlobUpdateOne) check() error {
+	if v, ok := buo.mutation.GetType(); ok {
+		if err := blob.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Blob.type": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -265,6 +359,12 @@ func (buo *BlobUpdateOne) sqlSave(ctx context.Context) (_node *Blob, err error) 
 	}
 	if value, ok := buo.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
+	}
+	if value, ok := buo.mutation.GetType(); ok {
+		_spec.SetField(blob.FieldType, field.TypeEnum, value)
+	}
+	if value, ok := buo.mutation.IsPublic(); ok {
+		_spec.SetField(blob.FieldIsPublic, field.TypeBool, value)
 	}
 	_node = &Blob{config: buo.config}
 	_spec.Assign = _node.assignValues

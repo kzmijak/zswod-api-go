@@ -76,6 +76,8 @@ var (
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "blob", Type: field.TypeBytes, SchemaType: map[string]string{"mysql": "mediumblob"}},
 		{Name: "content_type", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"Picture", "Attachment"}, Default: "Picture"},
+		{Name: "is_public", Type: field.TypeBool, Default: true},
 	}
 	// BlobsTable holds the schema information for the "blobs" table.
 	BlobsTable = &schema.Table{

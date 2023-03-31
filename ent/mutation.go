@@ -1436,6 +1436,8 @@ type BlobMutation struct {
 	create_time   *time.Time
 	blob          *[]byte
 	contentType   *string
+	_type         *blob.Type
+	isPublic      *bool
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Blob, error)
@@ -1654,6 +1656,78 @@ func (m *BlobMutation) ResetContentType() {
 	m.contentType = nil
 }
 
+// SetType sets the "type" field.
+func (m *BlobMutation) SetType(b blob.Type) {
+	m._type = &b
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *BlobMutation) GetType() (r blob.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Blob entity.
+// If the Blob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BlobMutation) OldType(ctx context.Context) (v blob.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *BlobMutation) ResetType() {
+	m._type = nil
+}
+
+// SetIsPublic sets the "isPublic" field.
+func (m *BlobMutation) SetIsPublic(b bool) {
+	m.isPublic = &b
+}
+
+// IsPublic returns the value of the "isPublic" field in the mutation.
+func (m *BlobMutation) IsPublic() (r bool, exists bool) {
+	v := m.isPublic
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsPublic returns the old "isPublic" field's value of the Blob entity.
+// If the Blob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BlobMutation) OldIsPublic(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsPublic is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsPublic requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsPublic: %w", err)
+	}
+	return oldValue.IsPublic, nil
+}
+
+// ResetIsPublic resets all changes to the "isPublic" field.
+func (m *BlobMutation) ResetIsPublic() {
+	m.isPublic = nil
+}
+
 // Where appends a list predicates to the BlobMutation builder.
 func (m *BlobMutation) Where(ps ...predicate.Blob) {
 	m.predicates = append(m.predicates, ps...)
@@ -1673,7 +1747,7 @@ func (m *BlobMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BlobMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 5)
 	if m.create_time != nil {
 		fields = append(fields, blob.FieldCreateTime)
 	}
@@ -1682,6 +1756,12 @@ func (m *BlobMutation) Fields() []string {
 	}
 	if m.contentType != nil {
 		fields = append(fields, blob.FieldContentType)
+	}
+	if m._type != nil {
+		fields = append(fields, blob.FieldType)
+	}
+	if m.isPublic != nil {
+		fields = append(fields, blob.FieldIsPublic)
 	}
 	return fields
 }
@@ -1697,6 +1777,10 @@ func (m *BlobMutation) Field(name string) (ent.Value, bool) {
 		return m.Blob()
 	case blob.FieldContentType:
 		return m.ContentType()
+	case blob.FieldType:
+		return m.GetType()
+	case blob.FieldIsPublic:
+		return m.IsPublic()
 	}
 	return nil, false
 }
@@ -1712,6 +1796,10 @@ func (m *BlobMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldBlob(ctx)
 	case blob.FieldContentType:
 		return m.OldContentType(ctx)
+	case blob.FieldType:
+		return m.OldType(ctx)
+	case blob.FieldIsPublic:
+		return m.OldIsPublic(ctx)
 	}
 	return nil, fmt.Errorf("unknown Blob field %s", name)
 }
@@ -1741,6 +1829,20 @@ func (m *BlobMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContentType(v)
+		return nil
+	case blob.FieldType:
+		v, ok := value.(blob.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
+		return nil
+	case blob.FieldIsPublic:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsPublic(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Blob field %s", name)
@@ -1799,6 +1901,12 @@ func (m *BlobMutation) ResetField(name string) error {
 		return nil
 	case blob.FieldContentType:
 		m.ResetContentType()
+		return nil
+	case blob.FieldType:
+		m.ResetType()
+		return nil
+	case blob.FieldIsPublic:
+		m.ResetIsPublic()
 		return nil
 	}
 	return fmt.Errorf("unknown Blob field %s", name)

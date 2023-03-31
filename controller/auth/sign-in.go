@@ -7,7 +7,6 @@ import (
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/models/role"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"github.com/kzmijak/zswod_api_go/utils/encryption"
 )
 
@@ -19,9 +18,6 @@ const (
 	ErrUnknownRole = "ErrUnknownRole: User has unknown roles and could not be retrieved"
 )
 
-const (
-	ErrInvalidUserRole = "ErrInvalidUserRole: User has invalid role"
-)
 
 type SignInRequest struct {
 	Email string `json:"email"`
@@ -50,9 +46,8 @@ func (c AuthController) SignIn(ctx *gin.Context) {
 		return
 	}
 
-	role, exists := role.FromString(user.Role.String())
-	if ! exists {
-		err = errors.Error(ErrInvalidUserRole)
+	role, err := role.FromString(user.Role.String())
+	if err != nil {
 		return
 	}
 

@@ -1,15 +1,20 @@
 package role
 
 import (
+	"github.com/kzmijak/zswod_api_go/modules/errors"
 	bimap "github.com/kzmijak/zswod_api_go/utils/bimap"
 	"golang.org/x/exp/slices"
+)
+
+const (
+	ErrRoleDoesNotExist = "ErrRoleDoesNotExist: Role does not exist."
 )
 
 type Role int 
 
 const (
-	Unknown Role = iota - 1
-	Admin Role = iota - 1
+	Unknown Role = iota
+	Admin
 	Teacher
 	LegalGuardian
 	Student
@@ -30,14 +35,22 @@ func (r Role) String() string {
 	return roleStringMap.GetByKey(r)
 }
 
-func FromString(role string) (Role, bool) {
-	return roleStringMap.GetByValue(role)
+func FromString(roleString string) (Role, error) {
+	role, exists := roleStringMap.GetByValue(roleString)
+	if !exists {
+		return Unknown, errors.Error(ErrRoleDoesNotExist)
+	}
+	
+	return role, nil
 }
 
-func FromId(id int) (role Role, exists bool) {
-	role = authority[id]
-	exists = len(authority) > id
-	return
+func FromId(roleId int) (Role, error) {
+	exists := roleStringMap.GetLength() > roleId
+	if !exists {
+		return Unknown, errors.Error(ErrRoleDoesNotExist)
+	}
+
+	return Role(roleId), nil
 }
 
 func (r Role) OrHigher() []Role{

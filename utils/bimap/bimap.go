@@ -34,3 +34,7 @@ func (bm BiMap[TEnum]) GetByValue(value string) (TEnum, bool) {
 
 	return key, exists
 }
+
+func (bm BiMap[TEnum]) GetLength() int {
+	return len(bm.keyValue)
+}

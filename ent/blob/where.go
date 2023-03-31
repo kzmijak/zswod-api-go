@@ -102,6 +102,13 @@ func ContentType(v string) predicate.Blob {
 	})
 }
 
+// IsPublic applies equality check predicate on the "isPublic" field. It's identical to IsPublicEQ.
+func IsPublic(v bool) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsPublic), v))
+	})
+}
+
 // CreateTimeEQ applies the EQ predicate on the "create_time" field.
 func CreateTimeEQ(v time.Time) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
@@ -326,6 +333,56 @@ func ContentTypeEqualFold(v string) predicate.Blob {
 func ContentTypeContainsFold(v string) predicate.Blob {
 	return predicate.Blob(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldContentType), v))
+	})
+}
+
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldType), v))
+	})
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldType), v))
+	})
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldType), v...))
+	})
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.Blob {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldType), v...))
+	})
+}
+
+// IsPublicEQ applies the EQ predicate on the "isPublic" field.
+func IsPublicEQ(v bool) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldIsPublic), v))
+	})
+}
+
+// IsPublicNEQ applies the NEQ predicate on the "isPublic" field.
+func IsPublicNEQ(v bool) predicate.Blob {
+	return predicate.Blob(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldIsPublic), v))
 	})
 }
 

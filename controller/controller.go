@@ -117,6 +117,7 @@ func (c Controller) Run() {
 		gallery := v1.Group("/gallery")
 		{
 			gallery.GET("", gc.GetGalleryHeadersList)
+			gallery.GET("/:galleryId", gc.GetGalleryById)
 		}
 
 		cpc := customPageController.New(c.Controller)

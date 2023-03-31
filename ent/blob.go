@@ -23,6 +23,10 @@ type Blob struct {
 	Blob []byte `json:"blob,omitempty"`
 	// ContentType holds the value of the "contentType" field.
 	ContentType string `json:"contentType,omitempty"`
+	// Type holds the value of the "type" field.
+	Type blob.Type `json:"type,omitempty"`
+	// IsPublic holds the value of the "isPublic" field.
+	IsPublic bool `json:"isPublic,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -32,7 +36,9 @@ func (*Blob) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case blob.FieldBlob:
 			values[i] = new([]byte)
-		case blob.FieldContentType:
+		case blob.FieldIsPublic:
+			values[i] = new(sql.NullBool)
+		case blob.FieldContentType, blob.FieldType:
 			values[i] = new(sql.NullString)
 		case blob.FieldCreateTime:
 			values[i] = new(sql.NullTime)
@@ -77,6 +83,18 @@ func (b *Blob) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				b.ContentType = value.String
 			}
+		case blob.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				b.Type = blob.Type(value.String)
+			}
+		case blob.FieldIsPublic:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field isPublic", values[i])
+			} else if value.Valid {
+				b.IsPublic = value.Bool
+			}
 		}
 	}
 	return nil
@@ -113,6 +131,12 @@ func (b *Blob) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("contentType=")
 	builder.WriteString(b.ContentType)
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", b.Type))
+	builder.WriteString(", ")
+	builder.WriteString("isPublic=")
+	builder.WriteString(fmt.Sprintf("%v", b.IsPublic))
 	builder.WriteByte(')')
 	return builder.String()
 }

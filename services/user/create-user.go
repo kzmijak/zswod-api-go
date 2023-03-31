@@ -12,7 +12,6 @@ import (
 const (
 	ErrUserCreationFailed = "ErrUserCreationFailed: Failed to save the user in the database"
 	ErrUserAlreadyExists = "ErrUserAlreadyExists: Failed to create user, user with provided email already exists"
-	ErrInvalidRole = "ErrInvalidRole: Provided user does not exist"
 )
 
 type CreateUserPayload struct {
@@ -22,8 +21,8 @@ type CreateUserPayload struct {
 }
 
 func (s UserService) CreateUser(payload CreateUserPayload, tx *ent.Tx) (*ent.User, error) {
-	if _, exists := role.FromString(payload.Role); !exists {
-		return nil, errors.Error(ErrInvalidRole)
+	if _, err := role.FromString(payload.Role); err != nil {
+		return nil, err
 	}
 
 	existingUser, _ := s.GetUserByEmail(payload.Email, tx)

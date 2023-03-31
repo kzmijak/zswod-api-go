@@ -97,6 +97,10 @@ func init() {
 	blobDescCreateTime := blobMixinFields1[0].Descriptor()
 	// blob.DefaultCreateTime holds the default value on creation for the create_time field.
 	blob.DefaultCreateTime = blobDescCreateTime.Default.(func() time.Time)
+	// blobDescIsPublic is the schema descriptor for isPublic field.
+	blobDescIsPublic := blobFields[3].Descriptor()
+	// blob.DefaultIsPublic holds the default value on creation for the isPublic field.
+	blob.DefaultIsPublic = blobDescIsPublic.Default.(bool)
 	// blobDescID is the schema descriptor for id field.
 	blobDescID := blobMixinFields0[0].Descriptor()
 	// blob.DefaultID holds the default value on creation for the id field.

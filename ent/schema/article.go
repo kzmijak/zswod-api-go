@@ -32,7 +32,6 @@ func (Article) Fields() []ent.Field {
 			dialect.MySQL: "mediumtext",
 		}),
 		field.Enum("status").Values("Draft", "Review", "Published", "Removed", "Unknown"),
-
 	}
 }
 

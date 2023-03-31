@@ -20,6 +20,10 @@ func (c JwtService) extractClaim(claimKey string, tokenString string) (string, e
 			return value, nil
 		} 
 		if value, ok := claims[claimKey].(float64); ok {
+			if value == 0 {
+				return "0", nil;
+			} 
+
 			str := fmt.Sprintf("%.0f", value)
     	return strings.TrimRight(str, ".0"), nil
 		}

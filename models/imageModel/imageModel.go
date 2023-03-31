@@ -19,8 +19,6 @@ type Image struct {
 var Nil = Image{}
 
 func FromEntity(imageEntity *ent.Image) (Image, error) {
-
-
 	return Image{
 		ID: imageEntity.ID,
 		Alt: imageEntity.Alt,

@@ -47,6 +47,34 @@ func (bc *BlobCreate) SetContentType(s string) *BlobCreate {
 	return bc
 }
 
+// SetType sets the "type" field.
+func (bc *BlobCreate) SetType(b blob.Type) *BlobCreate {
+	bc.mutation.SetType(b)
+	return bc
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (bc *BlobCreate) SetNillableType(b *blob.Type) *BlobCreate {
+	if b != nil {
+		bc.SetType(*b)
+	}
+	return bc
+}
+
+// SetIsPublic sets the "isPublic" field.
+func (bc *BlobCreate) SetIsPublic(b bool) *BlobCreate {
+	bc.mutation.SetIsPublic(b)
+	return bc
+}
+
+// SetNillableIsPublic sets the "isPublic" field if the given value is not nil.
+func (bc *BlobCreate) SetNillableIsPublic(b *bool) *BlobCreate {
+	if b != nil {
+		bc.SetIsPublic(*b)
+	}
+	return bc
+}
+
 // SetID sets the "id" field.
 func (bc *BlobCreate) SetID(u uuid.UUID) *BlobCreate {
 	bc.mutation.SetID(u)
@@ -142,6 +170,14 @@ func (bc *BlobCreate) defaults() {
 		v := blob.DefaultCreateTime()
 		bc.mutation.SetCreateTime(v)
 	}
+	if _, ok := bc.mutation.GetType(); !ok {
+		v := blob.DefaultType
+		bc.mutation.SetType(v)
+	}
+	if _, ok := bc.mutation.IsPublic(); !ok {
+		v := blob.DefaultIsPublic
+		bc.mutation.SetIsPublic(v)
+	}
 	if _, ok := bc.mutation.ID(); !ok {
 		v := blob.DefaultID()
 		bc.mutation.SetID(v)
@@ -158,6 +194,17 @@ func (bc *BlobCreate) check() error {
 	}
 	if _, ok := bc.mutation.ContentType(); !ok {
 		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
+	}
+	if _, ok := bc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Blob.type"`)}
+	}
+	if v, ok := bc.mutation.GetType(); ok {
+		if err := blob.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Blob.type": %w`, err)}
+		}
+	}
+	if _, ok := bc.mutation.IsPublic(); !ok {
+		return &ValidationError{Name: "isPublic", err: errors.New(`ent: missing required field "Blob.isPublic"`)}
 	}
 	return nil
 }
@@ -206,6 +253,14 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)
 		_node.ContentType = value
+	}
+	if value, ok := bc.mutation.GetType(); ok {
+		_spec.SetField(blob.FieldType, field.TypeEnum, value)
+		_node.Type = value
+	}
+	if value, ok := bc.mutation.IsPublic(); ok {
+		_spec.SetField(blob.FieldIsPublic, field.TypeBool, value)
+		_node.IsPublic = value
 	}
 	return _node, _spec
 }

@@ -11,7 +11,6 @@ const (
 	ErrNoRole = "ErrNoRole: User role is invalid"
 )
 
-// TODO: Remember that tokenString is string, whilst the target is to have it as byte array
 func (c JwtService) ExtractTokenRole(tokenString string) (*role.Role, error) {
 	roleString, err := c.extractClaim(CLAIM_ROLE, tokenString)
 	
@@ -24,10 +23,10 @@ func (c JwtService) ExtractTokenRole(tokenString string) (*role.Role, error) {
 		return nil, errors.Error(ErrNoRole)
 	}
 
-	role, exists := role.FromId(roleId)
-	if exists {
-		return &role, nil
+	role, err := role.FromId(roleId)
+	if err != nil {
+		return nil, err
 	}
 	
-	return nil, errors.Error(ErrNoRole)
+	return &role, nil
 }

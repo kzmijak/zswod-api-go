@@ -28,6 +28,8 @@ func (Blob) Fields() []ent.Field {
 			dialect.MySQL: "mediumblob",
 		}),
 		field.String("contentType"),
+		field.Enum("type").Values("Picture", "Attachment").Default("Picture"),
+		field.Bool("isPublic").Default(true),
 	}
 }
 
