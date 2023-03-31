@@ -1,10 +1,7 @@
 package jwt
 
 import (
-	"strconv"
-
 	"github.com/kzmijak/zswod_api_go/models/role"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
 
 const (
@@ -18,12 +15,7 @@ func (c JwtService) ExtractTokenRole(tokenString string) (*role.Role, error) {
 		return nil, err
 	}
 
-	roleId, err := strconv.Atoi(roleString)
-	if err != nil {
-		return nil, errors.Error(ErrNoRole)
-	}
-
-	role, err := role.FromId(roleId)
+	role, err := role.FromString(roleString)
 	if err != nil {
 		return nil, err
 	}

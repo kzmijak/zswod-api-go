@@ -1,16 +1,19 @@
 package blobService
 
-import "context"
+import (
+	"context"
+
+	"github.com/kzmijak/zswod_api_go/services/blobService/selectors"
+)
 
 type BlobService struct {
+	selectors selectors.BlobSelector
 	ctx context.Context
 }
 
-func New() BlobService {
-	return BlobService{}
-}
-
-func (s BlobService) WithContext(ctx context.Context) (BlobService) {
-	s.ctx = ctx
-	return s
+func New(ctx context.Context) BlobService {
+	return BlobService{
+		selectors: selectors.Initialize(ctx),
+		ctx: ctx,
+	}
 }

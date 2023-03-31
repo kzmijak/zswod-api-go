@@ -66,7 +66,7 @@ func (c Controller) Run() {
 
 	c.JwtService = jwt.New().WithConfig(c.Cfg.Auth)
 	c.UserService = user.New().WithContext(c.Ctx)
-	c.BlobService = blobService.New().WithContext(c.Ctx)
+	c.BlobService = blobService.New(c.Ctx)
 	c.ImageService = imageService.New().WithContext(c.Ctx)
 	c.ArticleService = articleService.New(c.Ctx)
 	c.GalleryService = galleryService.New(c.Ctx)

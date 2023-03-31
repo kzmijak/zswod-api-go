@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
-	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/blobModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/samber/lo"
 )
@@ -41,7 +41,7 @@ func (c *BlobController) GetBlobsList(ctx *gin.Context) {
 		return
 	}
 
-	blobUrls := lo.Map(response.Blobs, func(item *ent.Blob, index int) BlobResponse {
+	blobUrls := lo.Map(response.Blobs, func(item blobModel.BlobModel, index int) BlobResponse {
 		return BlobResponse{
 			Id: item.ID.String(),
 			CreateTime: item.CreateTime,

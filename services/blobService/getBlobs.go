@@ -2,43 +2,29 @@ package blobService
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/ent/blob"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
-)
-
-const (
-	ErrCouldNotQuery = "ErrCouldNotQuery: Failed to query for blobs"
+	"github.com/kzmijak/zswod_api_go/models/blobModel"
 )
 
 type GetBlobsReturnType struct {
-	Blobs []*ent.Blob `json:"blobs"`
+	Blobs []blobModel.BlobModel `json:"blobs"`
 	Eof bool `json:"eof"` 
 }
 
-func (s BlobService) GetBlobs(amount int, offset int, tx *ent.Tx) (*GetBlobsReturnType, error) {
-	queryBase := tx.Blob.Query()
-	
-	count, err := queryBase.Count(s.ctx)
+var Nil = GetBlobsReturnType{}
 
+func (s BlobService) GetBlobs(amount int, offset int, tx *ent.Tx) (GetBlobsReturnType, error) {
+	blobEntities, eof, err := s.selectors.SelectPublicPictureBlobs(tx, offset, amount)
 	if err != nil {
-		return nil, errors.Error(ErrCouldNotQuery)
+		return Nil, err
 	}
 
-	blobs, err := queryBase.
-		Limit(amount).
-		Offset(offset).
-		Order(ent.Desc(blob.FieldCreateTime)).
-		All(s.ctx)
-	
+	blobModels, err := blobModel.ArrayFromEntities(blobEntities)
 	if err != nil {
-		return nil, errors.Error(ErrCouldNotQuery)
+		return Nil, err
 	}
 
-	eof := amount + offset >= count
-
-
-	return &GetBlobsReturnType{
-		Blobs: blobs,
+	return GetBlobsReturnType{
+		Blobs: blobModels,
 		Eof: eof,
 	}, nil
 }

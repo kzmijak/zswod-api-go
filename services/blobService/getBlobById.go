@@ -3,18 +3,18 @@ package blobService
 import (
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
-	"github.com/kzmijak/zswod_api_go/modules/errors"
+	"github.com/kzmijak/zswod_api_go/models/blobModel"
 )
 
 const (
 	ErrBlobDoesNotExist = "ErrBlobDoesNotExist: Requested blob does not exist"
 )
 
-func (s BlobService) GetBlobById(uuid uuid.UUID, tx *ent.Tx) (*ent.Blob, error) {
-	blob, err := tx.Blob.Get(s.ctx, uuid)
+func (s BlobService) GetBlobById(uuid uuid.UUID, tx *ent.Tx) (blobModel.BlobModel, error) {
+	blob, err := s.selectors.SelectBlobById(tx, uuid)
 	if err != nil {
-		return nil, errors.Error(ErrBlobDoesNotExist)
+		return blobModel.Nil, err
 	}
 
-	return blob, nil
+	return blobModel.FromEntity(blob)
 }

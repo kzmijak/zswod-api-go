@@ -2,44 +2,33 @@ package blobType
 
 import (
 	"github.com/kzmijak/zswod_api_go/modules/errors"
-	"github.com/kzmijak/zswod_api_go/utils/bimap"
+	"github.com/kzmijak/zswod_api_go/utils/array"
 )
 
 const (
 	ErrBlobTypeDoesNotExist = "ErrBlobTypeDoesNotExist: Blob type does not exist"
 )
 
-type BlobType int
+type BlobType string
 
 const (
-	Unknown    BlobType = iota - 1
-	Attachment BlobType = iota - 1
-	Picture
+	Unknown    BlobType = "Unknown"
+	Attachment BlobType = "Attachment"
+	Picture    BlobType = "Picture"
 )
 
-var blobTypeStringMap = bimap.NewBiMap[BlobType]().
-	WithMember(Unknown, "Unknown").
-	WithMember(Attachment, "Attachment").
-	WithMember(Picture, "Picture")
+var BlobTypes = []BlobType{ Attachment, Picture }
 
 func (blobType BlobType) String() string {
-	return blobTypeStringMap.GetByKey(blobType)
+	return string(blobType)
 }
 
 func FromString(blobTypeString string) (BlobType, error) {
-	blobType, exists := blobTypeStringMap.GetByValue(blobTypeString)
+	blobType := BlobType(blobTypeString)
+	exists := array.Includes(BlobTypes, blobType)
 	if !exists {
 		return Unknown, errors.Error(ErrBlobTypeDoesNotExist)
 	}
 
 	return blobType, nil
-}
-
-func FromId(blobTypeId int) (BlobType, error) {
-	exists := blobTypeStringMap.GetLength() > blobTypeId
-	if !exists {
-		return Unknown, errors.Error(ErrBlobTypeDoesNotExist)
-	}
-
-	return BlobType(blobTypeId), nil
 }
