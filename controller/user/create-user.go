@@ -7,7 +7,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/models/role"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/user"
+	"github.com/kzmijak/zswod_api_go/services/userService"
 	"golang.org/x/exp/slices"
 )
 
@@ -17,7 +17,7 @@ const (
 )
 
 type CreateUserRequest struct {
-	user.CreateUserPayload
+	userService.CreateUserPayload
 	PasswordConfirm string `json:"passwordConfirm"`
 }
 

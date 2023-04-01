@@ -1,4 +1,4 @@
-package user
+package userService
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"

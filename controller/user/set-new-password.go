@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/kzmijak/zswod_api_go/services/user"
+	"github.com/kzmijak/zswod_api_go/services/userService"
 )
 
 type SetNewPasswordRequest struct {
@@ -32,7 +32,7 @@ func (c UserController) SetNewPassword(ctx *gin.Context) {
 		return
 	}
 
-	_, err = c.UserService.UpdateUserPassword(owner.ID.String(), user.UpdateUserPasswordPayload{
+	_, err = c.UserService.UpdateUserPassword(owner.ID.String(), userService.UpdateUserPasswordPayload{
 		NewPassword: requestBody.Password,
 	}, tx)
 	if err != nil {
