@@ -22,7 +22,8 @@ import (
 	"github.com/kzmijak/zswod_api_go/services/galleryService"
 	"github.com/kzmijak/zswod_api_go/services/imageService"
 	"github.com/kzmijak/zswod_api_go/services/jwt"
-	"github.com/kzmijak/zswod_api_go/services/user"
+	"github.com/kzmijak/zswod_api_go/services/resetPasswordTokenService"
+	"github.com/kzmijak/zswod_api_go/services/userService"
 )
 
 type Controller struct {
@@ -65,12 +66,13 @@ func (c Controller) Run() {
     }))
 
 	c.JwtService = jwt.New().WithConfig(c.Cfg.Auth)
-	c.UserService = user.New().WithContext(c.Ctx)
+	c.UserService = userService.New().WithContext(c.Ctx)
 	c.BlobService = blobService.New(c.Ctx)
 	c.ImageService = imageService.New().WithContext(c.Ctx)
 	c.ArticleService = articleService.New(c.Ctx)
 	c.GalleryService = galleryService.New(c.Ctx)
 	c.CustomPageService = customPageService.New(c.Ctx)
+	c.ResetPasswordTokenService = resetPasswordTokenService.New(c.Ctx)
 	
 	jwtController.New(c.Controller)
 	jc := jwtController.New(c.Controller)

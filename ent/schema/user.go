@@ -35,6 +35,6 @@ func (User) Edges() []ent.Edge {
 		edge.To("galleries", Gallery.Type),
 		edge.To("articles", Article.Type),
 		edge.To("avatar", Image.Type).Unique(),
-		edge.To("resetPasswordTokens", ResetPasswordToken.Type),
+		edge.To("resetPasswordToken", ResetPasswordToken.Type).Unique(),
 	}
 }

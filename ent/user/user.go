@@ -29,8 +29,8 @@ const (
 	EdgeArticles = "articles"
 	// EdgeAvatar holds the string denoting the avatar edge name in mutations.
 	EdgeAvatar = "avatar"
-	// EdgeResetPasswordTokens holds the string denoting the resetpasswordtokens edge name in mutations.
-	EdgeResetPasswordTokens = "resetPasswordTokens"
+	// EdgeResetPasswordToken holds the string denoting the resetpasswordtoken edge name in mutations.
+	EdgeResetPasswordToken = "resetPasswordToken"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// GalleriesTable is the table that holds the galleries relation/edge.
@@ -54,13 +54,13 @@ const (
 	AvatarInverseTable = "images"
 	// AvatarColumn is the table column denoting the avatar relation/edge.
 	AvatarColumn = "user_avatar"
-	// ResetPasswordTokensTable is the table that holds the resetPasswordTokens relation/edge.
-	ResetPasswordTokensTable = "reset_password_tokens"
-	// ResetPasswordTokensInverseTable is the table name for the ResetPasswordToken entity.
+	// ResetPasswordTokenTable is the table that holds the resetPasswordToken relation/edge.
+	ResetPasswordTokenTable = "reset_password_tokens"
+	// ResetPasswordTokenInverseTable is the table name for the ResetPasswordToken entity.
 	// It exists in this package in order to avoid circular dependency with the "resetpasswordtoken" package.
-	ResetPasswordTokensInverseTable = "reset_password_tokens"
-	// ResetPasswordTokensColumn is the table column denoting the resetPasswordTokens relation/edge.
-	ResetPasswordTokensColumn = "user_reset_password_tokens"
+	ResetPasswordTokenInverseTable = "reset_password_tokens"
+	// ResetPasswordTokenColumn is the table column denoting the resetPasswordToken relation/edge.
+	ResetPasswordTokenColumn = "user_reset_password_token"
 )
 
 // Columns holds all SQL columns for user fields.

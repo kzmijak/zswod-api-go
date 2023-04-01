@@ -7,6 +7,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/services/userService"
+	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
 
 type SetNewPasswordRequest struct {
@@ -27,7 +28,12 @@ func (c UserController) SetNewPassword(ctx *gin.Context) {
 		return
 	}
 
-	owner, err := c.UserService.GetResetPasswordTokenOwner(requestBody.Token, tx)
+	tokenId, err := parser.ParseUuid(requestBody.Token)
+	if err != nil {
+		return
+	}
+
+	owner, err := c.ResetPasswordTokenService.GetResetPasswordTokenById(tokenId, tx)
 	if err != nil {
 		return
 	}
@@ -39,7 +45,7 @@ func (c UserController) SetNewPassword(ctx *gin.Context) {
 		return
 	}
 
-	err = c.UserService.InvalidateResetPasswordToken(requestBody.Token, tx)
+	err = c.ResetPasswordTokenService.InvalidateResetPasswordToken(tokenId, tx)
 	if err != nil {
 		return
 	}

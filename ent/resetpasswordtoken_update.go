@@ -30,9 +30,15 @@ func (rptu *ResetPasswordTokenUpdate) Where(ps ...predicate.ResetPasswordToken) 
 	return rptu
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (rptu *ResetPasswordTokenUpdate) SetCreatedAt(t time.Time) *ResetPasswordTokenUpdate {
-	rptu.mutation.SetCreatedAt(t)
+// SetUpdateTime sets the "update_time" field.
+func (rptu *ResetPasswordTokenUpdate) SetUpdateTime(t time.Time) *ResetPasswordTokenUpdate {
+	rptu.mutation.SetUpdateTime(t)
+	return rptu
+}
+
+// SetExpiryTime sets the "expiryTime" field.
+func (rptu *ResetPasswordTokenUpdate) SetExpiryTime(t time.Time) *ResetPasswordTokenUpdate {
+	rptu.mutation.SetExpiryTime(t)
 	return rptu
 }
 
@@ -64,6 +70,7 @@ func (rptu *ResetPasswordTokenUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	rptu.defaults()
 	if len(rptu.hooks) == 0 {
 		if err = rptu.check(); err != nil {
 			return 0, err
@@ -118,6 +125,14 @@ func (rptu *ResetPasswordTokenUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rptu *ResetPasswordTokenUpdate) defaults() {
+	if _, ok := rptu.mutation.UpdateTime(); !ok {
+		v := resetpasswordtoken.UpdateDefaultUpdateTime()
+		rptu.mutation.SetUpdateTime(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rptu *ResetPasswordTokenUpdate) check() error {
 	if _, ok := rptu.mutation.OwnerID(); rptu.mutation.OwnerCleared() && !ok {
@@ -144,12 +159,15 @@ func (rptu *ResetPasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err e
 			}
 		}
 	}
-	if value, ok := rptu.mutation.CreatedAt(); ok {
-		_spec.SetField(resetpasswordtoken.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := rptu.mutation.UpdateTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldUpdateTime, field.TypeTime, value)
+	}
+	if value, ok := rptu.mutation.ExpiryTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldExpiryTime, field.TypeTime, value)
 	}
 	if rptu.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   resetpasswordtoken.OwnerTable,
 			Columns: []string{resetpasswordtoken.OwnerColumn},
@@ -165,7 +183,7 @@ func (rptu *ResetPasswordTokenUpdate) sqlSave(ctx context.Context) (n int, err e
 	}
 	if nodes := rptu.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   resetpasswordtoken.OwnerTable,
 			Columns: []string{resetpasswordtoken.OwnerColumn},
@@ -201,9 +219,15 @@ type ResetPasswordTokenUpdateOne struct {
 	mutation *ResetPasswordTokenMutation
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (rptuo *ResetPasswordTokenUpdateOne) SetCreatedAt(t time.Time) *ResetPasswordTokenUpdateOne {
-	rptuo.mutation.SetCreatedAt(t)
+// SetUpdateTime sets the "update_time" field.
+func (rptuo *ResetPasswordTokenUpdateOne) SetUpdateTime(t time.Time) *ResetPasswordTokenUpdateOne {
+	rptuo.mutation.SetUpdateTime(t)
+	return rptuo
+}
+
+// SetExpiryTime sets the "expiryTime" field.
+func (rptuo *ResetPasswordTokenUpdateOne) SetExpiryTime(t time.Time) *ResetPasswordTokenUpdateOne {
+	rptuo.mutation.SetExpiryTime(t)
 	return rptuo
 }
 
@@ -242,6 +266,7 @@ func (rptuo *ResetPasswordTokenUpdateOne) Save(ctx context.Context) (*ResetPassw
 		err  error
 		node *ResetPasswordToken
 	)
+	rptuo.defaults()
 	if len(rptuo.hooks) == 0 {
 		if err = rptuo.check(); err != nil {
 			return nil, err
@@ -302,6 +327,14 @@ func (rptuo *ResetPasswordTokenUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rptuo *ResetPasswordTokenUpdateOne) defaults() {
+	if _, ok := rptuo.mutation.UpdateTime(); !ok {
+		v := resetpasswordtoken.UpdateDefaultUpdateTime()
+		rptuo.mutation.SetUpdateTime(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rptuo *ResetPasswordTokenUpdateOne) check() error {
 	if _, ok := rptuo.mutation.OwnerID(); rptuo.mutation.OwnerCleared() && !ok {
@@ -345,12 +378,15 @@ func (rptuo *ResetPasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *R
 			}
 		}
 	}
-	if value, ok := rptuo.mutation.CreatedAt(); ok {
-		_spec.SetField(resetpasswordtoken.FieldCreatedAt, field.TypeTime, value)
+	if value, ok := rptuo.mutation.UpdateTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldUpdateTime, field.TypeTime, value)
+	}
+	if value, ok := rptuo.mutation.ExpiryTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldExpiryTime, field.TypeTime, value)
 	}
 	if rptuo.mutation.OwnerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   resetpasswordtoken.OwnerTable,
 			Columns: []string{resetpasswordtoken.OwnerColumn},
@@ -366,7 +402,7 @@ func (rptuo *ResetPasswordTokenUpdateOne) sqlSave(ctx context.Context) (_node *R
 	}
 	if nodes := rptuo.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   resetpasswordtoken.OwnerTable,
 			Columns: []string{resetpasswordtoken.OwnerColumn},

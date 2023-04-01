@@ -133,19 +133,23 @@ func (uc *UserCreate) SetAvatar(i *Image) *UserCreate {
 	return uc.SetAvatarID(i.ID)
 }
 
-// AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
-func (uc *UserCreate) AddResetPasswordTokenIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddResetPasswordTokenIDs(ids...)
+// SetResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID.
+func (uc *UserCreate) SetResetPasswordTokenID(id uuid.UUID) *UserCreate {
+	uc.mutation.SetResetPasswordTokenID(id)
 	return uc
 }
 
-// AddResetPasswordTokens adds the "resetPasswordTokens" edges to the ResetPasswordToken entity.
-func (uc *UserCreate) AddResetPasswordTokens(r ...*ResetPasswordToken) *UserCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID if the given value is not nil.
+func (uc *UserCreate) SetNillableResetPasswordTokenID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		uc = uc.SetResetPasswordTokenID(*id)
 	}
-	return uc.AddResetPasswordTokenIDs(ids...)
+	return uc
+}
+
+// SetResetPasswordToken sets the "resetPasswordToken" edge to the ResetPasswordToken entity.
+func (uc *UserCreate) SetResetPasswordToken(r *ResetPasswordToken) *UserCreate {
+	return uc.SetResetPasswordTokenID(r.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -361,12 +365,12 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.user_avatar = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.ResetPasswordTokenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
+			Table:   user.ResetPasswordTokenTable,
+			Columns: []string{user.ResetPasswordTokenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

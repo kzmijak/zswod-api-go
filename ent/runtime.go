@@ -12,6 +12,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/ent/custompage"
 	"github.com/kzmijak/zswod_api_go/ent/gallery"
 	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/schema"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
@@ -180,6 +181,27 @@ func init() {
 	imageDescID := imageMixinFields0[0].Descriptor()
 	// image.DefaultID holds the default value on creation for the id field.
 	image.DefaultID = imageDescID.Default.(func() uuid.UUID)
+	resetpasswordtokenMixin := schema.ResetPasswordToken{}.Mixin()
+	resetpasswordtokenMixinFields0 := resetpasswordtokenMixin[0].Fields()
+	_ = resetpasswordtokenMixinFields0
+	resetpasswordtokenMixinFields1 := resetpasswordtokenMixin[1].Fields()
+	_ = resetpasswordtokenMixinFields1
+	resetpasswordtokenFields := schema.ResetPasswordToken{}.Fields()
+	_ = resetpasswordtokenFields
+	// resetpasswordtokenDescCreateTime is the schema descriptor for create_time field.
+	resetpasswordtokenDescCreateTime := resetpasswordtokenMixinFields1[0].Descriptor()
+	// resetpasswordtoken.DefaultCreateTime holds the default value on creation for the create_time field.
+	resetpasswordtoken.DefaultCreateTime = resetpasswordtokenDescCreateTime.Default.(func() time.Time)
+	// resetpasswordtokenDescUpdateTime is the schema descriptor for update_time field.
+	resetpasswordtokenDescUpdateTime := resetpasswordtokenMixinFields1[1].Descriptor()
+	// resetpasswordtoken.DefaultUpdateTime holds the default value on creation for the update_time field.
+	resetpasswordtoken.DefaultUpdateTime = resetpasswordtokenDescUpdateTime.Default.(func() time.Time)
+	// resetpasswordtoken.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
+	resetpasswordtoken.UpdateDefaultUpdateTime = resetpasswordtokenDescUpdateTime.UpdateDefault.(func() time.Time)
+	// resetpasswordtokenDescID is the schema descriptor for id field.
+	resetpasswordtokenDescID := resetpasswordtokenMixinFields0[0].Descriptor()
+	// resetpasswordtoken.DefaultID holds the default value on creation for the id field.
+	resetpasswordtoken.DefaultID = resetpasswordtokenDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

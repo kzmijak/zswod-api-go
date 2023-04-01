@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/modules/database"
+	"github.com/kzmijak/zswod_api_go/utils/parser"
 )
 
 func (c UserController) VerifyResetPasswordToken(ctx *gin.Context) {
@@ -16,7 +17,11 @@ func (c UserController) VerifyResetPasswordToken(ctx *gin.Context) {
 	tx, _ := database.Client.Tx(c.Ctx)
 	defer tx.Rollback()
 
-	_, err = c.UserService.GetResetPasswordTokenOwner(tokenString, tx)
+	tokenId, err := parser.ParseUuid(tokenString)
+	if err != nil {
+		return
+	}
+	_, err = c.ResetPasswordTokenService.GetResetPasswordTokenById(tokenId, tx)
 	if err != nil {
 		return
 	}

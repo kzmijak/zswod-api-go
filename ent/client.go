@@ -950,7 +950,7 @@ func (c *ResetPasswordTokenClient) QueryOwner(rpt *ResetPasswordToken) *UserQuer
 		step := sqlgraph.NewStep(
 			sqlgraph.From(resetpasswordtoken.Table, resetpasswordtoken.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, resetpasswordtoken.OwnerTable, resetpasswordtoken.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, resetpasswordtoken.OwnerTable, resetpasswordtoken.OwnerColumn),
 		)
 		fromV = sqlgraph.Neighbors(rpt.driver.Dialect(), step)
 		return fromV, nil
@@ -1096,15 +1096,15 @@ func (c *UserClient) QueryAvatar(u *User) *ImageQuery {
 	return query
 }
 
-// QueryResetPasswordTokens queries the resetPasswordTokens edge of a User.
-func (c *UserClient) QueryResetPasswordTokens(u *User) *ResetPasswordTokenQuery {
+// QueryResetPasswordToken queries the resetPasswordToken edge of a User.
+func (c *UserClient) QueryResetPasswordToken(u *User) *ResetPasswordTokenQuery {
 	query := &ResetPasswordTokenQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(resetpasswordtoken.Table, resetpasswordtoken.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, user.ResetPasswordTokensTable, user.ResetPasswordTokensColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.ResetPasswordTokenTable, user.ResetPasswordTokenColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

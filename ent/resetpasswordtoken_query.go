@@ -77,7 +77,7 @@ func (rptq *ResetPasswordTokenQuery) QueryOwner() *UserQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(resetpasswordtoken.Table, resetpasswordtoken.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, resetpasswordtoken.OwnerTable, resetpasswordtoken.OwnerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, resetpasswordtoken.OwnerTable, resetpasswordtoken.OwnerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rptq.driver.Dialect(), step)
 		return fromU, nil
@@ -291,12 +291,12 @@ func (rptq *ResetPasswordTokenQuery) WithOwner(opts ...func(*UserQuery)) *ResetP
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"createdAt,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ResetPasswordToken.Query().
-//		GroupBy(resetpasswordtoken.FieldCreatedAt).
+//		GroupBy(resetpasswordtoken.FieldCreateTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rptq *ResetPasswordTokenQuery) GroupBy(field string, fields ...string) *ResetPasswordTokenGroupBy {
@@ -319,11 +319,11 @@ func (rptq *ResetPasswordTokenQuery) GroupBy(field string, fields ...string) *Re
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"createdAt,omitempty"`
+//		CreateTime time.Time `json:"create_time,omitempty"`
 //	}
 //
 //	client.ResetPasswordToken.Query().
-//		Select(resetpasswordtoken.FieldCreatedAt).
+//		Select(resetpasswordtoken.FieldCreateTime).
 //		Scan(ctx, &v)
 func (rptq *ResetPasswordTokenQuery) Select(fields ...string) *ResetPasswordTokenSelect {
 	rptq.fields = append(rptq.fields, fields...)
@@ -400,10 +400,10 @@ func (rptq *ResetPasswordTokenQuery) loadOwner(ctx context.Context, query *UserQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*ResetPasswordToken)
 	for i := range nodes {
-		if nodes[i].user_reset_password_tokens == nil {
+		if nodes[i].user_reset_password_token == nil {
 			continue
 		}
-		fk := *nodes[i].user_reset_password_tokens
+		fk := *nodes[i].user_reset_password_token
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -417,7 +417,7 @@ func (rptq *ResetPasswordTokenQuery) loadOwner(ctx context.Context, query *UserQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "user_reset_password_tokens" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "user_reset_password_token" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

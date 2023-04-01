@@ -82,74 +82,216 @@ func IDLTE(id uuid.UUID) predicate.ResetPasswordToken {
 	})
 }
 
-// CreatedAt applies equality check predicate on the "createdAt" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.ResetPasswordToken {
+// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+func CreateTime(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
 	})
 }
 
-// CreatedAtEQ applies the EQ predicate on the "createdAt" field.
-func CreatedAtEQ(v time.Time) predicate.ResetPasswordToken {
+// UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
+func UpdateTime(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+		s.Where(sql.EQ(s.C(FieldUpdateTime), v))
 	})
 }
 
-// CreatedAtNEQ applies the NEQ predicate on the "createdAt" field.
-func CreatedAtNEQ(v time.Time) predicate.ResetPasswordToken {
+// ExpiryTime applies equality check predicate on the "expiryTime" field. It's identical to ExpiryTimeEQ.
+func ExpiryTime(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldCreatedAt), v))
+		s.Where(sql.EQ(s.C(FieldExpiryTime), v))
 	})
 }
 
-// CreatedAtIn applies the In predicate on the "createdAt" field.
-func CreatedAtIn(vs ...time.Time) predicate.ResetPasswordToken {
+// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+func CreateTimeEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+func CreateTimeNEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeIn applies the In predicate on the "create_time" field.
+func CreateTimeIn(vs ...time.Time) predicate.ResetPasswordToken {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldCreatedAt), v...))
+		s.Where(sql.In(s.C(FieldCreateTime), v...))
 	})
 }
 
-// CreatedAtNotIn applies the NotIn predicate on the "createdAt" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.ResetPasswordToken {
+// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+func CreateTimeNotIn(vs ...time.Time) predicate.ResetPasswordToken {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldCreatedAt), v...))
+		s.Where(sql.NotIn(s.C(FieldCreateTime), v...))
 	})
 }
 
-// CreatedAtGT applies the GT predicate on the "createdAt" field.
-func CreatedAtGT(v time.Time) predicate.ResetPasswordToken {
+// CreateTimeGT applies the GT predicate on the "create_time" field.
+func CreateTimeGT(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldCreatedAt), v))
+		s.Where(sql.GT(s.C(FieldCreateTime), v))
 	})
 }
 
-// CreatedAtGTE applies the GTE predicate on the "createdAt" field.
-func CreatedAtGTE(v time.Time) predicate.ResetPasswordToken {
+// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+func CreateTimeGTE(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldCreatedAt), v))
+		s.Where(sql.GTE(s.C(FieldCreateTime), v))
 	})
 }
 
-// CreatedAtLT applies the LT predicate on the "createdAt" field.
-func CreatedAtLT(v time.Time) predicate.ResetPasswordToken {
+// CreateTimeLT applies the LT predicate on the "create_time" field.
+func CreateTimeLT(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldCreatedAt), v))
+		s.Where(sql.LT(s.C(FieldCreateTime), v))
 	})
 }
 
-// CreatedAtLTE applies the LTE predicate on the "createdAt" field.
-func CreatedAtLTE(v time.Time) predicate.ResetPasswordToken {
+// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+func CreateTimeLTE(v time.Time) predicate.ResetPasswordToken {
 	return predicate.ResetPasswordToken(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
+		s.Where(sql.LTE(s.C(FieldCreateTime), v))
+	})
+}
+
+// UpdateTimeEQ applies the EQ predicate on the "update_time" field.
+func UpdateTimeEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeNEQ applies the NEQ predicate on the "update_time" field.
+func UpdateTimeNEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeIn applies the In predicate on the "update_time" field.
+func UpdateTimeIn(vs ...time.Time) predicate.ResetPasswordToken {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldUpdateTime), v...))
+	})
+}
+
+// UpdateTimeNotIn applies the NotIn predicate on the "update_time" field.
+func UpdateTimeNotIn(vs ...time.Time) predicate.ResetPasswordToken {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldUpdateTime), v...))
+	})
+}
+
+// UpdateTimeGT applies the GT predicate on the "update_time" field.
+func UpdateTimeGT(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeGTE applies the GTE predicate on the "update_time" field.
+func UpdateTimeGTE(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeLT applies the LT predicate on the "update_time" field.
+func UpdateTimeLT(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldUpdateTime), v))
+	})
+}
+
+// UpdateTimeLTE applies the LTE predicate on the "update_time" field.
+func UpdateTimeLTE(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldUpdateTime), v))
+	})
+}
+
+// ExpiryTimeEQ applies the EQ predicate on the "expiryTime" field.
+func ExpiryTimeEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldExpiryTime), v))
+	})
+}
+
+// ExpiryTimeNEQ applies the NEQ predicate on the "expiryTime" field.
+func ExpiryTimeNEQ(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldExpiryTime), v))
+	})
+}
+
+// ExpiryTimeIn applies the In predicate on the "expiryTime" field.
+func ExpiryTimeIn(vs ...time.Time) predicate.ResetPasswordToken {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldExpiryTime), v...))
+	})
+}
+
+// ExpiryTimeNotIn applies the NotIn predicate on the "expiryTime" field.
+func ExpiryTimeNotIn(vs ...time.Time) predicate.ResetPasswordToken {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldExpiryTime), v...))
+	})
+}
+
+// ExpiryTimeGT applies the GT predicate on the "expiryTime" field.
+func ExpiryTimeGT(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldExpiryTime), v))
+	})
+}
+
+// ExpiryTimeGTE applies the GTE predicate on the "expiryTime" field.
+func ExpiryTimeGTE(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldExpiryTime), v))
+	})
+}
+
+// ExpiryTimeLT applies the LT predicate on the "expiryTime" field.
+func ExpiryTimeLT(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldExpiryTime), v))
+	})
+}
+
+// ExpiryTimeLTE applies the LTE predicate on the "expiryTime" field.
+func ExpiryTimeLTE(v time.Time) predicate.ResetPasswordToken {
+	return predicate.ResetPasswordToken(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldExpiryTime), v))
 	})
 }
 
@@ -159,7 +301,7 @@ func HasOwner() predicate.ResetPasswordToken {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(OwnerTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, OwnerTable, OwnerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -171,7 +313,7 @@ func HasOwnerWith(preds ...predicate.User) predicate.ResetPasswordToken {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(OwnerInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, OwnerTable, OwnerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, OwnerTable, OwnerColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -27,7 +27,7 @@ func (c UserController) ResetPassword(ctx *gin.Context) {
 		return
 	}
 
-	token, err := c.UserService.CreateResetPasswordToken(requestBody.Email, tx)
+	token, err := c.ResetPasswordTokenService.CreateResetPasswordToken(requestBody.Email, tx)
 	if err != nil {
 		return
 	}

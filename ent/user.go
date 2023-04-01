@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent/image"
+	"github.com/kzmijak/zswod_api_go/ent/resetpasswordtoken"
 	"github.com/kzmijak/zswod_api_go/ent/user"
 )
 
@@ -41,8 +42,8 @@ type UserEdges struct {
 	Articles []*Article `json:"articles,omitempty"`
 	// Avatar holds the value of the avatar edge.
 	Avatar *Image `json:"avatar,omitempty"`
-	// ResetPasswordTokens holds the value of the resetPasswordTokens edge.
-	ResetPasswordTokens []*ResetPasswordToken `json:"resetPasswordTokens,omitempty"`
+	// ResetPasswordToken holds the value of the resetPasswordToken edge.
+	ResetPasswordToken *ResetPasswordToken `json:"resetPasswordToken,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -79,13 +80,17 @@ func (e UserEdges) AvatarOrErr() (*Image, error) {
 	return nil, &NotLoadedError{edge: "avatar"}
 }
 
-// ResetPasswordTokensOrErr returns the ResetPasswordTokens value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) ResetPasswordTokensOrErr() ([]*ResetPasswordToken, error) {
+// ResetPasswordTokenOrErr returns the ResetPasswordToken value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) ResetPasswordTokenOrErr() (*ResetPasswordToken, error) {
 	if e.loadedTypes[3] {
-		return e.ResetPasswordTokens, nil
+		if e.ResetPasswordToken == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: resetpasswordtoken.Label}
+		}
+		return e.ResetPasswordToken, nil
 	}
-	return nil, &NotLoadedError{edge: "resetPasswordTokens"}
+	return nil, &NotLoadedError{edge: "resetPasswordToken"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -177,9 +182,9 @@ func (u *User) QueryAvatar() *ImageQuery {
 	return (&UserClient{config: u.config}).QueryAvatar(u)
 }
 
-// QueryResetPasswordTokens queries the "resetPasswordTokens" edge of the User entity.
-func (u *User) QueryResetPasswordTokens() *ResetPasswordTokenQuery {
-	return (&UserClient{config: u.config}).QueryResetPasswordTokens(u)
+// QueryResetPasswordToken queries the "resetPasswordToken" edge of the User entity.
+func (u *User) QueryResetPasswordToken() *ResetPasswordTokenQuery {
+	return (&UserClient{config: u.config}).QueryResetPasswordToken(u)
 }
 
 // Update returns a builder for updating this User.

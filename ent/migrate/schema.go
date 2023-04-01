@@ -160,8 +160,10 @@ var (
 	// ResetPasswordTokensColumns holds the columns for the "reset_password_tokens" table.
 	ResetPasswordTokensColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "user_reset_password_tokens", Type: field.TypeUUID},
+		{Name: "create_time", Type: field.TypeTime},
+		{Name: "update_time", Type: field.TypeTime},
+		{Name: "expiry_time", Type: field.TypeTime},
+		{Name: "user_reset_password_token", Type: field.TypeUUID, Unique: true},
 	}
 	// ResetPasswordTokensTable holds the schema information for the "reset_password_tokens" table.
 	ResetPasswordTokensTable = &schema.Table{
@@ -170,8 +172,8 @@ var (
 		PrimaryKey: []*schema.Column{ResetPasswordTokensColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "reset_password_tokens_users_resetPasswordTokens",
-				Columns:    []*schema.Column{ResetPasswordTokensColumns[2]},
+				Symbol:     "reset_password_tokens_users_resetPasswordToken",
+				Columns:    []*schema.Column{ResetPasswordTokensColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

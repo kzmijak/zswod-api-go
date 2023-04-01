@@ -652,25 +652,25 @@ func HasAvatarWith(preds ...predicate.Image) predicate.User {
 	})
 }
 
-// HasResetPasswordTokens applies the HasEdge predicate on the "resetPasswordTokens" edge.
-func HasResetPasswordTokens() predicate.User {
+// HasResetPasswordToken applies the HasEdge predicate on the "resetPasswordToken" edge.
+func HasResetPasswordToken() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ResetPasswordTokensTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTokensTable, ResetPasswordTokensColumn),
+			sqlgraph.To(ResetPasswordTokenTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ResetPasswordTokenTable, ResetPasswordTokenColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasResetPasswordTokensWith applies the HasEdge predicate on the "resetPasswordTokens" edge with a given conditions (other predicates).
-func HasResetPasswordTokensWith(preds ...predicate.ResetPasswordToken) predicate.User {
+// HasResetPasswordTokenWith applies the HasEdge predicate on the "resetPasswordToken" edge with a given conditions (other predicates).
+func HasResetPasswordTokenWith(preds ...predicate.ResetPasswordToken) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ResetPasswordTokensInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ResetPasswordTokensTable, ResetPasswordTokensColumn),
+			sqlgraph.To(ResetPasswordTokenInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, ResetPasswordTokenTable, ResetPasswordTokenColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

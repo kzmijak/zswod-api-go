@@ -4,7 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
+	"entgo.io/ent/schema/mixin"
 )
 
 // ResetPasswordToken holds the schema definition for the ResetPasswordToken entity.
@@ -12,11 +12,17 @@ type ResetPasswordToken struct {
 	ent.Schema
 }
 
+func (ResetPasswordToken) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		UuidMixin{},
+		mixin.Time{},
+	}
+}
+
 // Fields of the ResetPasswordToken.
 func (ResetPasswordToken) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()).Unique(),
-		field.Time("createdAt"),
+		field.Time("expiryTime"),
 	}
 }
 
@@ -24,7 +30,7 @@ func (ResetPasswordToken) Fields() []ent.Field {
 func (ResetPasswordToken) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("owner", User.Type).
-			Ref("resetPasswordTokens").
+			Ref("resetPasswordToken").
 			Unique().
 			Required(),
 	}

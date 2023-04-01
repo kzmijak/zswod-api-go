@@ -22,15 +22,51 @@ type ResetPasswordTokenCreate struct {
 	hooks    []Hook
 }
 
-// SetCreatedAt sets the "createdAt" field.
-func (rptc *ResetPasswordTokenCreate) SetCreatedAt(t time.Time) *ResetPasswordTokenCreate {
-	rptc.mutation.SetCreatedAt(t)
+// SetCreateTime sets the "create_time" field.
+func (rptc *ResetPasswordTokenCreate) SetCreateTime(t time.Time) *ResetPasswordTokenCreate {
+	rptc.mutation.SetCreateTime(t)
+	return rptc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (rptc *ResetPasswordTokenCreate) SetNillableCreateTime(t *time.Time) *ResetPasswordTokenCreate {
+	if t != nil {
+		rptc.SetCreateTime(*t)
+	}
+	return rptc
+}
+
+// SetUpdateTime sets the "update_time" field.
+func (rptc *ResetPasswordTokenCreate) SetUpdateTime(t time.Time) *ResetPasswordTokenCreate {
+	rptc.mutation.SetUpdateTime(t)
+	return rptc
+}
+
+// SetNillableUpdateTime sets the "update_time" field if the given value is not nil.
+func (rptc *ResetPasswordTokenCreate) SetNillableUpdateTime(t *time.Time) *ResetPasswordTokenCreate {
+	if t != nil {
+		rptc.SetUpdateTime(*t)
+	}
+	return rptc
+}
+
+// SetExpiryTime sets the "expiryTime" field.
+func (rptc *ResetPasswordTokenCreate) SetExpiryTime(t time.Time) *ResetPasswordTokenCreate {
+	rptc.mutation.SetExpiryTime(t)
 	return rptc
 }
 
 // SetID sets the "id" field.
 func (rptc *ResetPasswordTokenCreate) SetID(u uuid.UUID) *ResetPasswordTokenCreate {
 	rptc.mutation.SetID(u)
+	return rptc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (rptc *ResetPasswordTokenCreate) SetNillableID(u *uuid.UUID) *ResetPasswordTokenCreate {
+	if u != nil {
+		rptc.SetID(*u)
+	}
 	return rptc
 }
 
@@ -56,6 +92,7 @@ func (rptc *ResetPasswordTokenCreate) Save(ctx context.Context) (*ResetPasswordT
 		err  error
 		node *ResetPasswordToken
 	)
+	rptc.defaults()
 	if len(rptc.hooks) == 0 {
 		if err = rptc.check(); err != nil {
 			return nil, err
@@ -119,10 +156,32 @@ func (rptc *ResetPasswordTokenCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (rptc *ResetPasswordTokenCreate) defaults() {
+	if _, ok := rptc.mutation.CreateTime(); !ok {
+		v := resetpasswordtoken.DefaultCreateTime()
+		rptc.mutation.SetCreateTime(v)
+	}
+	if _, ok := rptc.mutation.UpdateTime(); !ok {
+		v := resetpasswordtoken.DefaultUpdateTime()
+		rptc.mutation.SetUpdateTime(v)
+	}
+	if _, ok := rptc.mutation.ID(); !ok {
+		v := resetpasswordtoken.DefaultID()
+		rptc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (rptc *ResetPasswordTokenCreate) check() error {
-	if _, ok := rptc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New(`ent: missing required field "ResetPasswordToken.createdAt"`)}
+	if _, ok := rptc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "ResetPasswordToken.create_time"`)}
+	}
+	if _, ok := rptc.mutation.UpdateTime(); !ok {
+		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "ResetPasswordToken.update_time"`)}
+	}
+	if _, ok := rptc.mutation.ExpiryTime(); !ok {
+		return &ValidationError{Name: "expiryTime", err: errors.New(`ent: missing required field "ResetPasswordToken.expiryTime"`)}
 	}
 	if _, ok := rptc.mutation.OwnerID(); !ok {
 		return &ValidationError{Name: "owner", err: errors.New(`ent: missing required edge "ResetPasswordToken.owner"`)}
@@ -163,13 +222,21 @@ func (rptc *ResetPasswordTokenCreate) createSpec() (*ResetPasswordToken, *sqlgra
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := rptc.mutation.CreatedAt(); ok {
-		_spec.SetField(resetpasswordtoken.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
+	if value, ok := rptc.mutation.CreateTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
+	if value, ok := rptc.mutation.UpdateTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldUpdateTime, field.TypeTime, value)
+		_node.UpdateTime = value
+	}
+	if value, ok := rptc.mutation.ExpiryTime(); ok {
+		_spec.SetField(resetpasswordtoken.FieldExpiryTime, field.TypeTime, value)
+		_node.ExpiryTime = value
 	}
 	if nodes := rptc.mutation.OwnerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   resetpasswordtoken.OwnerTable,
 			Columns: []string{resetpasswordtoken.OwnerColumn},
@@ -184,7 +251,7 @@ func (rptc *ResetPasswordTokenCreate) createSpec() (*ResetPasswordToken, *sqlgra
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.user_reset_password_tokens = &nodes[0]
+		_node.user_reset_password_token = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -204,6 +271,7 @@ func (rptcb *ResetPasswordTokenCreateBulk) Save(ctx context.Context) ([]*ResetPa
 	for i := range rptcb.builders {
 		func(i int, root context.Context) {
 			builder := rptcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ResetPasswordTokenMutation)
 				if !ok {

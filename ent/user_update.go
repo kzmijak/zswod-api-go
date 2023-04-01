@@ -139,19 +139,23 @@ func (uu *UserUpdate) SetAvatar(i *Image) *UserUpdate {
 	return uu.SetAvatarID(i.ID)
 }
 
-// AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
-func (uu *UserUpdate) AddResetPasswordTokenIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddResetPasswordTokenIDs(ids...)
+// SetResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID.
+func (uu *UserUpdate) SetResetPasswordTokenID(id uuid.UUID) *UserUpdate {
+	uu.mutation.SetResetPasswordTokenID(id)
 	return uu
 }
 
-// AddResetPasswordTokens adds the "resetPasswordTokens" edges to the ResetPasswordToken entity.
-func (uu *UserUpdate) AddResetPasswordTokens(r ...*ResetPasswordToken) *UserUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID if the given value is not nil.
+func (uu *UserUpdate) SetNillableResetPasswordTokenID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		uu = uu.SetResetPasswordTokenID(*id)
 	}
-	return uu.AddResetPasswordTokenIDs(ids...)
+	return uu
+}
+
+// SetResetPasswordToken sets the "resetPasswordToken" edge to the ResetPasswordToken entity.
+func (uu *UserUpdate) SetResetPasswordToken(r *ResetPasswordToken) *UserUpdate {
+	return uu.SetResetPasswordTokenID(r.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -207,25 +211,10 @@ func (uu *UserUpdate) ClearAvatar() *UserUpdate {
 	return uu
 }
 
-// ClearResetPasswordTokens clears all "resetPasswordTokens" edges to the ResetPasswordToken entity.
-func (uu *UserUpdate) ClearResetPasswordTokens() *UserUpdate {
-	uu.mutation.ClearResetPasswordTokens()
+// ClearResetPasswordToken clears the "resetPasswordToken" edge to the ResetPasswordToken entity.
+func (uu *UserUpdate) ClearResetPasswordToken() *UserUpdate {
+	uu.mutation.ClearResetPasswordToken()
 	return uu
-}
-
-// RemoveResetPasswordTokenIDs removes the "resetPasswordTokens" edge to ResetPasswordToken entities by IDs.
-func (uu *UserUpdate) RemoveResetPasswordTokenIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveResetPasswordTokenIDs(ids...)
-	return uu
-}
-
-// RemoveResetPasswordTokens removes "resetPasswordTokens" edges to ResetPasswordToken entities.
-func (uu *UserUpdate) RemoveResetPasswordTokens(r ...*ResetPasswordToken) *UserUpdate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return uu.RemoveResetPasswordTokenIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -480,12 +469,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.ResetPasswordTokensCleared() {
+	if uu.mutation.ResetPasswordTokenCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
+			Table:   user.ResetPasswordTokenTable,
+			Columns: []string{user.ResetPasswordTokenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -496,31 +485,12 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedResetPasswordTokensIDs(); len(nodes) > 0 && !uu.mutation.ResetPasswordTokensCleared() {
+	if nodes := uu.mutation.ResetPasswordTokenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: resetpasswordtoken.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
+			Table:   user.ResetPasswordTokenTable,
+			Columns: []string{user.ResetPasswordTokenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -660,19 +630,23 @@ func (uuo *UserUpdateOne) SetAvatar(i *Image) *UserUpdateOne {
 	return uuo.SetAvatarID(i.ID)
 }
 
-// AddResetPasswordTokenIDs adds the "resetPasswordTokens" edge to the ResetPasswordToken entity by IDs.
-func (uuo *UserUpdateOne) AddResetPasswordTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddResetPasswordTokenIDs(ids...)
+// SetResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID.
+func (uuo *UserUpdateOne) SetResetPasswordTokenID(id uuid.UUID) *UserUpdateOne {
+	uuo.mutation.SetResetPasswordTokenID(id)
 	return uuo
 }
 
-// AddResetPasswordTokens adds the "resetPasswordTokens" edges to the ResetPasswordToken entity.
-func (uuo *UserUpdateOne) AddResetPasswordTokens(r ...*ResetPasswordToken) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
+// SetNillableResetPasswordTokenID sets the "resetPasswordToken" edge to the ResetPasswordToken entity by ID if the given value is not nil.
+func (uuo *UserUpdateOne) SetNillableResetPasswordTokenID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		uuo = uuo.SetResetPasswordTokenID(*id)
 	}
-	return uuo.AddResetPasswordTokenIDs(ids...)
+	return uuo
+}
+
+// SetResetPasswordToken sets the "resetPasswordToken" edge to the ResetPasswordToken entity.
+func (uuo *UserUpdateOne) SetResetPasswordToken(r *ResetPasswordToken) *UserUpdateOne {
+	return uuo.SetResetPasswordTokenID(r.ID)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -728,25 +702,10 @@ func (uuo *UserUpdateOne) ClearAvatar() *UserUpdateOne {
 	return uuo
 }
 
-// ClearResetPasswordTokens clears all "resetPasswordTokens" edges to the ResetPasswordToken entity.
-func (uuo *UserUpdateOne) ClearResetPasswordTokens() *UserUpdateOne {
-	uuo.mutation.ClearResetPasswordTokens()
+// ClearResetPasswordToken clears the "resetPasswordToken" edge to the ResetPasswordToken entity.
+func (uuo *UserUpdateOne) ClearResetPasswordToken() *UserUpdateOne {
+	uuo.mutation.ClearResetPasswordToken()
 	return uuo
-}
-
-// RemoveResetPasswordTokenIDs removes the "resetPasswordTokens" edge to ResetPasswordToken entities by IDs.
-func (uuo *UserUpdateOne) RemoveResetPasswordTokenIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveResetPasswordTokenIDs(ids...)
-	return uuo
-}
-
-// RemoveResetPasswordTokens removes "resetPasswordTokens" edges to ResetPasswordToken entities.
-func (uuo *UserUpdateOne) RemoveResetPasswordTokens(r ...*ResetPasswordToken) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return uuo.RemoveResetPasswordTokenIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1031,12 +990,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.ResetPasswordTokensCleared() {
+	if uuo.mutation.ResetPasswordTokenCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
+			Table:   user.ResetPasswordTokenTable,
+			Columns: []string{user.ResetPasswordTokenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1047,31 +1006,12 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedResetPasswordTokensIDs(); len(nodes) > 0 && !uuo.mutation.ResetPasswordTokensCleared() {
+	if nodes := uuo.mutation.ResetPasswordTokenIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: resetpasswordtoken.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.ResetPasswordTokensIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   user.ResetPasswordTokensTable,
-			Columns: []string{user.ResetPasswordTokensColumn},
+			Table:   user.ResetPasswordTokenTable,
+			Columns: []string{user.ResetPasswordTokenColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -18,12 +18,16 @@ type ResetPasswordToken struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// CreatedAt holds the value of the "createdAt" field.
-	CreatedAt time.Time `json:"createdAt,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
+	// UpdateTime holds the value of the "update_time" field.
+	UpdateTime time.Time `json:"update_time,omitempty"`
+	// ExpiryTime holds the value of the "expiryTime" field.
+	ExpiryTime time.Time `json:"expiryTime,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ResetPasswordTokenQuery when eager-loading is set.
-	Edges                      ResetPasswordTokenEdges `json:"edges"`
-	user_reset_password_tokens *uuid.UUID
+	Edges                     ResetPasswordTokenEdges `json:"edges"`
+	user_reset_password_token *uuid.UUID
 }
 
 // ResetPasswordTokenEdges holds the relations/edges for other nodes in the graph.
@@ -53,11 +57,11 @@ func (*ResetPasswordToken) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case resetpasswordtoken.FieldCreatedAt:
+		case resetpasswordtoken.FieldCreateTime, resetpasswordtoken.FieldUpdateTime, resetpasswordtoken.FieldExpiryTime:
 			values[i] = new(sql.NullTime)
 		case resetpasswordtoken.FieldID:
 			values[i] = new(uuid.UUID)
-		case resetpasswordtoken.ForeignKeys[0]: // user_reset_password_tokens
+		case resetpasswordtoken.ForeignKeys[0]: // user_reset_password_token
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type ResetPasswordToken", columns[i])
@@ -80,18 +84,30 @@ func (rpt *ResetPasswordToken) assignValues(columns []string, values []any) erro
 			} else if value != nil {
 				rpt.ID = *value
 			}
-		case resetpasswordtoken.FieldCreatedAt:
+		case resetpasswordtoken.FieldCreateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field createdAt", values[i])
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
 			} else if value.Valid {
-				rpt.CreatedAt = value.Time
+				rpt.CreateTime = value.Time
+			}
+		case resetpasswordtoken.FieldUpdateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field update_time", values[i])
+			} else if value.Valid {
+				rpt.UpdateTime = value.Time
+			}
+		case resetpasswordtoken.FieldExpiryTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expiryTime", values[i])
+			} else if value.Valid {
+				rpt.ExpiryTime = value.Time
 			}
 		case resetpasswordtoken.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field user_reset_password_tokens", values[i])
+				return fmt.Errorf("unexpected type %T for field user_reset_password_token", values[i])
 			} else if value.Valid {
-				rpt.user_reset_password_tokens = new(uuid.UUID)
-				*rpt.user_reset_password_tokens = *value.S.(*uuid.UUID)
+				rpt.user_reset_password_token = new(uuid.UUID)
+				*rpt.user_reset_password_token = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -126,8 +142,14 @@ func (rpt *ResetPasswordToken) String() string {
 	var builder strings.Builder
 	builder.WriteString("ResetPasswordToken(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", rpt.ID))
-	builder.WriteString("createdAt=")
-	builder.WriteString(rpt.CreatedAt.Format(time.ANSIC))
+	builder.WriteString("create_time=")
+	builder.WriteString(rpt.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("update_time=")
+	builder.WriteString(rpt.UpdateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("expiryTime=")
+	builder.WriteString(rpt.ExpiryTime.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/kzmijak/zswod_api_go/services/galleryService"
 	"github.com/kzmijak/zswod_api_go/services/imageService"
 	"github.com/kzmijak/zswod_api_go/services/jwt"
+	"github.com/kzmijak/zswod_api_go/services/resetPasswordTokenService"
 	"github.com/kzmijak/zswod_api_go/services/userService"
 )
 
@@ -28,4 +29,5 @@ type Controller struct {
 	ImageService   imageService.ImageService
 	GalleryService galleryService.GalleryService
 	CustomPageService customPageService.CustomPageService
+	ResetPasswordTokenService resetPasswordTokenService.ResetPasswordTokenService
 }
