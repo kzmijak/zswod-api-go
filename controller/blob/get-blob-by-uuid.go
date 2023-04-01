@@ -28,5 +28,5 @@ func (c *BlobController) GetBlobByUuid(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Data(http.StatusOK, blob.ContentType, blob.Blob)
+	ctx.Data(http.StatusOK, blob.ContentType, blob.GetBytes())
 }

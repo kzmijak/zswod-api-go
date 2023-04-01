@@ -27,6 +27,7 @@ func (Blob) Fields() []ent.Field {
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumblob",
 		}),
+		field.String("title"),
 		field.String("contentType"),
 		field.Enum("type").Values("Picture", "Attachment").Default("Picture"),
 		field.Bool("isPublic").Default(true),

@@ -18,6 +18,8 @@ const (
 	FieldCreateTime = "create_time"
 	// FieldBlob holds the string denoting the blob field in the database.
 	FieldBlob = "blob"
+	// FieldTitle holds the string denoting the title field in the database.
+	FieldTitle = "title"
 	// FieldContentType holds the string denoting the contenttype field in the database.
 	FieldContentType = "content_type"
 	// FieldType holds the string denoting the type field in the database.
@@ -33,6 +35,7 @@ var Columns = []string{
 	FieldID,
 	FieldCreateTime,
 	FieldBlob,
+	FieldTitle,
 	FieldContentType,
 	FieldType,
 	FieldIsPublic,

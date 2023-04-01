@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
+	"github.com/kzmijak/zswod_api_go/models/blobModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
@@ -29,18 +30,15 @@ func (c *BlobController) UploadBlob(ctx *gin.Context) {
 		return
 	}
 
-	var blobs []BlobResponse
+	var blobs []blobModel.BlobModel
 
 	for _, file := range files {
-		response, err := c.BlobService.StoreBlob(file, tx)
+		blobModel, err := c.BlobService.StoreBlob(file, tx)
 		if err != nil {
 			return
 		}
 
-		blobs = append(blobs, BlobResponse{
-			Id: response.ID.String(),
-			CreateTime: response.CreateTime,
-		})
+		blobs = append(blobs, blobModel)
 	}
 
 	tx.Commit()

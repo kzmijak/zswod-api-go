@@ -75,6 +75,7 @@ var (
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "create_time", Type: field.TypeTime},
 		{Name: "blob", Type: field.TypeBytes, SchemaType: map[string]string{"mysql": "mediumblob"}},
+		{Name: "title", Type: field.TypeString},
 		{Name: "content_type", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"Picture", "Attachment"}, Default: "Picture"},
 		{Name: "is_public", Type: field.TypeBool, Default: true},

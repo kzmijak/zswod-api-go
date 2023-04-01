@@ -40,6 +40,7 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader, tx *ent.Tx) (blobMode
 		Create().
 		SetID(uuid.New()).
 		SetBlob(byteContainer).
+		SetTitle(file.Filename).
 		SetContentType(contentType).
 		SetCreateTime(time.Now()).
 		Save(s.ctx)

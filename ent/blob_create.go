@@ -41,6 +41,12 @@ func (bc *BlobCreate) SetBlob(b []byte) *BlobCreate {
 	return bc
 }
 
+// SetTitle sets the "title" field.
+func (bc *BlobCreate) SetTitle(s string) *BlobCreate {
+	bc.mutation.SetTitle(s)
+	return bc
+}
+
 // SetContentType sets the "contentType" field.
 func (bc *BlobCreate) SetContentType(s string) *BlobCreate {
 	bc.mutation.SetContentType(s)
@@ -192,6 +198,9 @@ func (bc *BlobCreate) check() error {
 	if _, ok := bc.mutation.Blob(); !ok {
 		return &ValidationError{Name: "blob", err: errors.New(`ent: missing required field "Blob.blob"`)}
 	}
+	if _, ok := bc.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Blob.title"`)}
+	}
 	if _, ok := bc.mutation.ContentType(); !ok {
 		return &ValidationError{Name: "contentType", err: errors.New(`ent: missing required field "Blob.contentType"`)}
 	}
@@ -249,6 +258,10 @@ func (bc *BlobCreate) createSpec() (*Blob, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.Blob(); ok {
 		_spec.SetField(blob.FieldBlob, field.TypeBytes, value)
 		_node.Blob = value
+	}
+	if value, ok := bc.mutation.Title(); ok {
+		_spec.SetField(blob.FieldTitle, field.TypeString, value)
+		_node.Title = value
 	}
 	if value, ok := bc.mutation.ContentType(); ok {
 		_spec.SetField(blob.FieldContentType, field.TypeString, value)

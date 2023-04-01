@@ -2,24 +2,15 @@ package blobController
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/kzmijak/zswod_api_go/controller/utils"
 	"github.com/kzmijak/zswod_api_go/models/blobModel"
 	"github.com/kzmijak/zswod_api_go/modules/database"
-	"github.com/samber/lo"
 )
 
-type BlobResponse struct {
-	Title     string    `json:"title"`
-	Alt       string    `json:"alt"`
-	Id        string    `json:"id"`
-	CreateTime time.Time `json:"createTime"`
-}
-
 type GetBlobsListResponse struct {
-	Blobs []BlobResponse `json:"blobs"`
+	Blobs []blobModel.BlobModel `json:"blobs"`
 	Eof bool `json:"eof"`
 }
 
@@ -41,16 +32,9 @@ func (c *BlobController) GetBlobsList(ctx *gin.Context) {
 		return
 	}
 
-	blobUrls := lo.Map(response.Blobs, func(item blobModel.BlobModel, index int) BlobResponse {
-		return BlobResponse{
-			Id: item.ID.String(),
-			CreateTime: item.CreateTime,
-		}
-	})
-
 	
 	ctx.IndentedJSON(http.StatusOK, GetBlobsListResponse {
-		Blobs: blobUrls,
+		Blobs: response.Blobs,
 		Eof: response.Eof,
 	})
 }

@@ -11,11 +11,12 @@ import (
 
 type BlobModel struct {
 	ID          uuid.UUID  `json:"id"`
+	Title				string		 `json:"title"`
 	CreateTime  time.Time  `json:"createTime"`
-	Blob        []byte     `json:"blob"`
 	ContentType string     `json:"contentType"`
 	IsPublic 	  bool 			 `json:"isPublic"`
 	Type blobType.BlobType `json:"blobType"`
+	blob        []byte
 }
 
 var Nil = BlobModel{}
@@ -29,11 +30,16 @@ func FromEntity(blobEntity *ent.Blob) (BlobModel, error) {
 	return BlobModel{
 		ID: blobEntity.ID,
 		CreateTime: blobEntity.CreateTime,
-		Blob: blobEntity.Blob,
 		ContentType: blobEntity.ContentType,
 		IsPublic: blobEntity.IsPublic,
 		Type: blobType,
+		blob: blobEntity.Blob,
+		Title: blobEntity.Title,
 	}, nil
+}
+
+func (blobModel BlobModel) GetBytes() []byte {
+	return blobModel.blob
 }
 
 var ArrayFromEntities = arraymap.CreateArrayMapper(FromEntity)

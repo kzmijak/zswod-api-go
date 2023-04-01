@@ -1435,6 +1435,7 @@ type BlobMutation struct {
 	id            *uuid.UUID
 	create_time   *time.Time
 	blob          *[]byte
+	title         *string
 	contentType   *string
 	_type         *blob.Type
 	isPublic      *bool
@@ -1620,6 +1621,42 @@ func (m *BlobMutation) ResetBlob() {
 	m.blob = nil
 }
 
+// SetTitle sets the "title" field.
+func (m *BlobMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *BlobMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Blob entity.
+// If the Blob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BlobMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *BlobMutation) ResetTitle() {
+	m.title = nil
+}
+
 // SetContentType sets the "contentType" field.
 func (m *BlobMutation) SetContentType(s string) {
 	m.contentType = &s
@@ -1747,12 +1784,15 @@ func (m *BlobMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BlobMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.create_time != nil {
 		fields = append(fields, blob.FieldCreateTime)
 	}
 	if m.blob != nil {
 		fields = append(fields, blob.FieldBlob)
+	}
+	if m.title != nil {
+		fields = append(fields, blob.FieldTitle)
 	}
 	if m.contentType != nil {
 		fields = append(fields, blob.FieldContentType)
@@ -1775,6 +1815,8 @@ func (m *BlobMutation) Field(name string) (ent.Value, bool) {
 		return m.CreateTime()
 	case blob.FieldBlob:
 		return m.Blob()
+	case blob.FieldTitle:
+		return m.Title()
 	case blob.FieldContentType:
 		return m.ContentType()
 	case blob.FieldType:
@@ -1794,6 +1836,8 @@ func (m *BlobMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldCreateTime(ctx)
 	case blob.FieldBlob:
 		return m.OldBlob(ctx)
+	case blob.FieldTitle:
+		return m.OldTitle(ctx)
 	case blob.FieldContentType:
 		return m.OldContentType(ctx)
 	case blob.FieldType:
@@ -1822,6 +1866,13 @@ func (m *BlobMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetBlob(v)
+		return nil
+	case blob.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
 		return nil
 	case blob.FieldContentType:
 		v, ok := value.(string)
@@ -1898,6 +1949,9 @@ func (m *BlobMutation) ResetField(name string) error {
 		return nil
 	case blob.FieldBlob:
 		m.ResetBlob()
+		return nil
+	case blob.FieldTitle:
+		m.ResetTitle()
 		return nil
 	case blob.FieldContentType:
 		m.ResetContentType()
