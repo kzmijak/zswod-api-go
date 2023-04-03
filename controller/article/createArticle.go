@@ -72,11 +72,11 @@ func (c ArticleController) createGallery(title string, authorId uuid.UUID, tx *e
 		WithAuthorId(authorId).
 		WithTitle(title)
 
-	galleryModel, err := c.GalleryService.CreateGallery(payload, tx)
+	galleryId, err := c.GalleryService.CreateGallery(payload, tx)
 	if err != nil {
 		return uuid.Nil, err
 	}
-	return galleryModel.ID, nil
+	return galleryId, nil
 }
 
 func (c ArticleController) createImages(req []imageModel.CreateImagePayload, galleryId uuid.UUID, tx *ent.Tx) error {

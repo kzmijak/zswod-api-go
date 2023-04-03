@@ -7,10 +7,5 @@ import (
 )
 
 func (s ResetPasswordTokenService) GetResetPasswordTokenById(tokenId uuid.UUID, tx *ent.Tx) (resetPasswordTokenModel.ResetPasswordTokenModel, error) {
-	tokenEntity, err := s.tokenSelectors.SelectTokenById(tx, tokenId)
-	if err != nil {
-		return resetPasswordTokenModel.Nil, err
-	}
-
-	return resetPasswordTokenModel.FromEntity(tokenEntity)
+	return s.tokenSelectors.SelectTokenById(tx, tokenId)
 }

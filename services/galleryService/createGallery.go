@@ -13,7 +13,7 @@ const (
 	ErrFailedToCreateGallery = "ErrFailedToCreateGallery: Could not create gallery with given input"
 )
 
-func (s GalleryService) CreateGallery(payload galleryModel.CreateGalleryPayload, tx *ent.Tx) (galleryModel.GalleryModel, error) {
+func (s GalleryService) CreateGallery(payload galleryModel.CreateGalleryPayload, tx *ent.Tx) (uuid.UUID, error) {
 	galleryId := uuid.New()
 	now := time.Now()
 
@@ -25,8 +25,8 @@ func (s GalleryService) CreateGallery(payload galleryModel.CreateGalleryPayload,
 		Save(s.ctx)
 
 	if err != nil {
-		return galleryModel.Nil, errors.Error(ErrFailedToCreateGallery)
+		return uuid.Nil, errors.Error(ErrFailedToCreateGallery)
 	}
 
-	return galleryModel.FromEntity(galleryEntity)
+	return galleryEntity.ID, nil
 }

@@ -16,7 +16,7 @@ func (s ResetPasswordTokenService) InvalidateResetPasswordToken(tokenId uuid.UUI
 		return err
 	}
 
-	err = tx.ResetPasswordToken.DeleteOne(token).Exec(s.ctx);
+	err = tx.ResetPasswordToken.DeleteOneID(token.ID).Exec(s.ctx);
 	if err != nil {
 		return errors.Error(ErrCouldNotDeleteToken)
 	}

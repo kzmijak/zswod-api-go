@@ -25,14 +25,15 @@ func FromEntity(userEntity *ent.User) (UserModel, error) {
 		return Nil, err
 	}
 
-	userAvatarEntity, err := userEntityPicker.PickAvatarImageEntity(userEntity)
-	if err != nil {
-		return Nil, err
+	var userAvatarModel imageModel.Image
+	userAvatarEntity, _ := userEntityPicker.PickAvatarImageEntity(userEntity)
+	if userAvatarEntity != nil {
+		userAvatarModel, err = imageModel.FromEntity(userAvatarEntity)
+		if err != nil {
+			return Nil, err
+		}
 	}
-	userAvatarModel, err := imageModel.FromEntity(userAvatarEntity)
-	if err != nil {
-		return Nil, err
-	}
+
 
 	return UserModel{
 		ID: userEntity.ID,

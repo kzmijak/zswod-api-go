@@ -2,6 +2,7 @@ package resetPasswordTokenSelectors
 
 import (
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/models/resetPasswordTokenModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 	"github.com/kzmijak/zswod_api_go/query/resetPasswordTokenQuery"
 	"github.com/kzmijak/zswod_api_go/query/userQuery"
@@ -11,7 +12,7 @@ const (
 	ErrCouldNotQueryTokenByOwner = "ErrCouldNotQueryTokenByOwner: Failed to query for token owner"
 )
 
-func (s ResetPasswordTokenSelectors) SelectTokenByOwnerEmail(tx *ent.Tx, email string) (*ent.ResetPasswordToken, error) {
+func (s ResetPasswordTokenSelectors) SelectTokenByOwnerEmail(tx *ent.Tx, email string) (resetPasswordTokenModel.ResetPasswordTokenModel, error) {
 	tokenEntQuery := userQuery.FromTx(tx).
 		QueryByEmail(email).
 		QueryResetPasswordToken()
@@ -21,8 +22,8 @@ func (s ResetPasswordTokenSelectors) SelectTokenByOwnerEmail(tx *ent.Tx, email s
 		Only(s.ctx)
 
 	if err != nil {
-		return nil, errors.Error(ErrCouldNotQueryTokenByOwner)
+		return resetPasswordTokenModel.Nil, errors.Error(ErrCouldNotQueryTokenByOwner)
 	}
 
-	return tokenEntity, nil
+	return resetPasswordTokenModel.FromEntity(tokenEntity)
 }

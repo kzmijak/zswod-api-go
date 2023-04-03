@@ -16,7 +16,7 @@ const (
 
 func (s ResetPasswordTokenService) CreateResetPasswordToken(ownerEmail string, tx *ent.Tx) (resetPasswordTokenModel.ResetPasswordTokenModel, error) {
 	existingToken, _ := s.tokenSelectors.SelectTokenByOwnerEmail(tx, ownerEmail)
-	if existingToken != nil {
+	if existingToken != resetPasswordTokenModel.Nil {
 		s.InvalidateResetPasswordToken(existingToken.ID, tx)
 	}
 
@@ -32,7 +32,7 @@ func (s ResetPasswordTokenService) CreateResetPasswordToken(ownerEmail string, t
 		SetCreateTime(now).
 		SetExpiryTime(twoHoursFromNow).
 		SetID(uuid.New()).
-		SetOwner(tokenOwner).
+		SetOwnerID(tokenOwner.ID).
 		Save(s.ctx)
 	if err != nil {
 		return resetPasswordTokenModel.Nil, errors.Error(ErrTokenCreationFailed)

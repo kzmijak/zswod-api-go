@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
+	"github.com/kzmijak/zswod_api_go/ent/blob"
 	"github.com/kzmijak/zswod_api_go/models/blobModel"
 	"github.com/kzmijak/zswod_api_go/modules/errors"
 )
@@ -39,6 +40,8 @@ func (s BlobService) StoreBlob(file *multipart.FileHeader, tx *ent.Tx) (blobMode
 	newBlobEntity, err := tx.Blob.
 		Create().
 		SetID(uuid.New()).
+		SetIsPublic(true).
+		SetType(blob.TypePicture).
 		SetBlob(byteContainer).
 		SetTitle(file.Filename).
 		SetContentType(contentType).
