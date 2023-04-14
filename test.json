@@ -1,6 +1,5 @@
-{"level":"trace","msg":"Uploading blob","time":"2023-03-31T22:21:50+02:00"}
-{"level":"trace","msg":"Uploading blob","time":"2023-03-31T22:21:55+02:00"}
-{"level":"trace","msg":"Uploading blob","time":"2023-03-31T22:23:44+02:00"}
+{"level":"fatal","msg":"Failed to initialize databaseent: validator failed for field \"CustomPage.title\": value is greater than the required length","time":"2023-04-14T23:16:20+02:00"}
+blob","time":"2023-03-31T22:23:44+02:00"}
 {"level":"trace","msg":"Uploading blob","time":"2023-03-31T22:23:55+02:00"}
 :00"}
 :00"}

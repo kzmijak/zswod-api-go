@@ -129,6 +129,8 @@ func (c Controller) Run() {
 			customPage.GET("/:section/:title", cpc.GetCustomPageBySectionAndTitle)
 			customPage.Use(jc.RequireTeacher)
 			customPage.POST("", cpc.CreateCustomPage)
+			customPage.PUT("", cpc.UpdateCustomPage)
+			customPage.DELETE("/:id", cpc.DeleteCustomPage)
 		}
 	}
 
