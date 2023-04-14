@@ -21,7 +21,6 @@ type CreateArticleRequest struct {
 	Images []imageModel.CreateImagePayload `json:"images"`
 }
 
-
 func (c ArticleController) CreateArticle(ctx *gin.Context) {
 	var requestBody CreateArticleRequest
 	var err error

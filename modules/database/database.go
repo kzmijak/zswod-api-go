@@ -103,14 +103,16 @@ func seedPaths(ctx context.Context) error {
 	bulk := make([]*ent.CustomPageCreate, len(pages))
 
 	for i, page := range pages {
+		sectionSanitized := sanitizer.SanitizeString(page.section)
 		titleSanitized := sanitizer.SanitizeString(page.title)
+		url := sectionSanitized + "/" + titleSanitized;
 
 		bulk[i] = Client.CustomPage.Create().
 			SetOrder(page.order).
 			SetSection(page.section).
 			SetIconId(page.icon).
 			SetTitle(page.title).
-			SetTitleNormalized(titleSanitized).
+			SetTitleNormalized(url).
 			SetContent("")
 
 		if (page.link != "") {

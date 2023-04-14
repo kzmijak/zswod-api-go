@@ -32,7 +32,6 @@ func (target StringUnderSanitization)	withReplacedSpacesWithDashes () StringUnde
 }
 
 func (target StringUnderSanitization) withReplacedDiacriticalSigns() StringUnderSanitization {
-
 	transformer := transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
         return unicode.Is(unicode.Mn, r)
     }), norm.NFC)

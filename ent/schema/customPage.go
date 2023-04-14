@@ -26,7 +26,7 @@ func (CustomPage) Mixin() []ent.Mixin {
 func (CustomPage) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("order"),
-		field.String("title").MinLen(6).MaxLen(200),
+		field.String("title").MinLen(3).MaxLen(12),
 		field.String("titleNormalized").Unique(),
 		field.String("content").
 			SchemaType(map[string]string{
@@ -34,7 +34,7 @@ func (CustomPage) Fields() []ent.Field {
 		}),
 		field.Bool("isExternal").Optional(),
 		field.String("link").Optional(),
-		field.String("section"),
+		field.String("section").MinLen(3).MaxLen(12),
 	}
 }
 

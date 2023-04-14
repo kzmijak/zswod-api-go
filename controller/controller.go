@@ -126,6 +126,9 @@ func (c Controller) Run() {
 		customPage := v1.Group("/customPages")
 		{
 			customPage.GET("", cpc.GetCustomPageHeaders)
+			customPage.GET("/:section/:title", cpc.GetCustomPageBySectionAndTitle)
+			customPage.Use(jc.RequireTeacher)
+			customPage.POST("", cpc.CreateCustomPage)
 		}
 	}
 
