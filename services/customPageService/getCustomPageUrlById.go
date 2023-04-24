@@ -11,5 +11,5 @@ func (s CustomPageService) GetCustomPageUrlById(customPageId uuid.UUID, tx *ent.
 		return "", err
 	}
 
-	return model.TitleNormalized, nil
+	return model.Url, nil
 }

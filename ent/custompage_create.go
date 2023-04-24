@@ -36,6 +36,20 @@ func (cpc *CustomPageCreate) SetNillableIconId(s *string) *CustomPageCreate {
 	return cpc
 }
 
+// SetCreateTime sets the "create_time" field.
+func (cpc *CustomPageCreate) SetCreateTime(t time.Time) *CustomPageCreate {
+	cpc.mutation.SetCreateTime(t)
+	return cpc
+}
+
+// SetNillableCreateTime sets the "create_time" field if the given value is not nil.
+func (cpc *CustomPageCreate) SetNillableCreateTime(t *time.Time) *CustomPageCreate {
+	if t != nil {
+		cpc.SetCreateTime(*t)
+	}
+	return cpc
+}
+
 // SetUpdateTime sets the "update_time" field.
 func (cpc *CustomPageCreate) SetUpdateTime(t time.Time) *CustomPageCreate {
 	cpc.mutation.SetUpdateTime(t)
@@ -50,21 +64,15 @@ func (cpc *CustomPageCreate) SetNillableUpdateTime(t *time.Time) *CustomPageCrea
 	return cpc
 }
 
-// SetOrder sets the "order" field.
-func (cpc *CustomPageCreate) SetOrder(i int) *CustomPageCreate {
-	cpc.mutation.SetOrder(i)
-	return cpc
-}
-
 // SetTitle sets the "title" field.
 func (cpc *CustomPageCreate) SetTitle(s string) *CustomPageCreate {
 	cpc.mutation.SetTitle(s)
 	return cpc
 }
 
-// SetTitleNormalized sets the "titleNormalized" field.
-func (cpc *CustomPageCreate) SetTitleNormalized(s string) *CustomPageCreate {
-	cpc.mutation.SetTitleNormalized(s)
+// SetURL sets the "url" field.
+func (cpc *CustomPageCreate) SetURL(s string) *CustomPageCreate {
+	cpc.mutation.SetURL(s)
 	return cpc
 }
 
@@ -214,6 +222,10 @@ func (cpc *CustomPageCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (cpc *CustomPageCreate) defaults() {
+	if _, ok := cpc.mutation.CreateTime(); !ok {
+		v := custompage.DefaultCreateTime()
+		cpc.mutation.SetCreateTime(v)
+	}
 	if _, ok := cpc.mutation.UpdateTime(); !ok {
 		v := custompage.DefaultUpdateTime()
 		cpc.mutation.SetUpdateTime(v)
@@ -226,11 +238,11 @@ func (cpc *CustomPageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (cpc *CustomPageCreate) check() error {
+	if _, ok := cpc.mutation.CreateTime(); !ok {
+		return &ValidationError{Name: "create_time", err: errors.New(`ent: missing required field "CustomPage.create_time"`)}
+	}
 	if _, ok := cpc.mutation.UpdateTime(); !ok {
 		return &ValidationError{Name: "update_time", err: errors.New(`ent: missing required field "CustomPage.update_time"`)}
-	}
-	if _, ok := cpc.mutation.Order(); !ok {
-		return &ValidationError{Name: "order", err: errors.New(`ent: missing required field "CustomPage.order"`)}
 	}
 	if _, ok := cpc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "CustomPage.title"`)}
@@ -240,14 +252,19 @@ func (cpc *CustomPageCreate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "CustomPage.title": %w`, err)}
 		}
 	}
-	if _, ok := cpc.mutation.TitleNormalized(); !ok {
-		return &ValidationError{Name: "titleNormalized", err: errors.New(`ent: missing required field "CustomPage.titleNormalized"`)}
+	if _, ok := cpc.mutation.URL(); !ok {
+		return &ValidationError{Name: "url", err: errors.New(`ent: missing required field "CustomPage.url"`)}
 	}
 	if _, ok := cpc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "CustomPage.content"`)}
 	}
 	if _, ok := cpc.mutation.Section(); !ok {
 		return &ValidationError{Name: "section", err: errors.New(`ent: missing required field "CustomPage.section"`)}
+	}
+	if v, ok := cpc.mutation.Section(); ok {
+		if err := custompage.SectionValidator(v); err != nil {
+			return &ValidationError{Name: "section", err: fmt.Errorf(`ent: validator failed for field "CustomPage.section": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -289,21 +306,21 @@ func (cpc *CustomPageCreate) createSpec() (*CustomPage, *sqlgraph.CreateSpec) {
 		_spec.SetField(custompage.FieldIconId, field.TypeString, value)
 		_node.IconId = value
 	}
+	if value, ok := cpc.mutation.CreateTime(); ok {
+		_spec.SetField(custompage.FieldCreateTime, field.TypeTime, value)
+		_node.CreateTime = value
+	}
 	if value, ok := cpc.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
 		_node.UpdateTime = value
-	}
-	if value, ok := cpc.mutation.Order(); ok {
-		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
-		_node.Order = value
 	}
 	if value, ok := cpc.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := cpc.mutation.TitleNormalized(); ok {
-		_spec.SetField(custompage.FieldTitleNormalized, field.TypeString, value)
-		_node.TitleNormalized = value
+	if value, ok := cpc.mutation.URL(); ok {
+		_spec.SetField(custompage.FieldURL, field.TypeString, value)
+		_node.URL = value
 	}
 	if value, ok := cpc.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)

@@ -1,6 +1,8 @@
 package customPageService
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/models/customPageModel"
@@ -15,6 +17,7 @@ func (s CustomPageService) UpdateCustomPage(customPageId uuid.UUID, payload cust
 	updatedEntity, err := tx.CustomPage.
 		UpdateOneID(customPageId).
 		SetContent(payload.Content).
+		SetUpdateTime(time.Now()).
 		Save(s.ctx)
 
 	if err != nil {

@@ -1,6 +1,8 @@
 package customPageService
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/kzmijak/zswod_api_go/ent"
 	"github.com/kzmijak/zswod_api_go/models/customPageModel"
@@ -16,7 +18,6 @@ func (s CustomPageService) CreateCustomPage(req customPageModel.CreateCustomPage
 	titleSanitized := sanitizer.SanitizeString(req.Title)	
 	sectionSanitized := sanitizer.SanitizeString(req.Section)	
 	url := sectionSanitized + "/" + titleSanitized 
-	order, err := s.selectors.SelectSectionMembersCount(tx, req.Section)
 
 	if err != nil {
 		return uuid.Nil, err
@@ -25,8 +26,8 @@ func (s CustomPageService) CreateCustomPage(req customPageModel.CreateCustomPage
 	customPageId = uuid.New()
 	err = tx.CustomPage.Create().
 		SetID(customPageId).
-		SetOrder(order).
-		SetTitleNormalized(url).
+		SetCreateTime(time.Now()).
+		SetURL(url).
 		SetSection(req.Section).
 		SetIconId(req.IconId).
 		SetTitle(req.Title).

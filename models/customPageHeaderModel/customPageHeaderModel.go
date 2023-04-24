@@ -5,17 +5,9 @@ import (
 	arraymap "github.com/kzmijak/zswod_api_go/utils/arrayMap"
 )
 
-type CustomPageHeaderItem struct {
-	TitleNormalized string `json:"titleNormalized"`
-	Section 				string `json:"section"`
-	Title           string `json:"title"`
-	IconId          string `json:"icon"`
-	IsExternal      bool   `json:"isExternal"`
-	Link            string `json:"link,omitempty"`
-}
 
 type CustomPageHeaderModel struct {
-	TitleNormalized string `json:"titleNormalized"`
+	Url string `json:"url"`
 	Section 				string `json:"section"`
 	Title           string `json:"title"`
 	IconId          string `json:"icon"`
@@ -27,7 +19,7 @@ var Nil = CustomPageHeaderModel{}
 
 func FromCustomPageEntity(customPageEntity *ent.CustomPage) (CustomPageHeaderModel, error) {
 	return CustomPageHeaderModel{
-		TitleNormalized: customPageEntity.TitleNormalized,
+		Url: customPageEntity.URL,
 		Title: customPageEntity.Title,
 		IconId: customPageEntity.IconId,
 		IsExternal: customPageEntity.IsExternal,

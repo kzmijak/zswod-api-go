@@ -2021,11 +2021,10 @@ type CustomPageMutation struct {
 	typ                string
 	id                 *uuid.UUID
 	iconId             *string
+	create_time        *time.Time
 	update_time        *time.Time
-	_order             *int
-	add_order          *int
 	title              *string
-	titleNormalized    *string
+	url                *string
 	content            *string
 	isExternal         *bool
 	link               *string
@@ -2192,6 +2191,42 @@ func (m *CustomPageMutation) ResetIconId() {
 	delete(m.clearedFields, custompage.FieldIconId)
 }
 
+// SetCreateTime sets the "create_time" field.
+func (m *CustomPageMutation) SetCreateTime(t time.Time) {
+	m.create_time = &t
+}
+
+// CreateTime returns the value of the "create_time" field in the mutation.
+func (m *CustomPageMutation) CreateTime() (r time.Time, exists bool) {
+	v := m.create_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreateTime returns the old "create_time" field's value of the CustomPage entity.
+// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomPageMutation) OldCreateTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreateTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreateTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreateTime: %w", err)
+	}
+	return oldValue.CreateTime, nil
+}
+
+// ResetCreateTime resets all changes to the "create_time" field.
+func (m *CustomPageMutation) ResetCreateTime() {
+	m.create_time = nil
+}
+
 // SetUpdateTime sets the "update_time" field.
 func (m *CustomPageMutation) SetUpdateTime(t time.Time) {
 	m.update_time = &t
@@ -2226,62 +2261,6 @@ func (m *CustomPageMutation) OldUpdateTime(ctx context.Context) (v time.Time, er
 // ResetUpdateTime resets all changes to the "update_time" field.
 func (m *CustomPageMutation) ResetUpdateTime() {
 	m.update_time = nil
-}
-
-// SetOrder sets the "order" field.
-func (m *CustomPageMutation) SetOrder(i int) {
-	m._order = &i
-	m.add_order = nil
-}
-
-// Order returns the value of the "order" field in the mutation.
-func (m *CustomPageMutation) Order() (r int, exists bool) {
-	v := m._order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOrder returns the old "order" field's value of the CustomPage entity.
-// If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomPageMutation) OldOrder(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOrder is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOrder requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOrder: %w", err)
-	}
-	return oldValue.Order, nil
-}
-
-// AddOrder adds i to the "order" field.
-func (m *CustomPageMutation) AddOrder(i int) {
-	if m.add_order != nil {
-		*m.add_order += i
-	} else {
-		m.add_order = &i
-	}
-}
-
-// AddedOrder returns the value that was added to the "order" field in this mutation.
-func (m *CustomPageMutation) AddedOrder() (r int, exists bool) {
-	v := m.add_order
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetOrder resets all changes to the "order" field.
-func (m *CustomPageMutation) ResetOrder() {
-	m._order = nil
-	m.add_order = nil
 }
 
 // SetTitle sets the "title" field.
@@ -2320,40 +2299,40 @@ func (m *CustomPageMutation) ResetTitle() {
 	m.title = nil
 }
 
-// SetTitleNormalized sets the "titleNormalized" field.
-func (m *CustomPageMutation) SetTitleNormalized(s string) {
-	m.titleNormalized = &s
+// SetURL sets the "url" field.
+func (m *CustomPageMutation) SetURL(s string) {
+	m.url = &s
 }
 
-// TitleNormalized returns the value of the "titleNormalized" field in the mutation.
-func (m *CustomPageMutation) TitleNormalized() (r string, exists bool) {
-	v := m.titleNormalized
+// URL returns the value of the "url" field in the mutation.
+func (m *CustomPageMutation) URL() (r string, exists bool) {
+	v := m.url
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTitleNormalized returns the old "titleNormalized" field's value of the CustomPage entity.
+// OldURL returns the old "url" field's value of the CustomPage entity.
 // If the CustomPage object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *CustomPageMutation) OldTitleNormalized(ctx context.Context) (v string, err error) {
+func (m *CustomPageMutation) OldURL(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTitleNormalized is only allowed on UpdateOne operations")
+		return v, errors.New("OldURL is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTitleNormalized requires an ID field in the mutation")
+		return v, errors.New("OldURL requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTitleNormalized: %w", err)
+		return v, fmt.Errorf("querying old value for OldURL: %w", err)
 	}
-	return oldValue.TitleNormalized, nil
+	return oldValue.URL, nil
 }
 
-// ResetTitleNormalized resets all changes to the "titleNormalized" field.
-func (m *CustomPageMutation) ResetTitleNormalized() {
-	m.titleNormalized = nil
+// ResetURL resets all changes to the "url" field.
+func (m *CustomPageMutation) ResetURL() {
+	m.url = nil
 }
 
 // SetContent sets the "content" field.
@@ -2603,17 +2582,17 @@ func (m *CustomPageMutation) Fields() []string {
 	if m.iconId != nil {
 		fields = append(fields, custompage.FieldIconId)
 	}
+	if m.create_time != nil {
+		fields = append(fields, custompage.FieldCreateTime)
+	}
 	if m.update_time != nil {
 		fields = append(fields, custompage.FieldUpdateTime)
-	}
-	if m._order != nil {
-		fields = append(fields, custompage.FieldOrder)
 	}
 	if m.title != nil {
 		fields = append(fields, custompage.FieldTitle)
 	}
-	if m.titleNormalized != nil {
-		fields = append(fields, custompage.FieldTitleNormalized)
+	if m.url != nil {
+		fields = append(fields, custompage.FieldURL)
 	}
 	if m.content != nil {
 		fields = append(fields, custompage.FieldContent)
@@ -2637,14 +2616,14 @@ func (m *CustomPageMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case custompage.FieldIconId:
 		return m.IconId()
+	case custompage.FieldCreateTime:
+		return m.CreateTime()
 	case custompage.FieldUpdateTime:
 		return m.UpdateTime()
-	case custompage.FieldOrder:
-		return m.Order()
 	case custompage.FieldTitle:
 		return m.Title()
-	case custompage.FieldTitleNormalized:
-		return m.TitleNormalized()
+	case custompage.FieldURL:
+		return m.URL()
 	case custompage.FieldContent:
 		return m.Content()
 	case custompage.FieldIsExternal:
@@ -2664,14 +2643,14 @@ func (m *CustomPageMutation) OldField(ctx context.Context, name string) (ent.Val
 	switch name {
 	case custompage.FieldIconId:
 		return m.OldIconId(ctx)
+	case custompage.FieldCreateTime:
+		return m.OldCreateTime(ctx)
 	case custompage.FieldUpdateTime:
 		return m.OldUpdateTime(ctx)
-	case custompage.FieldOrder:
-		return m.OldOrder(ctx)
 	case custompage.FieldTitle:
 		return m.OldTitle(ctx)
-	case custompage.FieldTitleNormalized:
-		return m.OldTitleNormalized(ctx)
+	case custompage.FieldURL:
+		return m.OldURL(ctx)
 	case custompage.FieldContent:
 		return m.OldContent(ctx)
 	case custompage.FieldIsExternal:
@@ -2696,19 +2675,19 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetIconId(v)
 		return nil
+	case custompage.FieldCreateTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreateTime(v)
+		return nil
 	case custompage.FieldUpdateTime:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdateTime(v)
-		return nil
-	case custompage.FieldOrder:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOrder(v)
 		return nil
 	case custompage.FieldTitle:
 		v, ok := value.(string)
@@ -2717,12 +2696,12 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTitle(v)
 		return nil
-	case custompage.FieldTitleNormalized:
+	case custompage.FieldURL:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTitleNormalized(v)
+		m.SetURL(v)
 		return nil
 	case custompage.FieldContent:
 		v, ok := value.(string)
@@ -2759,21 +2738,13 @@ func (m *CustomPageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *CustomPageMutation) AddedFields() []string {
-	var fields []string
-	if m.add_order != nil {
-		fields = append(fields, custompage.FieldOrder)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *CustomPageMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case custompage.FieldOrder:
-		return m.AddedOrder()
-	}
 	return nil, false
 }
 
@@ -2782,13 +2753,6 @@ func (m *CustomPageMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *CustomPageMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case custompage.FieldOrder:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddOrder(v)
-		return nil
 	}
 	return fmt.Errorf("unknown CustomPage numeric field %s", name)
 }
@@ -2840,17 +2804,17 @@ func (m *CustomPageMutation) ResetField(name string) error {
 	case custompage.FieldIconId:
 		m.ResetIconId()
 		return nil
+	case custompage.FieldCreateTime:
+		m.ResetCreateTime()
+		return nil
 	case custompage.FieldUpdateTime:
 		m.ResetUpdateTime()
-		return nil
-	case custompage.FieldOrder:
-		m.ResetOrder()
 		return nil
 	case custompage.FieldTitle:
 		m.ResetTitle()
 		return nil
-	case custompage.FieldTitleNormalized:
-		m.ResetTitleNormalized()
+	case custompage.FieldURL:
+		m.ResetURL()
 		return nil
 	case custompage.FieldContent:
 		m.ResetContent()

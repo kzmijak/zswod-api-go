@@ -18,23 +18,22 @@ func (CustomPage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		UuidMixin{},
 		IconMixin{},
-		mixin.UpdateTime{},
+		mixin.Time{},
 	}
 }
 
 // Fields of the CustomPage.
 func (CustomPage) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int("order"),
-		field.String("title").MinLen(3).MaxLen(12),
-		field.String("titleNormalized").Unique(),
+		field.String("title").MinLen(3).MaxLen(36),
+		field.String("url").Unique(),
 		field.String("content").
 			SchemaType(map[string]string{
 			dialect.MySQL: "mediumtext",
 		}),
 		field.Bool("isExternal").Optional(),
 		field.String("link").Optional(),
-		field.String("section").MinLen(3).MaxLen(12),
+		field.String("section").MinLen(3).MaxLen(36),
 	}
 }
 

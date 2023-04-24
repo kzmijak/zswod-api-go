@@ -113,14 +113,18 @@ func init() {
 	_ = custompageMixinFields2
 	custompageFields := schema.CustomPage{}.Fields()
 	_ = custompageFields
+	// custompageDescCreateTime is the schema descriptor for create_time field.
+	custompageDescCreateTime := custompageMixinFields2[0].Descriptor()
+	// custompage.DefaultCreateTime holds the default value on creation for the create_time field.
+	custompage.DefaultCreateTime = custompageDescCreateTime.Default.(func() time.Time)
 	// custompageDescUpdateTime is the schema descriptor for update_time field.
-	custompageDescUpdateTime := custompageMixinFields2[0].Descriptor()
+	custompageDescUpdateTime := custompageMixinFields2[1].Descriptor()
 	// custompage.DefaultUpdateTime holds the default value on creation for the update_time field.
 	custompage.DefaultUpdateTime = custompageDescUpdateTime.Default.(func() time.Time)
 	// custompage.UpdateDefaultUpdateTime holds the default value on update for the update_time field.
 	custompage.UpdateDefaultUpdateTime = custompageDescUpdateTime.UpdateDefault.(func() time.Time)
 	// custompageDescTitle is the schema descriptor for title field.
-	custompageDescTitle := custompageFields[1].Descriptor()
+	custompageDescTitle := custompageFields[0].Descriptor()
 	// custompage.TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	custompage.TitleValidator = func() func(string) error {
 		validators := custompageDescTitle.Validators
@@ -131,6 +135,24 @@ func init() {
 		return func(title string) error {
 			for _, fn := range fns {
 				if err := fn(title); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// custompageDescSection is the schema descriptor for section field.
+	custompageDescSection := custompageFields[5].Descriptor()
+	// custompage.SectionValidator is a validator for the "section" field. It is called by the builders before save.
+	custompage.SectionValidator = func() func(string) error {
+		validators := custompageDescSection.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(section string) error {
+			for _, fn := range fns {
+				if err := fn(section); err != nil {
 					return err
 				}
 			}

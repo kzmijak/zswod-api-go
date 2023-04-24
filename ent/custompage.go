@@ -19,14 +19,14 @@ type CustomPage struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// IconId holds the value of the "iconId" field.
 	IconId string `json:"iconId,omitempty"`
+	// CreateTime holds the value of the "create_time" field.
+	CreateTime time.Time `json:"create_time,omitempty"`
 	// UpdateTime holds the value of the "update_time" field.
 	UpdateTime time.Time `json:"update_time,omitempty"`
-	// Order holds the value of the "order" field.
-	Order int `json:"order,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// TitleNormalized holds the value of the "titleNormalized" field.
-	TitleNormalized string `json:"titleNormalized,omitempty"`
+	// URL holds the value of the "url" field.
+	URL string `json:"url,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
 	// IsExternal holds the value of the "isExternal" field.
@@ -65,11 +65,9 @@ func (*CustomPage) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case custompage.FieldIsExternal:
 			values[i] = new(sql.NullBool)
-		case custompage.FieldOrder:
-			values[i] = new(sql.NullInt64)
-		case custompage.FieldIconId, custompage.FieldTitle, custompage.FieldTitleNormalized, custompage.FieldContent, custompage.FieldLink, custompage.FieldSection:
+		case custompage.FieldIconId, custompage.FieldTitle, custompage.FieldURL, custompage.FieldContent, custompage.FieldLink, custompage.FieldSection:
 			values[i] = new(sql.NullString)
-		case custompage.FieldUpdateTime:
+		case custompage.FieldCreateTime, custompage.FieldUpdateTime:
 			values[i] = new(sql.NullTime)
 		case custompage.FieldID:
 			values[i] = new(uuid.UUID)
@@ -100,17 +98,17 @@ func (cp *CustomPage) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				cp.IconId = value.String
 			}
+		case custompage.FieldCreateTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field create_time", values[i])
+			} else if value.Valid {
+				cp.CreateTime = value.Time
+			}
 		case custompage.FieldUpdateTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field update_time", values[i])
 			} else if value.Valid {
 				cp.UpdateTime = value.Time
-			}
-		case custompage.FieldOrder:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field order", values[i])
-			} else if value.Valid {
-				cp.Order = int(value.Int64)
 			}
 		case custompage.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -118,11 +116,11 @@ func (cp *CustomPage) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				cp.Title = value.String
 			}
-		case custompage.FieldTitleNormalized:
+		case custompage.FieldURL:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field titleNormalized", values[i])
+				return fmt.Errorf("unexpected type %T for field url", values[i])
 			} else if value.Valid {
-				cp.TitleNormalized = value.String
+				cp.URL = value.String
 			}
 		case custompage.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -184,17 +182,17 @@ func (cp *CustomPage) String() string {
 	builder.WriteString("iconId=")
 	builder.WriteString(cp.IconId)
 	builder.WriteString(", ")
+	builder.WriteString("create_time=")
+	builder.WriteString(cp.CreateTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("update_time=")
 	builder.WriteString(cp.UpdateTime.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("order=")
-	builder.WriteString(fmt.Sprintf("%v", cp.Order))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(cp.Title)
 	builder.WriteString(", ")
-	builder.WriteString("titleNormalized=")
-	builder.WriteString(cp.TitleNormalized)
+	builder.WriteString("url=")
+	builder.WriteString(cp.URL)
 	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(cp.Content)

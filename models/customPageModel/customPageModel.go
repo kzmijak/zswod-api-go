@@ -15,7 +15,7 @@ type CustomPageModel struct {
 	Title       string                            `json:"title"`
 	Content     string                            `json:"content"`
 	Attachments []attachmentModel.AttachmentModel `json:"attachments"`
-	TitleNormalized string `json:"titleNormalized"`
+	Url string `json:"url"`
 }
 
 var Nil = CustomPageModel{}
@@ -35,6 +35,6 @@ func FromCustomPageEntity(customPageEntity *ent.CustomPage) (CustomPageModel, er
 		Title: customPageEntity.Title,
 		Content: customPageEntity.Content,
 		Attachments: attachmentModels,
-		TitleNormalized: customPageEntity.TitleNormalized,
+		Url: customPageEntity.URL,
 	}, nil
 }

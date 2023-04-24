@@ -15,14 +15,14 @@ const (
 	FieldID = "id"
 	// FieldIconId holds the string denoting the iconid field in the database.
 	FieldIconId = "icon_id"
+	// FieldCreateTime holds the string denoting the create_time field in the database.
+	FieldCreateTime = "create_time"
 	// FieldUpdateTime holds the string denoting the update_time field in the database.
 	FieldUpdateTime = "update_time"
-	// FieldOrder holds the string denoting the order field in the database.
-	FieldOrder = "order"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldTitleNormalized holds the string denoting the titlenormalized field in the database.
-	FieldTitleNormalized = "title_normalized"
+	// FieldURL holds the string denoting the url field in the database.
+	FieldURL = "url"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
 	// FieldIsExternal holds the string denoting the isexternal field in the database.
@@ -48,10 +48,10 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldIconId,
+	FieldCreateTime,
 	FieldUpdateTime,
-	FieldOrder,
 	FieldTitle,
-	FieldTitleNormalized,
+	FieldURL,
 	FieldContent,
 	FieldIsExternal,
 	FieldLink,
@@ -69,12 +69,16 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreateTime holds the default value on creation for the "create_time" field.
+	DefaultCreateTime func() time.Time
 	// DefaultUpdateTime holds the default value on creation for the "update_time" field.
 	DefaultUpdateTime func() time.Time
 	// UpdateDefaultUpdateTime holds the default value on update for the "update_time" field.
 	UpdateDefaultUpdateTime func() time.Time
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// SectionValidator is a validator for the "section" field. It is called by the builders before save.
+	SectionValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

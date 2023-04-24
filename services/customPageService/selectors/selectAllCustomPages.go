@@ -11,7 +11,7 @@ const (
 )
 
 func (s CustomPageSelector) SelectAllCustomPages(tx *ent.Tx) ([]*ent.CustomPage, error) {
-	customPageEntities, err := tx.CustomPage.Query().Order(ent.Asc(custompage.FieldOrder)).All(s.ctx)
+	customPageEntities, err := tx.CustomPage.Query().Order(ent.Asc(custompage.FieldCreateTime)).All(s.ctx)
 	if err != nil {
 		return nil, errors.Error(ErrCouldNotQueryCustomPages)
 	}

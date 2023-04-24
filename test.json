@@ -1,5 +1,5 @@
-{"level":"fatal","msg":"Failed to initialize databaseent: validator failed for field \"CustomPage.title\": value is greater than the required length","time":"2023-04-14T23:16:20+02:00"}
-blob","time":"2023-03-31T22:23:44+02:00"}
+{"level":"fatal","msg":"Failed to initialize databaseinsert nodes to table \"custom_pages\": Error 1364: Field 'title_normalized' doesn't have a default value","time":"2023-04-14T23:27:37+02:00"}
+e":"2023-03-31T22:23:44+02:00"}
 {"level":"trace","msg":"Uploading blob","time":"2023-03-31T22:23:55+02:00"}
 :00"}
 :00"}

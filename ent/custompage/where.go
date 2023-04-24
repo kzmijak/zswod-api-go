@@ -89,17 +89,17 @@ func IconId(v string) predicate.CustomPage {
 	})
 }
 
+// CreateTime applies equality check predicate on the "create_time" field. It's identical to CreateTimeEQ.
+func CreateTime(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
 // UpdateTime applies equality check predicate on the "update_time" field. It's identical to UpdateTimeEQ.
 func UpdateTime(v time.Time) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldUpdateTime), v))
-	})
-}
-
-// Order applies equality check predicate on the "order" field. It's identical to OrderEQ.
-func Order(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldOrder), v))
 	})
 }
 
@@ -110,10 +110,10 @@ func Title(v string) predicate.CustomPage {
 	})
 }
 
-// TitleNormalized applies equality check predicate on the "titleNormalized" field. It's identical to TitleNormalizedEQ.
-func TitleNormalized(v string) predicate.CustomPage {
+// URL applies equality check predicate on the "url" field. It's identical to URLEQ.
+func URL(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
+		s.Where(sql.EQ(s.C(FieldURL), v))
 	})
 }
 
@@ -258,6 +258,70 @@ func IconIdContainsFold(v string) predicate.CustomPage {
 	})
 }
 
+// CreateTimeEQ applies the EQ predicate on the "create_time" field.
+func CreateTimeEQ(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeNEQ applies the NEQ predicate on the "create_time" field.
+func CreateTimeNEQ(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeIn applies the In predicate on the "create_time" field.
+func CreateTimeIn(vs ...time.Time) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.In(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeNotIn applies the NotIn predicate on the "create_time" field.
+func CreateTimeNotIn(vs ...time.Time) predicate.CustomPage {
+	v := make([]any, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.NotIn(s.C(FieldCreateTime), v...))
+	})
+}
+
+// CreateTimeGT applies the GT predicate on the "create_time" field.
+func CreateTimeGT(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeGTE applies the GTE predicate on the "create_time" field.
+func CreateTimeGTE(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLT applies the LT predicate on the "create_time" field.
+func CreateTimeLT(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldCreateTime), v))
+	})
+}
+
+// CreateTimeLTE applies the LTE predicate on the "create_time" field.
+func CreateTimeLTE(v time.Time) predicate.CustomPage {
+	return predicate.CustomPage(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldCreateTime), v))
+	})
+}
+
 // UpdateTimeEQ applies the EQ predicate on the "update_time" field.
 func UpdateTimeEQ(v time.Time) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
@@ -319,70 +383,6 @@ func UpdateTimeLT(v time.Time) predicate.CustomPage {
 func UpdateTimeLTE(v time.Time) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdateTime), v))
-	})
-}
-
-// OrderEQ applies the EQ predicate on the "order" field.
-func OrderEQ(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldOrder), v))
-	})
-}
-
-// OrderNEQ applies the NEQ predicate on the "order" field.
-func OrderNEQ(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldOrder), v))
-	})
-}
-
-// OrderIn applies the In predicate on the "order" field.
-func OrderIn(vs ...int) predicate.CustomPage {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldOrder), v...))
-	})
-}
-
-// OrderNotIn applies the NotIn predicate on the "order" field.
-func OrderNotIn(vs ...int) predicate.CustomPage {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldOrder), v...))
-	})
-}
-
-// OrderGT applies the GT predicate on the "order" field.
-func OrderGT(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldOrder), v))
-	})
-}
-
-// OrderGTE applies the GTE predicate on the "order" field.
-func OrderGTE(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldOrder), v))
-	})
-}
-
-// OrderLT applies the LT predicate on the "order" field.
-func OrderLT(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldOrder), v))
-	})
-}
-
-// OrderLTE applies the LTE predicate on the "order" field.
-func OrderLTE(v int) predicate.CustomPage {
-	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldOrder), v))
 	})
 }
 
@@ -485,102 +485,102 @@ func TitleContainsFold(v string) predicate.CustomPage {
 	})
 }
 
-// TitleNormalizedEQ applies the EQ predicate on the "titleNormalized" field.
-func TitleNormalizedEQ(v string) predicate.CustomPage {
+// URLEQ applies the EQ predicate on the "url" field.
+func URLEQ(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldTitleNormalized), v))
+		s.Where(sql.EQ(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedNEQ applies the NEQ predicate on the "titleNormalized" field.
-func TitleNormalizedNEQ(v string) predicate.CustomPage {
+// URLNEQ applies the NEQ predicate on the "url" field.
+func URLNEQ(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldTitleNormalized), v))
+		s.Where(sql.NEQ(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedIn applies the In predicate on the "titleNormalized" field.
-func TitleNormalizedIn(vs ...string) predicate.CustomPage {
+// URLIn applies the In predicate on the "url" field.
+func URLIn(vs ...string) predicate.CustomPage {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldTitleNormalized), v...))
+		s.Where(sql.In(s.C(FieldURL), v...))
 	})
 }
 
-// TitleNormalizedNotIn applies the NotIn predicate on the "titleNormalized" field.
-func TitleNormalizedNotIn(vs ...string) predicate.CustomPage {
+// URLNotIn applies the NotIn predicate on the "url" field.
+func URLNotIn(vs ...string) predicate.CustomPage {
 	v := make([]any, len(vs))
 	for i := range v {
 		v[i] = vs[i]
 	}
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldTitleNormalized), v...))
+		s.Where(sql.NotIn(s.C(FieldURL), v...))
 	})
 }
 
-// TitleNormalizedGT applies the GT predicate on the "titleNormalized" field.
-func TitleNormalizedGT(v string) predicate.CustomPage {
+// URLGT applies the GT predicate on the "url" field.
+func URLGT(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldTitleNormalized), v))
+		s.Where(sql.GT(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedGTE applies the GTE predicate on the "titleNormalized" field.
-func TitleNormalizedGTE(v string) predicate.CustomPage {
+// URLGTE applies the GTE predicate on the "url" field.
+func URLGTE(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldTitleNormalized), v))
+		s.Where(sql.GTE(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedLT applies the LT predicate on the "titleNormalized" field.
-func TitleNormalizedLT(v string) predicate.CustomPage {
+// URLLT applies the LT predicate on the "url" field.
+func URLLT(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldTitleNormalized), v))
+		s.Where(sql.LT(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedLTE applies the LTE predicate on the "titleNormalized" field.
-func TitleNormalizedLTE(v string) predicate.CustomPage {
+// URLLTE applies the LTE predicate on the "url" field.
+func URLLTE(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldTitleNormalized), v))
+		s.Where(sql.LTE(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedContains applies the Contains predicate on the "titleNormalized" field.
-func TitleNormalizedContains(v string) predicate.CustomPage {
+// URLContains applies the Contains predicate on the "url" field.
+func URLContains(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldTitleNormalized), v))
+		s.Where(sql.Contains(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedHasPrefix applies the HasPrefix predicate on the "titleNormalized" field.
-func TitleNormalizedHasPrefix(v string) predicate.CustomPage {
+// URLHasPrefix applies the HasPrefix predicate on the "url" field.
+func URLHasPrefix(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldTitleNormalized), v))
+		s.Where(sql.HasPrefix(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedHasSuffix applies the HasSuffix predicate on the "titleNormalized" field.
-func TitleNormalizedHasSuffix(v string) predicate.CustomPage {
+// URLHasSuffix applies the HasSuffix predicate on the "url" field.
+func URLHasSuffix(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldTitleNormalized), v))
+		s.Where(sql.HasSuffix(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedEqualFold applies the EqualFold predicate on the "titleNormalized" field.
-func TitleNormalizedEqualFold(v string) predicate.CustomPage {
+// URLEqualFold applies the EqualFold predicate on the "url" field.
+func URLEqualFold(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldTitleNormalized), v))
+		s.Where(sql.EqualFold(s.C(FieldURL), v))
 	})
 }
 
-// TitleNormalizedContainsFold applies the ContainsFold predicate on the "titleNormalized" field.
-func TitleNormalizedContainsFold(v string) predicate.CustomPage {
+// URLContainsFold applies the ContainsFold predicate on the "url" field.
+func URLContainsFold(v string) predicate.CustomPage {
 	return predicate.CustomPage(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldTitleNormalized), v))
+		s.Where(sql.ContainsFold(s.C(FieldURL), v))
 	})
 }
 

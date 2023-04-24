@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/uuid"
@@ -70,6 +71,7 @@ func seedPaths(ctx context.Context) error {
 	}
 
 	type CustomPageHead struct {
+		createTime time.Time
 		icon string
 		section string
 		title string
@@ -78,26 +80,26 @@ func seedPaths(ctx context.Context) error {
 	}
 
 	pages := []CustomPageHead{
-		{ order: 0, section: "O Szkole", icon: "Enlist", title: "Rekrutacja" },
-		{ order: 1, section: "O Szkole", icon: "Documents", title: "Szkolne dokumenty", },
-		{ order: 2, section: "O Szkole", icon: "Chronicle", title: "Kronika szkoły", },
-		{ order: 3, section: "O Szkole", icon: "Library", title: "Biblioteka", },
-		{ order: 4, section: "O Szkole", icon: "Contests", title: "Konkursy", },
-		{ order: 5, section: "O Szkole", icon: "Projects", title: "Projekty", },
-		{ order: 6, section: "O Szkole", icon: "Talentowisko", title: "Talentowisko", link: "https://www.talentowisko.pl/podstawowa/szkola/szkola-podstawowa-im-jana-pawla-ii-w-orlowie-drewnianym" },
-		{ order: 7, section: "Dla Rodziców", icon: "Meeting", title: "Harmonogram zebrań", },
-		{ order: 8, section: "Dla Rodziców", icon: "Consult", title: "Konsultacje dla Rodziców", },
-		{ order: 9, section: "Dla Rodziców", icon: "Counsil", title: "Rada Rodziców", },
-		{ order: 10, section: "Dla Rodziców", icon: "Staff", title: "Grono pedagogiczne", },
-		{ order: 11, section: "Dla Rodziców", icon: "Lessons", title: "Kalendarz roku szkolnego", },
-		{ order: 12, section: "Dla Rodziców", icon: "Help", title: "Pomoc psychologiczno-pedagogiczna", },
-		{ order: 13, section: "Dla Ucznia", icon: "Lessons", title: "Tygodniowy Plan Zajęć", },
-		{ order: 14, section: "Dla Ucznia", icon: "Grades", title: "Dziennik elektroniczny", },
-		{ order: 15, section: "Dla Ucznia", icon: "StudentCounsil", title: "Samorząd Uczniowski", },
-		{ order: 16, section: "Dla Ucznia", icon: "Extracurricular", title: "Zajęcia pozalekcyjne", },
-		{ order: 17, section: "Dla Ucznia", icon: "Pedagogue", title: "Pedagog szkolny", },
-		{ order: 18, section: "Dla Ucznia", icon: "Volunteer", title: "Szkolne Koło Wolontariatu", },
-		{ order: 19, section: "Dla Ucznia", icon: "Mentors", title: "Wychowawcy", },
+		{ createTime: time.Now().Add(0), section: "O Szkole", icon: "Enlist", title: "Rekrutacja" },
+		{ createTime: time.Now().Add(1), section: "O Szkole", icon: "Documents", title: "Szkolne dokumenty", },
+		{ createTime: time.Now().Add(2), section: "O Szkole", icon: "Chronicle", title: "Kronika szkoły", },
+		{ createTime: time.Now().Add(3), section: "O Szkole", icon: "Library", title: "Biblioteka", },
+		{ createTime: time.Now().Add(4), section: "O Szkole", icon: "Contests", title: "Konkursy", },
+		{ createTime: time.Now().Add(5), section: "O Szkole", icon: "Projects", title: "Projekty", },
+		{ createTime: time.Now().Add(6), section: "O Szkole", icon: "Talentowisko", title: "Talentowisko", link: "https://www.talentowisko.pl/podstawowa/szkola/szkola-podstawowa-im-jana-pawla-ii-w-orlowie-drewnianym" },
+		{ createTime: time.Now().Add(7), section: "Dla Rodziców", icon: "Meeting", title: "Harmonogram zebrań", },
+		{ createTime: time.Now().Add(8), section: "Dla Rodziców", icon: "Consult", title: "Konsultacje dla Rodziców", },
+		{ createTime: time.Now().Add(9), section: "Dla Rodziców", icon: "Counsil", title: "Rada Rodziców", },
+		{ createTime: time.Now().Add(10), section: "Dla Rodziców", icon: "Staff", title: "Grono pedagogiczne", },
+		{ createTime: time.Now().Add(11), section: "Dla Rodziców", icon: "Lessons", title: "Kalendarz roku szkolnego", },
+		{ createTime: time.Now().Add(12), section: "Dla Rodziców", icon: "Help", title: "Pomoc psychologiczno-pedagogiczna", },
+		{ createTime: time.Now().Add(13), section: "Dla Ucznia", icon: "Lessons", title: "Tygodniowy Plan Zajęć", },
+		{ createTime: time.Now().Add(14), section: "Dla Ucznia", icon: "Grades", title: "Dziennik elektroniczny", },
+		{ createTime: time.Now().Add(15), section: "Dla Ucznia", icon: "StudentCounsil", title: "Samorząd Uczniowski", },
+		{ createTime: time.Now().Add(16), section: "Dla Ucznia", icon: "Extracurricular", title: "Zajęcia pozalekcyjne", },
+		{ createTime: time.Now().Add(17), section: "Dla Ucznia", icon: "Pedagogue", title: "Pedagog szkolny", },
+		{ createTime: time.Now().Add(18), section: "Dla Ucznia", icon: "Volunteer", title: "Szkolne Koło Wolontariatu", },
+		{ createTime: time.Now().Add(19), section: "Dla Ucznia", icon: "Mentors", title: "Wychowawcy", },
 	}
 
 	bulk := make([]*ent.CustomPageCreate, len(pages))
@@ -108,11 +110,11 @@ func seedPaths(ctx context.Context) error {
 		url := sectionSanitized + "/" + titleSanitized;
 
 		bulk[i] = Client.CustomPage.Create().
-			SetOrder(page.order).
+			SetCreateTime(page.createTime).
 			SetSection(page.section).
 			SetIconId(page.icon).
 			SetTitle(page.title).
-			SetTitleNormalized(url).
+			SetURL(url).
 			SetContent("")
 
 		if (page.link != "") {

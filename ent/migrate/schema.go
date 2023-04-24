@@ -90,14 +90,14 @@ var (
 	CustomPagesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
 		{Name: "icon_id", Type: field.TypeString, Nullable: true},
+		{Name: "create_time", Type: field.TypeTime},
 		{Name: "update_time", Type: field.TypeTime},
-		{Name: "order", Type: field.TypeInt},
-		{Name: "title", Type: field.TypeString, Size: 200},
-		{Name: "title_normalized", Type: field.TypeString, Unique: true},
+		{Name: "title", Type: field.TypeString, Size: 36},
+		{Name: "url", Type: field.TypeString, Unique: true},
 		{Name: "content", Type: field.TypeString, SchemaType: map[string]string{"mysql": "mediumtext"}},
 		{Name: "is_external", Type: field.TypeBool, Nullable: true},
 		{Name: "link", Type: field.TypeString, Nullable: true},
-		{Name: "section", Type: field.TypeString},
+		{Name: "section", Type: field.TypeString, Size: 36},
 	}
 	// CustomPagesTable holds the schema information for the "custom_pages" table.
 	CustomPagesTable = &schema.Table{

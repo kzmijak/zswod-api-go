@@ -56,28 +56,15 @@ func (cpu *CustomPageUpdate) SetUpdateTime(t time.Time) *CustomPageUpdate {
 	return cpu
 }
 
-// SetOrder sets the "order" field.
-func (cpu *CustomPageUpdate) SetOrder(i int) *CustomPageUpdate {
-	cpu.mutation.ResetOrder()
-	cpu.mutation.SetOrder(i)
-	return cpu
-}
-
-// AddOrder adds i to the "order" field.
-func (cpu *CustomPageUpdate) AddOrder(i int) *CustomPageUpdate {
-	cpu.mutation.AddOrder(i)
-	return cpu
-}
-
 // SetTitle sets the "title" field.
 func (cpu *CustomPageUpdate) SetTitle(s string) *CustomPageUpdate {
 	cpu.mutation.SetTitle(s)
 	return cpu
 }
 
-// SetTitleNormalized sets the "titleNormalized" field.
-func (cpu *CustomPageUpdate) SetTitleNormalized(s string) *CustomPageUpdate {
-	cpu.mutation.SetTitleNormalized(s)
+// SetURL sets the "url" field.
+func (cpu *CustomPageUpdate) SetURL(s string) *CustomPageUpdate {
+	cpu.mutation.SetURL(s)
 	return cpu
 }
 
@@ -250,6 +237,11 @@ func (cpu *CustomPageUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "CustomPage.title": %w`, err)}
 		}
 	}
+	if v, ok := cpu.mutation.Section(); ok {
+		if err := custompage.SectionValidator(v); err != nil {
+			return &ValidationError{Name: "section", err: fmt.Errorf(`ent: validator failed for field "CustomPage.section": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -280,17 +272,11 @@ func (cpu *CustomPageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cpu.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := cpu.mutation.Order(); ok {
-		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
-	}
-	if value, ok := cpu.mutation.AddedOrder(); ok {
-		_spec.AddField(custompage.FieldOrder, field.TypeInt, value)
-	}
 	if value, ok := cpu.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := cpu.mutation.TitleNormalized(); ok {
-		_spec.SetField(custompage.FieldTitleNormalized, field.TypeString, value)
+	if value, ok := cpu.mutation.URL(); ok {
+		_spec.SetField(custompage.FieldURL, field.TypeString, value)
 	}
 	if value, ok := cpu.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)
@@ -409,28 +395,15 @@ func (cpuo *CustomPageUpdateOne) SetUpdateTime(t time.Time) *CustomPageUpdateOne
 	return cpuo
 }
 
-// SetOrder sets the "order" field.
-func (cpuo *CustomPageUpdateOne) SetOrder(i int) *CustomPageUpdateOne {
-	cpuo.mutation.ResetOrder()
-	cpuo.mutation.SetOrder(i)
-	return cpuo
-}
-
-// AddOrder adds i to the "order" field.
-func (cpuo *CustomPageUpdateOne) AddOrder(i int) *CustomPageUpdateOne {
-	cpuo.mutation.AddOrder(i)
-	return cpuo
-}
-
 // SetTitle sets the "title" field.
 func (cpuo *CustomPageUpdateOne) SetTitle(s string) *CustomPageUpdateOne {
 	cpuo.mutation.SetTitle(s)
 	return cpuo
 }
 
-// SetTitleNormalized sets the "titleNormalized" field.
-func (cpuo *CustomPageUpdateOne) SetTitleNormalized(s string) *CustomPageUpdateOne {
-	cpuo.mutation.SetTitleNormalized(s)
+// SetURL sets the "url" field.
+func (cpuo *CustomPageUpdateOne) SetURL(s string) *CustomPageUpdateOne {
+	cpuo.mutation.SetURL(s)
 	return cpuo
 }
 
@@ -616,6 +589,11 @@ func (cpuo *CustomPageUpdateOne) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "CustomPage.title": %w`, err)}
 		}
 	}
+	if v, ok := cpuo.mutation.Section(); ok {
+		if err := custompage.SectionValidator(v); err != nil {
+			return &ValidationError{Name: "section", err: fmt.Errorf(`ent: validator failed for field "CustomPage.section": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -663,17 +641,11 @@ func (cpuo *CustomPageUpdateOne) sqlSave(ctx context.Context) (_node *CustomPage
 	if value, ok := cpuo.mutation.UpdateTime(); ok {
 		_spec.SetField(custompage.FieldUpdateTime, field.TypeTime, value)
 	}
-	if value, ok := cpuo.mutation.Order(); ok {
-		_spec.SetField(custompage.FieldOrder, field.TypeInt, value)
-	}
-	if value, ok := cpuo.mutation.AddedOrder(); ok {
-		_spec.AddField(custompage.FieldOrder, field.TypeInt, value)
-	}
 	if value, ok := cpuo.mutation.Title(); ok {
 		_spec.SetField(custompage.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := cpuo.mutation.TitleNormalized(); ok {
-		_spec.SetField(custompage.FieldTitleNormalized, field.TypeString, value)
+	if value, ok := cpuo.mutation.URL(); ok {
+		_spec.SetField(custompage.FieldURL, field.TypeString, value)
 	}
 	if value, ok := cpuo.mutation.Content(); ok {
 		_spec.SetField(custompage.FieldContent, field.TypeString, value)
