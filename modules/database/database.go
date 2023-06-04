@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -25,7 +26,7 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 
 	Client = client;
 
-	fmt.Printf("%+v\n", client)
+	PrettyPrint(client)
 
 	if err := Client.Schema.Create(ctx); err != nil {
 		return ErrSchemaCreationFail
@@ -129,4 +130,15 @@ func seedPaths(ctx context.Context) error {
 	_, err = Client.CustomPage.CreateBulk(bulk...).Save(ctx)
 
 	return err
+}
+
+func PrettyPrint(data interface{}) {
+    var p []byte
+    //    var err := error
+    p, err := json.MarshalIndent(data, "", "\t")
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    fmt.Printf("%s \n", p)
 }
