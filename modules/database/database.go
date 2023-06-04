@@ -25,7 +25,7 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 
 	Client = client;
 
-	fmt.Print(client);
+	fmt.Printf("%+v\n", client)
 
 	if err := Client.Schema.Create(ctx); err != nil {
 		return ErrSchemaCreationFail
