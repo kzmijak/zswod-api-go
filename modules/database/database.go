@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -23,7 +24,9 @@ func InitDatabase(cfg DatabaseConfig, ctx context.Context) error  {
 	}
 
 	Client = client;
-	
+
+	fmt.Print(client);
+
 	if err := Client.Schema.Create(ctx); err != nil {
 		return ErrSchemaCreationFail
 	}
