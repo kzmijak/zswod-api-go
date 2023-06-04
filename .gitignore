@@ -1,3 +1,6 @@
 _debug_bin.exe
 /config/config.json
 /log
+
+/.vscode
+/.idea
