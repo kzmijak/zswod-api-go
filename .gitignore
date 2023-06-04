@@ -1,2 +1,3 @@
-_debug_bin.exe
-/config/config.json
+#_debug_bin.exe
+#/config/config.json
+#/log

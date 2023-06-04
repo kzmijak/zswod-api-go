@@ -1,0 +1,25 @@
+{
+  "database": {
+    "driverName": "mysql",
+    "dsn": "kzmijak:DED676F3E104E6770DD0C529FD96E7C355306FD0649C645BDB8063F9A0850948@tcp(146.59.94.6:3306)/sporlowd?parseTime=true",
+    "env": "dev"
+  },
+  "logger": {
+    "filePath": "test.json"
+  },
+  "server": {
+    "domain": "sporlowd.pl",
+    "host": "8080",
+    "clientbaseUrl": "https://sporlowd.pl:3000"
+  },
+  "auth": {
+    "lifespanHours": "8",
+    "secret": "dfsksljvckxljvkl304522394tjierfgjfklcbv"
+  },
+  "mailer": {
+    "host": "localhost",
+    "port": 25,
+    "username": "mailer",
+    "password": "lsOoW4mNx7sAdlZ7WkJI"
+  }
+}
