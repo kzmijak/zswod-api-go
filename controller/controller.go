@@ -58,7 +58,7 @@ func (c Controller) Run() {
 	router := gin.Default()
 
 	router.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"https://sporlowd.pl:3000"},
+				AllowOrigins:     []string{c.Cfg.Server.ClientBaseUrl},
         AllowMethods:     []string{"*"},
         AllowHeaders: 		[]string{"*"},
         ExposeHeaders:    []string{"Content-Length"},
